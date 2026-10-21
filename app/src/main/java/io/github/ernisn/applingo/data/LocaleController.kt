@@ -126,6 +126,12 @@ class LocaleController(
                         Log.i(TAG, "Repaired $packageName: $current -> ${action.locales}")
                     }
                     is ReconcileAction.Adopt -> {
+                        // Locales set elsewhere (Language Selector, system settings) were usually written
+                        // with fromDelegate=true. Rewriting the same value without it takes the package off
+                        // the system's reset-on-update list; the app sees no change.
+                        withContext(Dispatchers.IO) {
+                            service.setApplicationLocales(packageName, userId, LocaleTags.join(action.locales))
+                        }
                         store.set(userId, packageName, action.locales)
                         adopted++
                         Log.i(TAG, "Adopted $packageName: $wanted -> ${action.locales}")
