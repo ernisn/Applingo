@@ -26,6 +26,9 @@ output-metadata.json
 *.pfx
 keystore.properties
 
+# Design notes and release checklist, kept locally
+docs/
+
 # OS
 .DS_Store
 Thumbs.db

@@ -48,7 +48,8 @@ internal class HiddenLocaleManager {
     fun setApplicationLocales(packageName: String, userId: Int, locales: LocaleList) {
         if (setLocales.parameterCount == 4) {
             // fromDelegate=true would put the package on the system's "set by delegate" list, and the
-            // system then strips locales the app doesn't declare on every app update (docs/DESIGN.md §3.1).
+            // system then strips locales the app doesn't declare on every app update ("Missing from the
+            // LocaleConfig, reset app locales" in the log).
             call(setLocales, packageName, userId, locales, false)
         } else {
             call(setLocales, packageName, userId, locales)
