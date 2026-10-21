@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Common actions -->
+    <string name="action_back">Terug</string>
+    <string name="action_close">Sluiten</string>
+    <string name="action_retry">Opnieuw proberen</string>
+    <string name="action_refresh">Vernieuwen</string>
+    <string name="action_apply">Toepassen</string>
+    <string name="action_open">Openen</string>
+    <string name="action_restart_app">App herstarten</string>
+    <string name="action_force_stop">Geforceerd stoppen</string>
+    <string name="action_app_info">App-info</string>
+    <string name="action_system_language">Taal in systeeminstellingen</string>
+    <string name="action_change_language">Taal wijzigen</string>
+    <string name="action_reset_to_system">Systeem volgen</string>
+    <string name="action_follow_system">Wissen</string>
+    <string name="action_move_up">Omhoog</string>
+    <string name="action_move_down">Omlaag</string>
+    <string name="action_remove">Verwijderen</string>
+    <string name="action_expand">Regio’s tonen</string>
+    <string name="action_collapse">Regio’s verbergen</string>
+    <string name="action_sort">Sorteren</string>
+    <string name="action_clear_search">Zoekopdracht wissen</string>
+    <string name="action_select_all">Alles selecteren</string>
+    <string name="action_check_now">Nu controleren</string>
+    <string name="action_forget">Vergeten</string>
+    <string name="action_clear_activity">Wissen</string>
+    <string name="action_reorder">Sleep om te herschikken</string>
+
+    <!-- Navigation -->
+    <string name="nav_apps">Apps</string>
+    <string name="nav_managed">Mijn talen</string>
+    <string name="nav_settings">Instellingen</string>
+
+    <!-- App list -->
+    <string name="search_hint">Apps of talen zoeken</string>
+    <string name="list_empty">Geen apps om te tonen</string>
+    <string name="list_no_results">Geen resultaten</string>
+    <string name="filter_launchable">Startbaar</string>
+    <string name="filter_user">Gebruiker</string>
+    <string name="filter_system">Systeem</string>
+    <string name="filter_all">Alle</string>
+    <string name="filter_only_with_locale">Taal ingesteld</string>
+    <string name="sort_name">Naam</string>
+    <string name="sort_recently_set">Onlangs ingesteld</string>
+    <string name="sort_recently_updated">Onlangs bijgewerkt</string>
+    <string name="sort_recently_installed">Onlangs geïnstalleerd</string>
+    <string name="sort_with_locale_first">Apps met een taal eerst</string>
+    <string name="sort_reverse">Omgekeerde volgorde</string>
+    <string name="app_badge_system">Systeem</string>
+    <string name="app_badge_disabled">Uitgeschakeld</string>
+    <plurals name="selection_count">
+        <item quantity="one">%1$d geselecteerd</item>
+        <item quantity="other">%1$d geselecteerd</item>
+    </plurals>
+
+    <!-- My languages -->
+    <string name="managed_section_apps">Apps</string>
+    <string name="managed_empty">Nog geen enkele app heeft een eigen taal.</string>
+    <string name="managed_section_activity">Recente activiteit</string>
+    <string name="managed_activity_empty">Nog niets.</string>
+    <plurals name="managed_summary_count">
+        <item quantity="one">%1$d app met een eigen taal</item>
+        <item quantity="other">%1$d apps met een eigen taal</item>
+    </plurals>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d vraagt aandacht</item>
+        <item quantity="other">%1$d vragen aandacht</item>
+    </plurals>
+    <string name="managed_last_check_never">Nog niet gecontroleerd</string>
+    <string name="managed_last_check">Laatst gecontroleerd %1$s · %2$d hersteld · %3$d overgenomen</string>
+    <string name="managed_not_installed">Niet geïnstalleerd</string>
+    <string name="activity_applied">Ingesteld op %1$s</string>
+    <string name="activity_reset">Terug naar de systeemtaal</string>
+    <string name="activity_repaired">Hersteld nadat het systeem het had gewijzigd: %1$s → %2$s</string>
+    <string name="activity_mismatch">Door het systeem gewijzigd naar %1$s (jouw keuze: %2$s); automatisch herstel staat uit</string>
+    <string name="activity_adopted">Overgenomen: %1$s</string>
+    <string name="activity_imported">Geïmporteerd: %1$s</string>
+    <string name="activity_failed">Kon niet schrijven: %1$s</string>
+
+    <!-- Settings -->
+    <string name="settings_shizuku_connected">Verbonden als %1$s</string>
+    <string name="settings_section_appearance">Weergave</string>
+    <string name="settings_theme">Thema</string>
+    <string name="settings_theme_system">Systeem</string>
+    <string name="settings_theme_light">Licht</string>
+    <string name="settings_theme_dark">Donker</string>
+    <string name="settings_dynamic_color">Achtergrondkleuren</string>
+    <string name="settings_dynamic_color_summary">Kleuren van je achtergrond gebruiken</string>
+    <string name="settings_seed_color">Themakleur</string>
+    <string name="settings_pure_black">Puur zwart</string>
+    <string name="settings_pure_black_summary">Zwarte achtergrond in donker thema</string>
+    <string name="settings_section_keeping">Talen behouden</string>
+    <string name="settings_auto_repair">Automatisch herstellen</string>
+    <string name="settings_auto_repair_summary">Als het systeem een gekozen taal verwijdert of inkort, wordt die teruggeschreven. Als dit uit staat, wordt het alleen gemeld.</string>
+    <string name="settings_background_check">Op de achtergrond controleren</string>
+    <string name="settings_background_check_summary">Regelmatig controleren, ook als Applingo niet geopend is (Shizuku moet dan actief zijn)</string>
+    <string name="settings_background_interval">Controleren elke</string>
+    <string name="settings_section_app_list">App-lijst</string>
+    <string name="settings_refresh_on_launch">Vernieuwen bij openen</string>
+    <string name="settings_refresh_on_launch_summary">Geïnstalleerde apps opnieuw scannen telkens als Applingo opent. Maakt openen trager; als dit uit staat, trek de lijst omlaag om te vernieuwen.</string>
+    <string name="settings_hours">%1$d u</string>
+    <string name="settings_section_data">Gegevens</string>
+    <string name="settings_export">Exporteren</string>
+    <string name="settings_export_summary">De talen van je apps in een bestand opslaan</string>
+    <string name="settings_import">Importeren</string>
+    <string name="settings_import_summary">App-talen laden uit een geëxporteerd bestand en toepassen</string>
+    <string name="settings_section_about">Over</string>
+    <string name="settings_own_language">Taal van Applingo</string>
+    <string name="settings_source">Broncode</string>
+    <string name="settings_version">Versie</string>
+    <string name="settings_license">MIT-licentie</string>
+    <string name="time_just_now">zojuist</string>
+
+    <!-- Shizuku -->
+    <string name="shizuku_not_installed">Applingo heeft Shizuku (of Sui) nodig om de taal van andere apps te wijzigen. Installeer en start het eerst.</string>
+    <string name="shizuku_not_running">Shizuku is geïnstalleerd maar niet actief. Start het in de Shizuku-app. Je keuzes worden opgeslagen en toegepast zodra het draait.</string>
+    <string name="shizuku_unsupported">Deze versie van Shizuku is te oud. Werk Shizuku bij.</string>
+    <string name="shizuku_permission_required">Sta Applingo toe Shizuku te gebruiken.</string>
+    <string name="shizuku_permission_denied">De Shizuku-toestemming is geweigerd. Sta Applingo toe in de Shizuku-app en probeer het opnieuw.</string>
+    <string name="shizuku_connecting">Verbinden met Shizuku…</string>
+    <string name="shizuku_failed">Kan de Shizuku-service niet starten: %1$s</string>
+    <string name="shizuku_action_get">Shizuku downloaden</string>
+    <string name="shizuku_action_grant">Toestaan</string>
+    <string name="shizuku_action_open">Shizuku openen</string>
+
+    <!-- Detail -->
+    <string name="detail_empty">Selecteer een app</string>
+    <string name="detail_not_installed">Deze app is niet geïnstalleerd</string>
+    <string name="detail_language">App-taal</string>
+    <string name="locale_follow_system">Systeemtaal</string>
+    <string name="locale_system_fallback">Standaard, laagste prioriteit · %1$s</string>
+    <string name="detail_order_hint">De app gebruikt van boven naar beneden de eerste taal die ze ondersteunt.</string>
+    <string name="status_none">Volgt de systeemtaal</string>
+    <string name="status_applied">Actief</string>
+    <string name="status_pending">Opgeslagen – wordt toegepast zodra Shizuku verbonden is</string>
+    <string name="status_mismatch">Het systeem gebruikt nu %1$s, wat afwijkt van je keuze.</string>
+    <string name="info_version">Versie</string>
+    <string name="info_sdk">SDK</string>
+    <string name="info_sdk_value">Doel %1$d · Min. %2$d</string>
+    <string name="info_installed">Geïnstalleerd</string>
+    <string name="info_updated">Bijgewerkt</string>
+    <string name="info_installer">Geïnstalleerd via</string>
+    <string name="info_type">Type</string>
+    <string name="info_type_user">Gebruikersapp</string>
+    <string name="info_type_system">Systeemapp</string>
+    <string name="info_type_updated_system">Systeemapp (bijgewerkt)</string>
+    <string name="info_declared_locales">Opgegeven talen</string>
+    <string name="info_declared_none">Geen opgegeven</string>
+    <plurals name="info_declared_count">
+        <item quantity="one">%1$d taal</item>
+        <item quantity="other">%1$d talen</item>
+    </plurals>
+    <string name="info_system_value">Systeemwaarde</string>
+    <string name="info_system_value_unknown">Onbekend (Shizuku niet verbonden)</string>
+
+    <!-- Picker -->
+    <string name="picker_title">Taal · %1$s</string>
+    <plurals name="picker_title_batch">
+        <item quantity="one">Taal · %1$d app</item>
+        <item quantity="other">Taal · %1$d apps</item>
+    </plurals>
+    <string name="picker_selected">Volgorde</string>
+    <string name="picker_selected_empty">Geen taal gekozen: de app gebruikt de systeemtaal. Kies hieronder talen.</string>
+    <string name="picker_search_hint">Talen zoeken</string>
+    <string name="picker_order_hint">De app gebruikt van boven naar beneden de eerste taal die ze ondersteunt; de systeemtaal komt als laatste. Sleep ≡ om te herschikken.</string>
+    <string name="picker_section_declared">Opgegeven door de app</string>
+    <string name="picker_section_system">Je systeemtalen</string>
+    <string name="picker_section_all">Alle talen</string>
+
+    <!-- Messages -->
+    <string name="message_applied">Taal toegepast</string>
+    <string name="message_reset">De app volgt weer de systeemtaal</string>
+    <string name="message_saved_pending">Opgeslagen. Wordt toegepast zodra Shizuku verbonden is.</string>
+    <string name="message_apply_failed">Kon niet toepassen: %1$s</string>
+    <string name="message_needs_shizuku">Hiervoor moet Shizuku actief zijn</string>
+    <string name="message_restart_failed">Kon de app niet herstarten: %1$s</string>
+    <string name="message_reconcile_failed">Kon de app-talen niet controleren: %1$s</string>
+    <string name="message_check_ok">Alle app-talen zijn zoals je ze hebt ingesteld</string>
+    <plurals name="message_batch_applied">
+        <item quantity="one">Toegepast op %1$d app</item>
+        <item quantity="other">Toegepast op %1$d apps</item>
+    </plurals>
+    <string name="message_batch_failed">Mislukt voor %1$d van %2$d apps</string>
+    <string name="message_exported">Geëxporteerd</string>
+    <string name="message_export_failed">Exporteren mislukt: %1$s</string>
+    <plurals name="message_imported">
+        <item quantity="one">%1$d app geïmporteerd</item>
+        <item quantity="other">%1$d apps geïmporteerd</item>
+    </plurals>
+    <string name="message_import_failed">Importeren mislukt: %1$s</string>
+    <string name="message_force_stopped">App gestopt</string>
+    <string name="message_force_stop_failed">Kon de app niet stoppen: %1$s</string>
+    <plurals name="message_repaired">
+        <item quantity="one">Taal van %1$d app hersteld</item>
+        <item quantity="other">Talen van %1$d apps hersteld</item>
+    </plurals>
+    <plurals name="message_adopted">
+        <item quantity="one">Bestaande taal van %1$d app overgenomen</item>
+        <item quantity="other">Bestaande talen van %1$d apps overgenomen</item>
+    </plurals>
+</resources>

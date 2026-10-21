@@ -183,8 +183,7 @@ class MainViewModel(private val app: Application, private val container: AppCont
     // --- App list --------------------------------------------------------------------------------
 
     fun onQueryChange(value: String) {
-        // Single-line search: pasted line breaks become spaces instead of breaking the match.
-        query.value = value.replace(Regex("[\\r\\n]+"), " ")
+        query.value = value
     }
 
     fun updatePreferences(transform: (ListPreferences) -> ListPreferences) {
@@ -195,9 +194,28 @@ class MainViewModel(private val app: Application, private val container: AppCont
         viewModelScope.launch { container.refreshApps() }
     }
 
-    /** Called when the UI comes to the foreground: pick up installs/updates and re-check locales. */
+    /** Called when the UI comes back to the foreground: re-check locales, and rescan apps if enabled. */
     fun onForeground() {
-        if (System.currentTimeMillis() - container.apps.lastRefreshAt > FOREGROUND_REFRESH_MS) refresh()
+        val stale = System.currentTimeMillis() - container.apps.lastRefreshAt > FOREGROUND_REFRESH_MS
+        when {
+            !stale -> Unit
+            settings.value.refreshOnLaunch -> refresh()
+            else -> container.locales.requestReconcile()
+        }
+    }
+
+    fun forceStop(packageName: String) {
+        viewModelScope.launch {
+            val text = try {
+                locales.forceStop(packageName)
+                app.getString(R.string.message_force_stopped)
+            } catch (e: ServiceUnavailableException) {
+                app.getString(R.string.message_needs_shizuku)
+            } catch (e: Exception) {
+                app.getString(R.string.message_force_stop_failed, e.message ?: e.toString())
+            }
+            localMessages.send(UserMessage(text))
+        }
     }
 
     fun toggleSelection(packageName: String) {
@@ -344,7 +362,9 @@ class MainViewModel(private val app: Application, private val container: AppCont
 
     /** UI languages Applingo ships, from its generated LocaleConfig. */
     val ownLocaleOptions: List<String> by lazy {
+        val collator = Collator.getInstance(Locale.ROOT)
         LocaleTags.parse(LocaleConfig(app).supportedLocales?.toLanguageTags())
+            .sortedWith(compareBy(collator) { LocaleTags.nativeName(it) })
     }
 
     fun ownLocale(): String? =
@@ -401,10 +421,11 @@ class MainViewModel(private val app: Application, private val container: AppCont
             AppSort.RecentlyUpdated -> compareByDescending<AppRow> { it.app.lastUpdateTime }.then(byName)
             AppSort.RecentlyInstalled -> compareByDescending<AppRow> { it.app.firstInstallTime }.then(byName)
         }
+        val directed = if (preferences.reverseOrder) sortOrder.reversed() else sortOrder
         val ordering = if (preferences.withLocaleFirst) {
-            compareBy<AppRow> { it.locales.isEmpty() }.then(sortOrder)
+            compareBy<AppRow> { it.locales.isEmpty() }.then(directed)
         } else {
-            sortOrder
+            directed
         }
         return visible.filter { row ->
             when (preferences.typeFilter) {

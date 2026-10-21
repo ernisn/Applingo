@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -80,6 +81,7 @@ import io.github.ernisn.applingo.ui.AppIcon
 import io.github.ernisn.applingo.ui.AppRow
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
 import io.github.ernisn.applingo.ui.components.focusableOnlyAfterTouch
 import io.github.ernisn.applingo.ui.picker.BatchLocalePickerDialog
@@ -92,6 +94,9 @@ fun AppListPane(
 ) {
     val state by viewModel.listState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    // The field owns its text: echoing it back through the (asynchronously computed) list state lags
+    // behind fast typing and IME composition, which scrambles characters and resets the cursor.
+    var queryText by rememberSaveable { mutableStateOf("") }
 
     // A new query, filter or order is a new list: start at its top instead of keeping the scroll
     // anchored to whichever app happened to be first before.
@@ -108,6 +113,8 @@ fun AppListPane(
     }
 
     Scaffold(
+        modifier = Modifier.safeArea(),
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             if (selecting) {
                 SelectionBar(
@@ -119,11 +126,17 @@ fun AppListPane(
                 )
             } else {
                 SearchHeader(
-                    query = state.query,
-                    onQueryChange = viewModel::onQueryChange,
+                    query = queryText,
+                    onQueryChange = { value ->
+                        // Single-line search: pasted line breaks become spaces instead of breaking the match.
+                        queryText = value.replace(Regex("[\\r\\n]+"), " ")
+                        viewModel.onQueryChange(queryText)
+                    },
                     sort = state.preferences.sort,
+                    reverseOrder = state.preferences.reverseOrder,
                     withLocaleFirst = state.preferences.withLocaleFirst,
                     onSortChange = { sort -> viewModel.updatePreferences { it.copy(sort = sort) } },
+                    onReverseOrderChange = { value -> viewModel.updatePreferences { it.copy(reverseOrder = value) } },
                     onWithLocaleFirstChange = { value -> viewModel.updatePreferences { it.copy(withLocaleFirst = value) } },
                     onRefresh = viewModel::refresh,
                 )
@@ -177,7 +190,6 @@ fun AppListPane(
                                 onLongClick = { viewModel.toggleSelection(packageName) },
                             )
                         }
-                        item { Spacer(Modifier.navigationBarsPadding()) }
                     }
                 }
             }
@@ -190,8 +202,10 @@ private fun SearchHeader(
     query: String,
     onQueryChange: (String) -> Unit,
     sort: AppSort,
+    reverseOrder: Boolean,
     withLocaleFirst: Boolean,
     onSortChange: (AppSort) -> Unit,
+    onReverseOrderChange: (Boolean) -> Unit,
     onWithLocaleFirstChange: (Boolean) -> Unit,
     onRefresh: () -> Unit,
 ) {
@@ -201,7 +215,6 @@ private fun SearchHeader(
         shape = CircleShape,
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = Modifier
-            .statusBarsPadding()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth()
             .height(56.dp),
@@ -252,15 +265,13 @@ private fun SearchHeader(
                     }
                     HorizontalDivider()
                     DropdownMenuItem(
+                        text = { Text(stringResource(R.string.sort_reverse)) },
+                        leadingIcon = { Checkbox(checked = reverseOrder, onCheckedChange = null) },
+                        onClick = { onReverseOrderChange(!reverseOrder) },
+                    )
+                    DropdownMenuItem(
                         text = { Text(stringResource(R.string.sort_with_locale_first)) },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Filled.Check,
-                                contentDescription = null,
-                                tint = if (withLocaleFirst) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.surfaceContainerHigh,
-                            )
-                        },
+                        leadingIcon = { Checkbox(checked = withLocaleFirst, onCheckedChange = null) },
                         onClick = { onWithLocaleFirstChange(!withLocaleFirst) },
                     )
                     HorizontalDivider()
@@ -335,6 +346,7 @@ private fun SelectionBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        windowInsets = WindowInsets(0),
     )
 }
 

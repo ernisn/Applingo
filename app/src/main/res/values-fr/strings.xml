@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Common actions -->
+    <string name="action_back">Retour</string>
+    <string name="action_close">Fermer</string>
+    <string name="action_retry">Réessayer</string>
+    <string name="action_refresh">Actualiser</string>
+    <string name="action_apply">Appliquer</string>
+    <string name="action_open">Ouvrir</string>
+    <string name="action_restart_app">Redémarrer l’app</string>
+    <string name="action_force_stop">Forcer l’arrêt</string>
+    <string name="action_app_info">Infos sur l’app</string>
+    <string name="action_system_language">Langue dans les paramètres système</string>
+    <string name="action_change_language">Changer de langue</string>
+    <string name="action_reset_to_system">Suivre le système</string>
+    <string name="action_follow_system">Effacer</string>
+    <string name="action_move_up">Monter</string>
+    <string name="action_move_down">Descendre</string>
+    <string name="action_remove">Retirer</string>
+    <string name="action_expand">Afficher les régions</string>
+    <string name="action_collapse">Masquer les régions</string>
+    <string name="action_sort">Trier</string>
+    <string name="action_clear_search">Effacer la recherche</string>
+    <string name="action_select_all">Tout sélectionner</string>
+    <string name="action_check_now">Vérifier maintenant</string>
+    <string name="action_forget">Oublier</string>
+    <string name="action_clear_activity">Effacer</string>
+    <string name="action_reorder">Faire glisser pour réorganiser</string>
+
+    <!-- Navigation -->
+    <string name="nav_apps">Apps</string>
+    <string name="nav_managed">Mes langues</string>
+    <string name="nav_settings">Paramètres</string>
+
+    <!-- App list -->
+    <string name="search_hint">Rechercher des apps ou des langues</string>
+    <string name="list_empty">Aucune app à afficher</string>
+    <string name="list_no_results">Aucun résultat</string>
+    <string name="filter_launchable">Lançables</string>
+    <string name="filter_user">Utilisateur</string>
+    <string name="filter_system">Système</string>
+    <string name="filter_all">Toutes</string>
+    <string name="filter_only_with_locale">Langue définie</string>
+    <string name="sort_name">Nom</string>
+    <string name="sort_recently_set">Définies récemment</string>
+    <string name="sort_recently_updated">Mises à jour récemment</string>
+    <string name="sort_recently_installed">Installées récemment</string>
+    <string name="sort_with_locale_first">Apps avec une langue en premier</string>
+    <string name="sort_reverse">Ordre inverse</string>
+    <string name="app_badge_system">Système</string>
+    <string name="app_badge_disabled">Désactivée</string>
+    <plurals name="selection_count">
+        <item quantity="one">%1$d sélectionnée</item>
+        <item quantity="many">%1$d sélectionnées</item>
+        <item quantity="other">%1$d sélectionnées</item>
+    </plurals>
+
+    <!-- My languages -->
+    <string name="managed_section_apps">Apps</string>
+    <string name="managed_empty">Aucune app n’a encore sa propre langue.</string>
+    <string name="managed_section_activity">Activité récente</string>
+    <string name="managed_activity_empty">Rien pour l’instant.</string>
+    <plurals name="managed_summary_count">
+        <item quantity="one">%1$d app avec sa propre langue</item>
+        <item quantity="many">%1$d apps avec leur propre langue</item>
+        <item quantity="other">%1$d apps avec leur propre langue</item>
+    </plurals>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d nécessite votre attention</item>
+        <item quantity="many">%1$d nécessitent votre attention</item>
+        <item quantity="other">%1$d nécessitent votre attention</item>
+    </plurals>
+    <string name="managed_last_check_never">Pas encore vérifié</string>
+    <string name="managed_last_check">Dernière vérification %1$s · %2$d restaurées · %3$d reprises</string>
+    <string name="managed_not_installed">Non installée</string>
+    <string name="activity_applied">Définie sur %1$s</string>
+    <string name="activity_reset">Retour à la langue du système</string>
+    <string name="activity_repaired">Restaurée après une modification du système : %1$s → %2$s</string>
+    <string name="activity_mismatch">Modifiée par le système en %1$s (votre choix : %2$s) ; la restauration automatique est désactivée</string>
+    <string name="activity_adopted">Reprise : %1$s</string>
+    <string name="activity_imported">Importée : %1$s</string>
+    <string name="activity_failed">Échec de l’écriture : %1$s</string>
+
+    <!-- Settings -->
+    <string name="settings_shizuku_connected">Connecté en tant que %1$s</string>
+    <string name="settings_section_appearance">Apparence</string>
+    <string name="settings_theme">Thème</string>
+    <string name="settings_theme_system">Système</string>
+    <string name="settings_theme_light">Clair</string>
+    <string name="settings_theme_dark">Sombre</string>
+    <string name="settings_dynamic_color">Couleurs du fond d’écran</string>
+    <string name="settings_dynamic_color_summary">Utiliser les couleurs de votre fond d’écran</string>
+    <string name="settings_seed_color">Couleur du thème</string>
+    <string name="settings_pure_black">Noir pur</string>
+    <string name="settings_pure_black_summary">Arrière-plan noir en thème sombre</string>
+    <string name="settings_section_keeping">Conserver les langues</string>
+    <string name="settings_auto_repair">Restaurer automatiquement</string>
+    <string name="settings_auto_repair_summary">Lorsque le système supprime ou réduit une langue que vous avez choisie, elle est réécrite. Si désactivé, c’est seulement signalé.</string>
+    <string name="settings_background_check">Vérifier en arrière-plan</string>
+    <string name="settings_background_check_summary">Vérifier régulièrement même quand Applingo n’est pas ouvert (Shizuku doit alors être actif)</string>
+    <string name="settings_background_interval">Vérifier toutes les</string>
+    <string name="settings_section_app_list">Liste des apps</string>
+    <string name="settings_refresh_on_launch">Actualiser au lancement</string>
+    <string name="settings_refresh_on_launch_summary">Analyser à nouveau les apps installées à chaque ouverture d’Applingo. Ralentit l’ouverture ; si désactivé, tirez la liste vers le bas pour actualiser.</string>
+    <string name="settings_hours">%1$d h</string>
+    <string name="settings_section_data">Données</string>
+    <string name="settings_export">Exporter</string>
+    <string name="settings_export_summary">Enregistrer les langues de vos apps dans un fichier</string>
+    <string name="settings_import">Importer</string>
+    <string name="settings_import_summary">Charger les langues des apps depuis un fichier exporté et les appliquer</string>
+    <string name="settings_section_about">À propos</string>
+    <string name="settings_own_language">Langue d’Applingo</string>
+    <string name="settings_source">Code source</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_license">Licence MIT</string>
+    <string name="time_just_now">à l’instant</string>
+
+    <!-- Shizuku -->
+    <string name="shizuku_not_installed">Applingo a besoin de Shizuku (ou Sui) pour changer la langue des autres apps. Installez-le et lancez-le d’abord.</string>
+    <string name="shizuku_not_running">Shizuku est installé mais n’est pas actif. Lancez-le dans l’app Shizuku. Vos choix sont enregistrés et appliqués dès qu’il fonctionne.</string>
+    <string name="shizuku_unsupported">Cette version de Shizuku est trop ancienne. Veuillez mettre Shizuku à jour.</string>
+    <string name="shizuku_permission_required">Autorisez Applingo à utiliser Shizuku.</string>
+    <string name="shizuku_permission_denied">L’autorisation Shizuku a été refusée. Autorisez Applingo dans l’app Shizuku, puis réessayez.</string>
+    <string name="shizuku_connecting">Connexion à Shizuku…</string>
+    <string name="shizuku_failed">Impossible de démarrer le service Shizuku : %1$s</string>
+    <string name="shizuku_action_get">Obtenir Shizuku</string>
+    <string name="shizuku_action_grant">Autoriser</string>
+    <string name="shizuku_action_open">Ouvrir Shizuku</string>
+
+    <!-- Detail -->
+    <string name="detail_empty">Sélectionnez une app</string>
+    <string name="detail_not_installed">Cette app n’est pas installée</string>
+    <string name="detail_language">Langue de l’app</string>
+    <string name="locale_follow_system">Langue du système</string>
+    <string name="locale_system_fallback">Par défaut, priorité la plus basse · %1$s</string>
+    <string name="detail_order_hint">L’app utilise la première langue qu’elle prend en charge, de haut en bas.</string>
+    <string name="status_none">Suit la langue du système</string>
+    <string name="status_applied">Active</string>
+    <string name="status_pending">Enregistrée – sera appliquée lorsque Shizuku sera connecté</string>
+    <string name="status_mismatch">Le système utilise actuellement %1$s, ce qui diffère de votre choix.</string>
+    <string name="info_version">Version</string>
+    <string name="info_sdk">SDK</string>
+    <string name="info_sdk_value">Cible %1$d · Min. %2$d</string>
+    <string name="info_installed">Installée</string>
+    <string name="info_updated">Mise à jour</string>
+    <string name="info_installer">Installée par</string>
+    <string name="info_type">Type</string>
+    <string name="info_type_user">App utilisateur</string>
+    <string name="info_type_system">App système</string>
+    <string name="info_type_updated_system">App système (mise à jour)</string>
+    <string name="info_declared_locales">Langues déclarées</string>
+    <string name="info_declared_none">Aucune déclarée</string>
+    <plurals name="info_declared_count">
+        <item quantity="one">%1$d langue</item>
+        <item quantity="many">%1$d langues</item>
+        <item quantity="other">%1$d langues</item>
+    </plurals>
+    <string name="info_system_value">Valeur système</string>
+    <string name="info_system_value_unknown">Inconnue (Shizuku non connecté)</string>
+
+    <!-- Picker -->
+    <string name="picker_title">Langue · %1$s</string>
+    <plurals name="picker_title_batch">
+        <item quantity="one">Langue · %1$d app</item>
+        <item quantity="many">Langue · %1$d apps</item>
+        <item quantity="other">Langue · %1$d apps</item>
+    </plurals>
+    <string name="picker_selected">Ordre de correspondance</string>
+    <string name="picker_selected_empty">Aucune langue choisie : l’app utilise la langue du système. Choisissez des langues ci-dessous.</string>
+    <string name="picker_search_hint">Rechercher des langues</string>
+    <string name="picker_order_hint">L’app utilise la première langue qu’elle prend en charge, de haut en bas ; la langue du système vient en dernier. Faites glisser ≡ pour réorganiser.</string>
+    <string name="picker_section_declared">Déclarées par l’app</string>
+    <string name="picker_section_system">Vos langues système</string>
+    <string name="picker_section_all">Toutes les langues</string>
+
+    <!-- Messages -->
+    <string name="message_applied">Langue appliquée</string>
+    <string name="message_reset">L’app suit de nouveau la langue du système</string>
+    <string name="message_saved_pending">Enregistré. Sera appliqué lorsque Shizuku sera connecté.</string>
+    <string name="message_apply_failed">Impossible d’appliquer : %1$s</string>
+    <string name="message_needs_shizuku">Shizuku doit être actif pour cela</string>
+    <string name="message_restart_failed">Impossible de redémarrer l’app : %1$s</string>
+    <string name="message_reconcile_failed">Impossible de vérifier les langues des apps : %1$s</string>
+    <string name="message_check_ok">Toutes les langues des apps sont telles que vous les avez définies</string>
+    <plurals name="message_batch_applied">
+        <item quantity="one">Appliquée à %1$d app</item>
+        <item quantity="many">Appliquée à %1$d apps</item>
+        <item quantity="other">Appliquée à %1$d apps</item>
+    </plurals>
+    <string name="message_batch_failed">Échec pour %1$d apps sur %2$d</string>
+    <string name="message_exported">Exporté</string>
+    <string name="message_export_failed">Échec de l’exportation : %1$s</string>
+    <plurals name="message_imported">
+        <item quantity="one">%1$d app importée</item>
+        <item quantity="many">%1$d apps importées</item>
+        <item quantity="other">%1$d apps importées</item>
+    </plurals>
+    <string name="message_import_failed">Échec de l’importation : %1$s</string>
+    <string name="message_force_stopped">App arrêtée</string>
+    <string name="message_force_stop_failed">Impossible d’arrêter l’app : %1$s</string>
+    <plurals name="message_repaired">
+        <item quantity="one">Langue de %1$d app restaurée</item>
+        <item quantity="many">Langues de %1$d apps restaurées</item>
+        <item quantity="other">Langues de %1$d apps restaurées</item>
+    </plurals>
+    <plurals name="message_adopted">
+        <item quantity="one">Langue existante de %1$d app reprise</item>
+        <item quantity="many">Langues existantes de %1$d apps reprises</item>
+        <item quantity="other">Langues existantes de %1$d apps reprises</item>
+    </plurals>
+</resources>

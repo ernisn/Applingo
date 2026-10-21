@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -42,7 +43,13 @@ class AppContainer(private val app: Application) {
         locales.start()
         scope.launch {
             apps.loadSnapshot()
-            refreshApps()
+            // The snapshot is shown right away; rescanning on every launch is opt-in (it slows startup),
+            // except on first run when there is nothing to show yet.
+            if (apps.apps.value == null || preferences.settings.first().refreshOnLaunch) {
+                refreshApps()
+            } else {
+                locales.requestReconcile()
+            }
         }
         scope.launch {
             preferences.settings

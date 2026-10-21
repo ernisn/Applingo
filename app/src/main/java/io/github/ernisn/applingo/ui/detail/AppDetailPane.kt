@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,6 +49,8 @@ import io.github.ernisn.applingo.ui.AppIcon
 import io.github.ernisn.applingo.ui.AppRow
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.components.LocalePriorityList
+import io.github.ernisn.applingo.ui.safeArea
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,8 +68,11 @@ fun AppDetailPane(
     }
 
     Scaffold(
+        modifier = Modifier.safeArea(),
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0),
                 title = { Text(row?.app?.label ?: packageName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = {
                     if (showBack) {
@@ -94,13 +99,13 @@ fun AppDetailPane(
             item {
                 LanguageCard(
                     row = row,
+                    systemLocales = viewModel.systemLocales,
                     onEdit = onEditLanguages,
                     onReset = { viewModel.applyLocales(packageName, emptyList()) },
                 )
             }
             item { ActionsCard(viewModel, row, extras) }
             item { InfoCard(row, extras) }
-            item { Spacer(Modifier.navigationBarsPadding()) }
         }
     }
 }
@@ -134,14 +139,16 @@ private fun HeaderCard(row: AppRow) {
 }
 
 @Composable
-private fun LanguageCard(row: AppRow, onEdit: () -> Unit, onReset: () -> Unit) {
+private fun LanguageCard(row: AppRow, systemLocales: List<String>, onEdit: () -> Unit, onReset: () -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.detail_language), style = MaterialTheme.typography.titleMedium)
             Text(
-                text = chainText(row.locales),
-                style = MaterialTheme.typography.bodyLarge,
+                text = stringResource(R.string.detail_order_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            LocalePriorityList(chain = row.locales, systemLocales = systemLocales)
             val (statusText, isProblem) = when (row.status) {
                 LocaleStatus.None -> stringResource(R.string.status_none) to false
                 LocaleStatus.Applied -> stringResource(R.string.status_applied) to false
@@ -187,9 +194,12 @@ private fun ActionsCard(viewModel: MainViewModel, row: AppRow, extras: AppExtras
         ) {
             if (launchIntent != null) {
                 OutlinedButton(onClick = { launch(launchIntent) }) { Text(stringResource(R.string.action_open)) }
+                OutlinedButton(onClick = { viewModel.restartApp(packageName) }) {
+                    Text(stringResource(R.string.action_restart_app))
+                }
             }
-            OutlinedButton(onClick = { viewModel.restartApp(packageName) }) {
-                Text(stringResource(if (launchIntent != null) R.string.action_restart_app else R.string.action_force_stop))
+            OutlinedButton(onClick = { viewModel.forceStop(packageName) }) {
+                Text(stringResource(R.string.action_force_stop))
             }
             OutlinedButton(onClick = { launch(viewModel.appInfoIntent(packageName)) }) {
                 Text(stringResource(R.string.action_app_info))
@@ -265,4 +275,4 @@ private fun InfoRow(label: String, value: String) {
 @Composable
 private fun chainText(locales: List<String>): String =
     if (locales.isEmpty()) stringResource(R.string.locale_follow_system)
-    else (locales.map(LocaleTags::nativeName) + stringResource(R.string.locale_follow_system)).joinToString(" → ")
+    else locales.joinToString(", ") { LocaleTags.nativeName(it) }

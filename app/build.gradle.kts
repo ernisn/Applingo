@@ -87,7 +87,9 @@ android {
         generateLocaleConfig = true
         // Drop library translations for languages Applingo itself doesn't ship, so framework widgets
         // never appear in a different language than the rest of the UI.
-        localeFilters += listOf("en", "zh-rCN")
+        localeFilters += listOf(
+            "en", "en-rGB", "de", "el", "es", "fr", "it", "nl", "pl", "ru", "sv", "zh-rCN", "zh-rHK",
+        )
     }
 
     dependenciesInfo {
@@ -107,7 +109,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.core)
-    implementation(libs.androidx.compose.material3.navigation.suite)
     implementation(libs.androidx.adaptive)
     implementation(libs.androidx.adaptive.layout)
     implementation(libs.androidx.adaptive.navigation)

@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -59,6 +59,7 @@ import io.github.ernisn.applingo.data.SEED_COLORS
 import io.github.ernisn.applingo.data.ThemeMode
 import io.github.ernisn.applingo.shizuku.ShizukuState
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -100,7 +101,11 @@ fun SettingsScreen(viewModel: MainViewModel) {
         )
     }
 
-    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.nav_settings)) }) }) { padding ->
+    Scaffold(
+        modifier = Modifier.safeArea(),
+        contentWindowInsets = WindowInsets(0),
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.nav_settings)) }, windowInsets = WindowInsets(0)) },
+    ) { padding ->
         LazyColumn(
             contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = 16.dp),
             modifier = Modifier.fillMaxSize(),
@@ -231,6 +236,16 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 }
             }
 
+            sectionHeader(R.string.settings_section_app_list)
+            item {
+                SwitchRow(
+                    title = stringResource(R.string.settings_refresh_on_launch),
+                    summary = stringResource(R.string.settings_refresh_on_launch_summary),
+                    checked = settings.refreshOnLaunch,
+                    onCheckedChange = { value -> viewModel.updateSettings { it.copy(refreshOnLaunch = value) } },
+                )
+            }
+
             sectionHeader(R.string.settings_section_data)
             item {
                 ClickRow(
@@ -271,7 +286,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     supportingContent = { Text(viewModel.versionName + " · " + stringResource(R.string.settings_license)) },
                 )
             }
-            item { Spacer(Modifier.navigationBarsPadding()) }
         }
     }
 }

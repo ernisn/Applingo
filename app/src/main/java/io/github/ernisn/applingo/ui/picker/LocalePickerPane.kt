@@ -3,7 +3,9 @@ package io.github.ernisn.applingo.ui.picker
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -66,7 +68,9 @@ import io.github.ernisn.applingo.core.LocaleCatalog
 import io.github.ernisn.applingo.core.LocaleOption
 import io.github.ernisn.applingo.core.Search
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.components.EditablePriorityList
 import io.github.ernisn.applingo.ui.components.focusableOnlyAfterTouch
+import io.github.ernisn.applingo.ui.safeArea
 
 private val chainSaver = listSaver<SnapshotStateList<String>, String>(
     save = { it.toList() },
@@ -109,7 +113,7 @@ fun BatchLocalePickerDialog(viewModel: MainViewModel, count: Int, onDismiss: () 
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
-        Surface(Modifier.fillMaxSize()) {
+        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             LocalePickerContent(
                 viewModel = viewModel,
                 stateKey = "batch",
@@ -159,8 +163,11 @@ private fun LocalePickerContent(
     }
 
     Scaffold(
+        modifier = Modifier.safeArea(),
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0),
                 title = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
@@ -179,8 +186,6 @@ private fun LocalePickerContent(
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .imePadding()
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                 ) {
                     TextButton(onClick = { chain.clear() }, enabled = chain.isNotEmpty()) {
@@ -199,39 +204,16 @@ private fun LocalePickerContent(
             modifier = Modifier.fillMaxSize(),
         ) {
             sectionHeader(R.string.picker_selected)
-            if (chain.isEmpty()) {
-                item {
+            item(key = "chain") {
+                Column(Modifier.padding(horizontal = 16.dp)) {
                     Text(
-                        text = stringResource(R.string.picker_selected_empty),
+                        text = stringResource(if (chain.isEmpty()) R.string.picker_selected_empty else R.string.picker_order_hint),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        modifier = Modifier.padding(bottom = 8.dp),
                     )
+                    EditablePriorityList(chain = chain, systemLocales = viewModel.systemLocales)
                 }
-            }
-            itemsIndexed(chain.toList(), key = { _, tag -> "chain:$tag" }) { index, tag ->
-                val option = remember(tag, uiLocale) { LocaleCatalog.option(tag, uiLocale) }
-                ListItem(
-                    leadingContent = { Text("${index + 1}", style = MaterialTheme.typography.titleMedium) },
-                    headlineContent = { Text(option.nativeName) },
-                    supportingContent = { Text("${option.localizedName} · ${option.tag}") },
-                    trailingContent = {
-                        Row {
-                            IconButton(onClick = { chain.add(index - 1, chain.removeAt(index)) }, enabled = index > 0) {
-                                Icon(Icons.Filled.KeyboardArrowUp, contentDescription = stringResource(R.string.action_move_up))
-                            }
-                            IconButton(
-                                onClick = { chain.add(index + 1, chain.removeAt(index)) },
-                                enabled = index < chain.lastIndex,
-                            ) {
-                                Icon(Icons.Filled.KeyboardArrowDown, contentDescription = stringResource(R.string.action_move_down))
-                            }
-                            IconButton(onClick = { chain.removeAt(index) }) {
-                                Icon(Icons.Filled.Clear, contentDescription = stringResource(R.string.action_remove))
-                            }
-                        }
-                    },
-                )
             }
             item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
             item {

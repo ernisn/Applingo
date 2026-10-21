@@ -25,12 +25,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             val settings by viewModel.settings.collectAsStateWithLifecycle()
             val dark = isAppInDarkTheme(settings)
-            // System bar icons follow the app's theme, which may differ from the system's.
+            // Fully transparent system bars whose icons follow the app's theme (which may differ from the
+            // system's). Explicit light/dark styles also stop the system from adding a contrast scrim behind
+            // three-button navigation; content keeps clear of the bars itself (see MainScreen).
             LaunchedEffect(dark) {
-                enableEdgeToEdge(
-                    statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { dark },
-                    navigationBarStyle = SystemBarStyle.auto(LIGHT_SCRIM, DARK_SCRIM) { dark },
-                )
+                val style = if (dark) {
+                    SystemBarStyle.dark(Color.TRANSPARENT)
+                } else {
+                    SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                }
+                enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
             }
             ApplingoTheme(settings) {
                 MainScreen(viewModel)
@@ -41,11 +45,5 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         viewModel.onForeground()
-    }
-
-    private companion object {
-        // Same scrims androidx.activity uses for three-button navigation by default.
-        val LIGHT_SCRIM = Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
-        val DARK_SCRIM = Color.argb(0x80, 0x1b, 0x1b, 0x1b)
     }
 }

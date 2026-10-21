@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,6 +51,7 @@ import io.github.ernisn.applingo.shizuku.ShizukuState
 import io.github.ernisn.applingo.ui.AppIcon
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.ManagedApp
 import io.github.ernisn.applingo.ui.ManagedState
 import io.github.ernisn.applingo.ui.applist.LocaleBadge
@@ -64,7 +65,11 @@ private const val MAX_ACTIVITY_SHOWN = 100
 fun ManagedPane(viewModel: MainViewModel, selectedPackage: String?, onOpenApp: (String) -> Unit) {
     val state by viewModel.managedState.collectAsStateWithLifecycle()
 
-    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.nav_managed)) }) }) { padding ->
+    Scaffold(
+        modifier = Modifier.safeArea(),
+        contentWindowInsets = WindowInsets(0),
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.nav_managed)) }, windowInsets = WindowInsets(0)) },
+    ) { padding ->
         LazyColumn(
             contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = 16.dp),
             modifier = Modifier.fillMaxSize(),
@@ -112,7 +117,6 @@ fun ManagedPane(viewModel: MainViewModel, selectedPackage: String?, onOpenApp: (
                 item { Hint(stringResource(R.string.managed_activity_empty)) }
             }
             items(state.activity.take(MAX_ACTIVITY_SHOWN)) { ActivityItem(it) }
-            item { Spacer(Modifier.navigationBarsPadding()) }
         }
     }
 }

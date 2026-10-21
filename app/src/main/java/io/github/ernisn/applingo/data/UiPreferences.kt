@@ -20,6 +20,8 @@ data class ListPreferences(
     val typeFilter: AppTypeFilter = AppTypeFilter.Launchable,
     val onlyWithLocale: Boolean = false,
     val sort: AppSort = AppSort.Name,
+    /** Reverses the natural order of [sort] (A→Z for names, newest first for dates). */
+    val reverseOrder: Boolean = false,
     val withLocaleFirst: Boolean = true,
 )
 
@@ -33,6 +35,11 @@ data class AppSettings(
     val autoRepair: Boolean = true,
     val backgroundCheck: Boolean = true,
     val backgroundCheckHours: Int = 6,
+    /**
+     * Rescan installed apps every time Applingo opens. Off by default: the list shows the saved snapshot
+     * right away, which the background check and pull-to-refresh keep up to date.
+     */
+    val refreshOnLaunch: Boolean = false,
 )
 
 /** Seed colors offered when dynamic color is off (ARGB). */
@@ -56,6 +63,7 @@ class UiPreferences(context: Context) {
             prefs[TYPE_FILTER] = next.typeFilter.name
             prefs[ONLY_WITH_LOCALE] = next.onlyWithLocale
             prefs[SORT] = next.sort.name
+            prefs[REVERSE_ORDER] = next.reverseOrder
             prefs[WITH_LOCALE_FIRST] = next.withLocaleFirst
         }
     }
@@ -70,6 +78,7 @@ class UiPreferences(context: Context) {
             prefs[AUTO_REPAIR] = next.autoRepair
             prefs[BACKGROUND_CHECK] = next.backgroundCheck
             prefs[BACKGROUND_CHECK_HOURS_KEY] = next.backgroundCheckHours
+            prefs[REFRESH_ON_LAUNCH] = next.refreshOnLaunch
         }
     }
 
@@ -79,6 +88,7 @@ class UiPreferences(context: Context) {
             typeFilter = enumOr(this[TYPE_FILTER], defaults.typeFilter),
             onlyWithLocale = this[ONLY_WITH_LOCALE] ?: defaults.onlyWithLocale,
             sort = enumOr(this[SORT], defaults.sort),
+            reverseOrder = this[REVERSE_ORDER] ?: defaults.reverseOrder,
             withLocaleFirst = this[WITH_LOCALE_FIRST] ?: defaults.withLocaleFirst,
         )
     }
@@ -94,6 +104,7 @@ class UiPreferences(context: Context) {
             backgroundCheck = this[BACKGROUND_CHECK] ?: defaults.backgroundCheck,
             backgroundCheckHours = this[BACKGROUND_CHECK_HOURS_KEY]?.takeIf { it in BACKGROUND_CHECK_HOURS }
                 ?: defaults.backgroundCheckHours,
+            refreshOnLaunch = this[REFRESH_ON_LAUNCH] ?: defaults.refreshOnLaunch,
         )
     }
 
@@ -105,6 +116,8 @@ class UiPreferences(context: Context) {
         val ONLY_WITH_LOCALE = booleanPreferencesKey("only_with_locale")
         val SORT = stringPreferencesKey("sort")
         val WITH_LOCALE_FIRST = booleanPreferencesKey("with_locale_first")
+        val REVERSE_ORDER = booleanPreferencesKey("reverse_order")
+        val REFRESH_ON_LAUNCH = booleanPreferencesKey("refresh_on_launch")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val SEED_COLOR = intPreferencesKey("seed_color")

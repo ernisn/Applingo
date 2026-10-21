@@ -25,6 +25,7 @@
     <string name="action_check_now">立即检查</string>
     <string name="action_forget">忘记</string>
     <string name="action_clear_activity">清空</string>
+    <string name="action_reorder">拖动排序</string>
 
     <!-- Navigation -->
     <string name="nav_apps">应用</string>
@@ -45,6 +46,7 @@
     <string name="sort_recently_updated">最近更新</string>
     <string name="sort_recently_installed">最近安装</string>
     <string name="sort_with_locale_first">已设置语言的排在前面</string>
+    <string name="sort_reverse">倒序</string>
     <string name="app_badge_system">系统</string>
     <string name="app_badge_disabled">已停用</string>
     <plurals name="selection_count">
@@ -91,6 +93,9 @@
     <string name="settings_background_check">后台检查</string>
     <string name="settings_background_check_summary">即使没有打开 Applingo 也定期检查（需要当时 Shizuku 正在运行）</string>
     <string name="settings_background_interval">检查间隔</string>
+    <string name="settings_section_app_list">应用列表</string>
+    <string name="settings_refresh_on_launch">启动时刷新应用列表</string>
+    <string name="settings_refresh_on_launch_summary">每次打开 Applingo 时重新扫描已安装的应用。会减缓打开速度；关闭时可下拉列表手动刷新。</string>
     <string name="settings_hours">%1$d 小时</string>
     <string name="settings_section_data">数据</string>
     <string name="settings_export">导出</string>
@@ -121,6 +126,8 @@
     <string name="detail_not_installed">此应用未安装</string>
     <string name="detail_language">应用语言</string>
     <string name="locale_follow_system">系统语言</string>
+    <string name="locale_system_fallback">默认，最低优先级 · %1$s</string>
+    <string name="detail_order_hint">应用会从上往下，使用第一个它支持的语言。</string>
     <string name="status_none">跟随系统语言</string>
     <string name="status_applied">已生效</string>
     <string name="status_pending">已保存，Shizuku 连接后应用</string>
@@ -148,9 +155,10 @@
     <plurals name="picker_title_batch">
         <item quantity="other">语言 · %1$d 个应用</item>
     </plurals>
-    <string name="picker_selected">已选（按优先级排列）</string>
-    <string name="picker_selected_empty">未选择，应用跟随系统语言</string>
+    <string name="picker_selected">匹配顺序</string>
+    <string name="picker_selected_empty">未选择语言，应用使用系统语言。请在下方选择。</string>
     <string name="picker_search_hint">搜索语言</string>
+    <string name="picker_order_hint">应用会从上往下，使用第一个它支持的语言；系统语言始终排在最后。拖动 ≡ 调整顺序。</string>
     <string name="picker_section_declared">应用声明支持</string>
     <string name="picker_section_system">系统语言</string>
     <string name="picker_section_all">全部语言</string>
@@ -174,6 +182,8 @@
         <item quantity="other">已导入 %1$d 个应用</item>
     </plurals>
     <string name="message_import_failed">导入失败：%1$s</string>
+    <string name="message_force_stopped">已强制停止</string>
+    <string name="message_force_stop_failed">无法停止应用：%1$s</string>
     <plurals name="message_repaired">
         <item quantity="other">已恢复 %1$d 个应用的语言设置</item>
     </plurals>

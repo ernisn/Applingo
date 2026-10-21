@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Common actions -->
+    <string name="action_back">返回</string>
+    <string name="action_close">關閉</string>
+    <string name="action_retry">重試</string>
+    <string name="action_refresh">重新整理</string>
+    <string name="action_apply">套用</string>
+    <string name="action_open">開啟</string>
+    <string name="action_restart_app">重新啟動應用程式</string>
+    <string name="action_force_stop">強制停止</string>
+    <string name="action_app_info">應用程式資料</string>
+    <string name="action_system_language">系統語言設定</string>
+    <string name="action_change_language">更改語言</string>
+    <string name="action_reset_to_system">跟隨系統</string>
+    <string name="action_follow_system">清除</string>
+    <string name="action_move_up">上移</string>
+    <string name="action_move_down">下移</string>
+    <string name="action_remove">移除</string>
+    <string name="action_expand">展開地區</string>
+    <string name="action_collapse">收起地區</string>
+    <string name="action_sort">排序</string>
+    <string name="action_clear_search">清除搜尋</string>
+    <string name="action_select_all">全選</string>
+    <string name="action_check_now">立即檢查</string>
+    <string name="action_forget">忘記</string>
+    <string name="action_clear_activity">清除</string>
+    <string name="action_reorder">拖曳排序</string>
+
+    <!-- Navigation -->
+    <string name="nav_apps">應用程式</string>
+    <string name="nav_managed">已設定</string>
+    <string name="nav_settings">設定</string>
+
+    <!-- App list -->
+    <string name="search_hint">搜尋應用程式或語言</string>
+    <string name="list_empty">沒有可顯示的應用程式</string>
+    <string name="list_no_results">沒有符合的項目</string>
+    <string name="filter_launchable">可啟動</string>
+    <string name="filter_user">用戶</string>
+    <string name="filter_system">系統</string>
+    <string name="filter_all">全部</string>
+    <string name="filter_only_with_locale">已設定語言</string>
+    <string name="sort_name">名稱</string>
+    <string name="sort_recently_set">最近設定</string>
+    <string name="sort_recently_updated">最近更新</string>
+    <string name="sort_recently_installed">最近安裝</string>
+    <string name="sort_with_locale_first">已設定語言的排在前面</string>
+    <string name="sort_reverse">倒序</string>
+    <string name="app_badge_system">系統</string>
+    <string name="app_badge_disabled">已停用</string>
+    <plurals name="selection_count">
+        <item quantity="other">已選取 %1$d 個</item>
+    </plurals>
+
+    <!-- My languages -->
+    <string name="managed_section_apps">應用程式</string>
+    <string name="managed_empty">尚未為任何應用程式單獨設定語言。</string>
+    <string name="managed_section_activity">最近活動</string>
+    <string name="managed_activity_empty">暫無紀錄。</string>
+    <plurals name="managed_summary_count">
+        <item quantity="other">%1$d 個應用程式使用單獨的語言</item>
+    </plurals>
+    <plurals name="managed_summary_attention">
+        <item quantity="other">%1$d 個需要注意</item>
+    </plurals>
+    <string name="managed_last_check_never">尚未檢查</string>
+    <string name="managed_last_check">上次檢查 %1$s · 已還原 %2$d 個 · 已匯入 %3$d 個</string>
+    <string name="managed_not_installed">未安裝</string>
+    <string name="activity_applied">設定為 %1$s</string>
+    <string name="activity_reset">恢復跟隨系統語言</string>
+    <string name="activity_repaired">被系統更改後已還原：%1$s → %2$s</string>
+    <string name="activity_mismatch">被系統改為 %1$s（你的設定：%2$s），自動還原已關閉</string>
+    <string name="activity_adopted">匯入現有設定：%1$s</string>
+    <string name="activity_imported">從檔案匯入：%1$s</string>
+    <string name="activity_failed">寫入失敗：%1$s</string>
+
+    <!-- Settings -->
+    <string name="settings_shizuku_connected">已連線，身分：%1$s</string>
+    <string name="settings_section_appearance">外觀</string>
+    <string name="settings_theme">主題</string>
+    <string name="settings_theme_system">跟隨系統</string>
+    <string name="settings_theme_light">淺色</string>
+    <string name="settings_theme_dark">深色</string>
+    <string name="settings_dynamic_color">桌布取色</string>
+    <string name="settings_dynamic_color_summary">使用桌布中的顏色</string>
+    <string name="settings_seed_color">主題色</string>
+    <string name="settings_pure_black">純黑背景</string>
+    <string name="settings_pure_black_summary">深色主題下使用純黑背景</string>
+    <string name="settings_section_keeping">保持語言</string>
+    <string name="settings_auto_repair">自動還原</string>
+    <string name="settings_auto_repair_summary">系統清除或刪減了你設定的語言時，自動寫回。關閉後只記錄、不修復。</string>
+    <string name="settings_background_check">背景檢查</string>
+    <string name="settings_background_check_summary">即使沒有開啟 Applingo 也會定期檢查（需要屆時 Shizuku 正在運行）</string>
+    <string name="settings_background_interval">檢查間隔</string>
+    <string name="settings_section_app_list">應用程式清單</string>
+    <string name="settings_refresh_on_launch">啟動時重新整理清單</string>
+    <string name="settings_refresh_on_launch_summary">每次開啟 Applingo 時重新掃描已安裝的應用程式。會減慢開啟速度；關閉時可向下拉動清單手動重新整理。</string>
+    <string name="settings_hours">%1$d 小時</string>
+    <string name="settings_section_data">資料</string>
+    <string name="settings_export">匯出</string>
+    <string name="settings_export_summary">將應用程式語言設定儲存為檔案</string>
+    <string name="settings_import">匯入</string>
+    <string name="settings_import_summary">從匯出的檔案讀取應用程式語言設定並套用</string>
+    <string name="settings_section_about">關於</string>
+    <string name="settings_own_language">Applingo 的語言</string>
+    <string name="settings_source">原始碼</string>
+    <string name="settings_version">版本</string>
+    <string name="settings_license">MIT 授權條款</string>
+    <string name="time_just_now">剛剛</string>
+
+    <!-- Shizuku -->
+    <string name="shizuku_not_installed">Applingo 需要 Shizuku（或 Sui）才能更改其他應用程式的語言。請先安裝並啟動。</string>
+    <string name="shizuku_not_running">已安裝 Shizuku，但未在運行。請在 Shizuku 應用程式中啟動。你的設定會先儲存，待它運行後再套用。</string>
+    <string name="shizuku_unsupported">Shizuku 版本過舊，請更新。</string>
+    <string name="shizuku_permission_required">請允許 Applingo 使用 Shizuku。</string>
+    <string name="shizuku_permission_denied">Shizuku 權限已被拒絕。請在 Shizuku 應用程式中允許 Applingo，然後重試。</string>
+    <string name="shizuku_connecting">正在連線至 Shizuku…</string>
+    <string name="shizuku_failed">無法啟動 Shizuku 服務：%1$s</string>
+    <string name="shizuku_action_get">取得 Shizuku</string>
+    <string name="shizuku_action_grant">允許</string>
+    <string name="shizuku_action_open">開啟 Shizuku</string>
+
+    <!-- Detail -->
+    <string name="detail_empty">選擇一個應用程式</string>
+    <string name="detail_not_installed">此應用程式未安裝</string>
+    <string name="detail_language">應用程式語言</string>
+    <string name="locale_follow_system">系統語言</string>
+    <string name="locale_system_fallback">預設，最低優先次序 · %1$s</string>
+    <string name="detail_order_hint">應用程式會由上而下，使用第一個它支援的語言。</string>
+    <string name="status_none">跟隨系統語言</string>
+    <string name="status_applied">已生效</string>
+    <string name="status_pending">已儲存，Shizuku 連線後套用</string>
+    <string name="status_mismatch">系統目前為 %1$s，與你的設定不同。</string>
+    <string name="info_version">版本</string>
+    <string name="info_sdk">SDK</string>
+    <string name="info_sdk_value">目標 %1$d · 最低 %2$d</string>
+    <string name="info_installed">安裝時間</string>
+    <string name="info_updated">更新時間</string>
+    <string name="info_installer">安裝來源</string>
+    <string name="info_type">類型</string>
+    <string name="info_type_user">用戶應用程式</string>
+    <string name="info_type_system">系統應用程式</string>
+    <string name="info_type_updated_system">系統應用程式（已更新）</string>
+    <string name="info_declared_locales">聲明支援的語言</string>
+    <string name="info_declared_none">未聲明</string>
+    <plurals name="info_declared_count">
+        <item quantity="other">%1$d 種</item>
+    </plurals>
+    <string name="info_system_value">系統實際值</string>
+    <string name="info_system_value_unknown">未知（Shizuku 未連線）</string>
+
+    <!-- Picker -->
+    <string name="picker_title">語言 · %1$s</string>
+    <plurals name="picker_title_batch">
+        <item quantity="other">語言 · %1$d 個應用程式</item>
+    </plurals>
+    <string name="picker_selected">配對次序</string>
+    <string name="picker_selected_empty">未選擇語言，應用程式使用系統語言。請在下方選擇。</string>
+    <string name="picker_search_hint">搜尋語言</string>
+    <string name="picker_order_hint">應用程式會由上而下，使用第一個它支援的語言；系統語言永遠排在最後。拖曳 ≡ 調整次序。</string>
+    <string name="picker_section_declared">應用程式聲明支援</string>
+    <string name="picker_section_system">系統語言</string>
+    <string name="picker_section_all">所有語言</string>
+
+    <!-- Messages -->
+    <string name="message_applied">已套用語言</string>
+    <string name="message_reset">應用程式已恢復跟隨系統語言</string>
+    <string name="message_saved_pending">已儲存，將在 Shizuku 連線後套用。</string>
+    <string name="message_apply_failed">套用失敗：%1$s</string>
+    <string name="message_needs_shizuku">需要 Shizuku 正在運行</string>
+    <string name="message_restart_failed">無法重新啟動應用程式：%1$s</string>
+    <string name="message_reconcile_failed">無法檢查應用程式語言：%1$s</string>
+    <string name="message_check_ok">所有應用程式的語言都與你的設定一致</string>
+    <plurals name="message_batch_applied">
+        <item quantity="other">已套用至 %1$d 個應用程式</item>
+    </plurals>
+    <string name="message_batch_failed">%2$d 個應用程式中有 %1$d 個失敗</string>
+    <string name="message_exported">已匯出</string>
+    <string name="message_export_failed">匯出失敗：%1$s</string>
+    <plurals name="message_imported">
+        <item quantity="other">已匯入 %1$d 個應用程式</item>
+    </plurals>
+    <string name="message_import_failed">匯入失敗：%1$s</string>
+    <string name="message_force_stopped">已強制停止</string>
+    <string name="message_force_stop_failed">無法停止應用程式：%1$s</string>
+    <plurals name="message_repaired">
+        <item quantity="other">已還原 %1$d 個應用程式的語言設定</item>
+    </plurals>
+    <plurals name="message_adopted">
+        <item quantity="other">已匯入 %1$d 個應用程式的現有語言設定</item>
+    </plurals>
+</resources>

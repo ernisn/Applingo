@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="en">
     <string name="app_name" translatable="false">Applingo</string>
 
     <!-- Common actions -->
@@ -27,6 +27,7 @@
     <string name="action_check_now">Check now</string>
     <string name="action_forget">Forget</string>
     <string name="action_clear_activity">Clear</string>
+    <string name="action_reorder">Drag to reorder</string>
 
     <!-- Navigation -->
     <string name="nav_apps">Apps</string>
@@ -47,6 +48,7 @@
     <string name="sort_recently_updated">Recently updated</string>
     <string name="sort_recently_installed">Recently installed</string>
     <string name="sort_with_locale_first">Apps with a language first</string>
+    <string name="sort_reverse">Reverse order</string>
     <string name="app_badge_system">System</string>
     <string name="app_badge_disabled">Disabled</string>
     <plurals name="selection_count">
@@ -96,6 +98,9 @@
     <string name="settings_background_check">Check in the background</string>
     <string name="settings_background_check_summary">Check periodically even when Applingo isn\'t open (needs Shizuku running at that time)</string>
     <string name="settings_background_interval">Check every</string>
+    <string name="settings_section_app_list">App list</string>
+    <string name="settings_refresh_on_launch">Refresh on launch</string>
+    <string name="settings_refresh_on_launch_summary">Rescan installed apps every time Applingo opens. Slows down opening; when off, pull down the list to refresh.</string>
     <string name="settings_hours" tools:ignore="PluralsCandidate">%1$d h</string>
     <string name="settings_section_data">Data</string>
     <string name="settings_export">Export</string>
@@ -127,6 +132,8 @@
     <string name="detail_not_installed">This app is not installed</string>
     <string name="detail_language">App language</string>
     <string name="locale_follow_system">System language</string>
+    <string name="locale_system_fallback">Default, lowest priority · %1$s</string>
+    <string name="detail_order_hint">The app uses the first language it supports, from top to bottom.</string>
     <string name="status_none">Follows the system language</string>
     <string name="status_applied">Active</string>
     <string name="status_pending">Saved — will be applied when Shizuku connects</string>
@@ -156,9 +163,10 @@
         <item quantity="one">Language · %1$d app</item>
         <item quantity="other">Language · %1$d apps</item>
     </plurals>
-    <string name="picker_selected">Selected, in order of priority</string>
-    <string name="picker_selected_empty">None — the app follows the system language</string>
+    <string name="picker_selected">Matching order</string>
+    <string name="picker_selected_empty">No language chosen: the app uses the system language. Pick languages below.</string>
     <string name="picker_search_hint">Search languages</string>
+    <string name="picker_order_hint">The app uses the first language it supports, from top to bottom; the system language comes last. Drag ≡ to reorder.</string>
     <string name="picker_section_declared">Declared by the app</string>
     <string name="picker_section_system">Your system languages</string>
     <string name="picker_section_all">All languages</string>
@@ -184,6 +192,8 @@
         <item quantity="other">Imported %1$d apps</item>
     </plurals>
     <string name="message_import_failed">Import failed: %1$s</string>
+    <string name="message_force_stopped">App stopped</string>
+    <string name="message_force_stop_failed">Could not stop the app: %1$s</string>
     <plurals name="message_repaired">
         <item quantity="one">Restored the language of %1$d app</item>
         <item quantity="other">Restored the languages of %1$d apps</item>
