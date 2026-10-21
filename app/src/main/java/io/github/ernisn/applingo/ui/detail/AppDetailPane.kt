@@ -6,17 +6,19 @@ import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
@@ -29,7 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -90,22 +92,25 @@ fun AppDetailPane(
             }
             return@Scaffold
         }
-        LazyColumn(
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = padding.calculateTopPadding(), bottom = 16.dp),
+        // A plain scrolling column rather than a LazyColumn: there are only four cards, and a lazy list
+        // pre-measures the off-screen ones while the pane is still animating its width, leaving them
+        // stuck at that narrower size.
+        Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(start = 16.dp, end = 16.dp, top = padding.calculateTopPadding(), bottom = 16.dp),
         ) {
-            item { HeaderCard(row) }
-            item {
-                LanguageCard(
-                    row = row,
-                    systemLocales = viewModel.systemLocales,
-                    onEdit = onEditLanguages,
-                    onReset = { viewModel.applyLocales(packageName, emptyList()) },
-                )
-            }
-            item { ActionsCard(viewModel, row, extras) }
-            item { InfoCard(row, extras) }
+            HeaderCard(row)
+            LanguageCard(
+                row = row,
+                systemLocales = viewModel.systemLocales,
+                onEdit = onEditLanguages,
+                onReset = { viewModel.applyLocales(packageName, emptyList()) },
+            )
+            ActionsCard(viewModel, row, extras)
+            InfoCard(row, extras)
         }
     }
 }
@@ -163,17 +168,37 @@ private fun LanguageCard(row: AppRow, systemLocales: List<String>, onEdit: () ->
                     color = if (isProblem) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End), modifier = Modifier.fillMaxWidth()) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+            ) {
                 if (row.locales.isNotEmpty()) {
-                    TextButton(onClick = onReset) { Text(stringResource(R.string.action_reset_to_system)) }
+                    OutlinedButton(
+                        onClick = onReset,
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                    ) {
+                        Text(stringResource(R.string.action_reset_to_system), textAlign = TextAlign.Center, maxLines = 2)
+                    }
                 }
-                Button(onClick = onEdit) { Text(stringResource(R.string.action_change_language)) }
+                Button(
+                    onClick = onEdit,
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                ) {
+                    Text(stringResource(R.string.action_change_language), textAlign = TextAlign.Center, maxLines = 2)
+                }
             }
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+private class AppAction(val label: Int, val onClick: () -> Unit)
+
+/**
+ * Equal-width buttons, two per row: Open / Restart and Force stop / App info for launchable apps,
+ * just the second pair otherwise. The optional system-language shortcut takes a full row of its own.
+ */
 @Composable
 private fun ActionsCard(viewModel: MainViewModel, row: AppRow, extras: AppExtras?) {
     val context = LocalContext.current
@@ -187,26 +212,34 @@ private fun ActionsCard(viewModel: MainViewModel, row: AppRow, extras: AppExtras
     }
     val packageName = row.app.packageName
     val launchIntent = viewModel.launchIntent(packageName)
+    val actions = buildList {
+        if (launchIntent != null) {
+            add(AppAction(R.string.action_open) { launch(launchIntent) })
+            add(AppAction(R.string.action_restart_app) { viewModel.restartApp(packageName) })
+        }
+        add(AppAction(R.string.action_force_stop) { viewModel.forceStop(packageName) })
+        add(AppAction(R.string.action_app_info) { launch(viewModel.appInfoIntent(packageName)) })
+        if (extras?.declaredLocales != null) {
+            add(AppAction(R.string.action_system_language) { launch(viewModel.systemLanguageIntent(packageName)) })
+        }
+    }
     Card(Modifier.fillMaxWidth()) {
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(16.dp),
-        ) {
-            if (launchIntent != null) {
-                OutlinedButton(onClick = { launch(launchIntent) }) { Text(stringResource(R.string.action_open)) }
-                OutlinedButton(onClick = { viewModel.restartApp(packageName) }) {
-                    Text(stringResource(R.string.action_restart_app))
-                }
-            }
-            OutlinedButton(onClick = { viewModel.forceStop(packageName) }) {
-                Text(stringResource(R.string.action_force_stop))
-            }
-            OutlinedButton(onClick = { launch(viewModel.appInfoIntent(packageName)) }) {
-                Text(stringResource(R.string.action_app_info))
-            }
-            if (extras?.declaredLocales != null) {
-                OutlinedButton(onClick = { launch(viewModel.systemLanguageIntent(packageName)) }) {
-                    Text(stringResource(R.string.action_system_language))
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            actions.chunked(2).forEach { pair ->
+                // Same height for both buttons even when one label wraps to two lines.
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                ) {
+                    pair.forEach { action ->
+                        OutlinedButton(
+                            onClick = action.onClick,
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                        ) {
+                            Text(stringResource(action.label), textAlign = TextAlign.Center, maxLines = 2)
+                        }
+                    }
                 }
             }
         }
