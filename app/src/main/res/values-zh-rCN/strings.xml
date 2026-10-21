@@ -1,4 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_tagline">为每个应用设置语言，持久生效</string>
+    <!-- Common actions -->
+    <string name="action_back">返回</string>
+    <string name="action_close">关闭</string>
+    <string name="action_retry">重试</string>
+    <string name="action_refresh">刷新</string>
+    <string name="action_apply">应用</string>
+    <string name="action_open">打开</string>
+    <string name="action_restart_app">重启应用</string>
+    <string name="action_force_stop">强制停止</string>
+    <string name="action_app_info">应用信息</string>
+    <string name="action_system_language">系统语言设置</string>
+    <string name="action_change_language">更改语言</string>
+    <string name="action_reset_to_system">跟随系统</string>
+    <string name="action_follow_system">清空</string>
+    <string name="action_move_up">上移</string>
+    <string name="action_move_down">下移</string>
+    <string name="action_remove">移除</string>
+    <string name="action_expand">展开地区</string>
+    <string name="action_collapse">收起地区</string>
+    <string name="action_sort">排序</string>
+    <string name="action_clear_search">清除搜索</string>
+
+    <!-- App list -->
+    <string name="search_hint">搜索应用、包名或语言</string>
+    <string name="list_empty">没有可显示的应用</string>
+    <string name="list_no_results">没有匹配项</string>
+    <string name="filter_launchable">可启动</string>
+    <string name="filter_user">用户</string>
+    <string name="filter_system">系统</string>
+    <string name="filter_all">全部</string>
+    <string name="filter_only_with_locale">已设置语言</string>
+    <string name="sort_name">名称</string>
+    <string name="sort_recently_set">最近设置</string>
+    <string name="sort_recently_updated">最近更新</string>
+    <string name="sort_recently_installed">最近安装</string>
+    <string name="sort_with_locale_first">已设置语言的排在前面</string>
+    <string name="app_badge_system">系统</string>
+    <string name="app_badge_disabled">已停用</string>
+
+    <!-- Shizuku -->
+    <string name="shizuku_not_installed">Applingo 需要 Shizuku（或 Sui）才能更改其他应用的语言。请先安装并启动。</string>
+    <string name="shizuku_not_running">已安装 Shizuku，但它没有运行。请在 Shizuku 应用中启动。你的设置会先保存，等它运行后再应用。</string>
+    <string name="shizuku_unsupported">Shizuku 版本过旧，请更新。</string>
+    <string name="shizuku_permission_required">请允许 Applingo 使用 Shizuku。</string>
+    <string name="shizuku_permission_denied">Shizuku 权限已被拒绝。请在 Shizuku 应用中允许 Applingo，然后重试。</string>
+    <string name="shizuku_connecting">正在连接 Shizuku…</string>
+    <string name="shizuku_failed">无法启动 Shizuku 服务：%1$s</string>
+    <string name="shizuku_action_get">获取 Shizuku</string>
+    <string name="shizuku_action_grant">允许</string>
+    <string name="shizuku_action_open">打开 Shizuku</string>
+
+    <!-- Detail -->
+    <string name="detail_empty">选择一个应用</string>
+    <string name="detail_not_installed">此应用未安装</string>
+    <string name="detail_language">应用语言</string>
+    <string name="locale_follow_system">系统语言</string>
+    <string name="status_none">跟随系统语言</string>
+    <string name="status_applied">已生效</string>
+    <string name="status_pending">已保存，Shizuku 连接后应用</string>
+    <string name="status_mismatch">系统当前为：%1$s。Applingo 会恢复你的设置。</string>
+    <string name="info_version">版本</string>
+    <string name="info_sdk">SDK</string>
+    <string name="info_sdk_value">目标 %1$d · 最低 %2$d</string>
+    <string name="info_installed">安装时间</string>
+    <string name="info_updated">更新时间</string>
+    <string name="info_installer">安装来源</string>
+    <string name="info_type">类型</string>
+    <string name="info_type_user">用户应用</string>
+    <string name="info_type_system">系统应用</string>
+    <string name="info_type_updated_system">系统应用（已更新）</string>
+    <string name="info_declared_locales">声明支持的语言</string>
+    <string name="info_declared_none">未声明</string>
+    <plurals name="info_declared_count">
+        <item quantity="other">%1$d 种</item>
+    </plurals>
+    <string name="info_system_value">系统实际值</string>
+    <string name="info_system_value_unknown">未知（Shizuku 未连接）</string>
+
+    <!-- Picker -->
+    <string name="picker_title">语言 · %1$s</string>
+    <string name="picker_selected">已选（按优先级排列）</string>
+    <string name="picker_selected_empty">未选择，应用跟随系统语言</string>
+    <string name="picker_search_hint">搜索语言</string>
+    <string name="picker_section_declared">应用声明支持</string>
+    <string name="picker_section_system">系统语言</string>
+    <string name="picker_section_all">全部语言</string>
+
+    <!-- Messages -->
+    <string name="message_applied">语言已应用</string>
+    <string name="message_reset">应用已恢复跟随系统语言</string>
+    <string name="message_saved_pending">已保存，将在 Shizuku 连接后应用。</string>
+    <string name="message_apply_failed">应用失败：%1$s</string>
+    <string name="message_needs_shizuku">需要 Shizuku 正在运行</string>
+    <string name="message_restart_failed">无法重启应用：%1$s</string>
+    <string name="message_reconcile_failed">无法检查应用语言：%1$s</string>
+    <plurals name="message_repaired">
+        <item quantity="other">已恢复 %1$d 个应用的语言设置</item>
+    </plurals>
+    <plurals name="message_adopted">
+        <item quantity="other">已导入 %1$d 个应用的现有语言设置</item>
+    </plurals>
 </resources>

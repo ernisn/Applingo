@@ -1,2 +1,6 @@
 # Project-specific R8 rules.
-# Shizuku UserService / AIDL keep rules will be added together with the service in M1.
+
+# Shizuku starts the user service by class name in its own process; keep the class and constructor.
+-keep class io.github.ernisn.applingo.service.ApplingoUserService {
+    public <init>(...);
+}
