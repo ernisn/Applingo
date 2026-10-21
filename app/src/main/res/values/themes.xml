@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window theme only; all in-app styling is done in Compose (ui/theme). -->
+    <style name="Theme.Applingo" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
