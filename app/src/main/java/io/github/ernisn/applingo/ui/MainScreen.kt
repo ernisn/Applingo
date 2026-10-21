@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.fitInside
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
@@ -46,7 +46,11 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.WindowInsetsRulers
+import androidx.compose.ui.layout.findRootCoordinates
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.unit.Constraints
+import kotlin.math.roundToInt
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
@@ -147,7 +151,8 @@ fun MainScreen(viewModel: MainViewModel) {
                     }
                     Spacer(Modifier.weight(1f))
                 }
-                content(Modifier.weight(1f).fillMaxHeight())
+                // Breathing room between the rail (whose labels can be as wide as it is) and the first pane.
+                content(Modifier.weight(1f).fillMaxHeight().padding(start = 12.dp))
             }
         } else {
             Column(Modifier.fillMaxSize()) {
@@ -168,10 +173,52 @@ fun MainScreen(viewModel: MainViewModel) {
 }
 
 /**
- * Keeps content inside the safe drawing area (system bars, display cutout, keyboard), but only on the
- * sides where this element actually overlaps them: a pane in the middle of the screen gets no padding.
+ * Keeps content inside the safe drawing area (system bars, display cutout, keyboard), but only by as
+ * much as this element actually overlaps them: a pane in the middle of the screen gets no padding,
+ * a pane at the left edge clears the cutout there, and so on.
+ *
+ * The element's position in the window is only known while it is being placed, so the content is
+ * measured there, at the size left over after the overlaps. (Foundation's `fitInside` with the
+ * SafeDrawing rulers moved the content down by the status bar but kept its full height, pushing the
+ * bottom of every pane off screen.)
  */
-fun Modifier.safeArea(): Modifier = fitInside(WindowInsetsRulers.SafeDrawing.current)
+@Composable
+fun Modifier.safeArea(): Modifier {
+    val insets = WindowInsets.safeDrawing
+    return layout { measurable, constraints ->
+        if (!constraints.hasBoundedWidth || !constraints.hasBoundedHeight) {
+            val placeable = measurable.measure(constraints)
+            return@layout layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+        }
+        val width = constraints.maxWidth
+        val height = constraints.maxHeight
+        val direction = layoutDirection
+        layout(width, height) {
+            val coords = coordinates
+            var left = 0
+            var top = 0
+            var right = 0
+            var bottom = 0
+            if (coords != null) {
+                val window = coords.findRootCoordinates().size
+                val origin = coords.positionInWindow()
+                val x = origin.x.roundToInt()
+                val y = origin.y.roundToInt()
+                left = (insets.getLeft(this@layout, direction) - x).coerceAtLeast(0)
+                top = (insets.getTop(this@layout) - y).coerceAtLeast(0)
+                right = (x + width - (window.width - insets.getRight(this@layout, direction))).coerceAtLeast(0)
+                bottom = (y + height - (window.height - insets.getBottom(this@layout))).coerceAtLeast(0)
+            }
+            val placeable = measurable.measure(
+                Constraints.fixed(
+                    (width - left - right).coerceAtLeast(0),
+                    (height - top - bottom).coerceAtLeast(0),
+                ),
+            )
+            placeable.place(left, top)
+        }
+    }
+}
 
 @Composable
 private fun DestinationIcon(destination: Destination) = when (destination) {

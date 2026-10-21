@@ -88,7 +88,7 @@ android {
         // Drop library translations for languages Applingo itself doesn't ship, so framework widgets
         // never appear in a different language than the rest of the UI.
         localeFilters += listOf(
-            "en", "en-rGB", "de", "el", "es", "fr", "it", "nl", "pl", "ru", "sv", "zh-rCN", "zh-rHK",
+            "en", "en-rGB", "de", "el", "es", "fr", "it", "nl", "pl", "ru", "sv", "zh-rCN",
         )
     }
 
