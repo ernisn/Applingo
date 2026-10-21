@@ -24,13 +24,22 @@ object Search {
     fun keywords(query: String): List<String> =
         normalize(query).split(' ').filter { it.isNotEmpty() }
 
-    /** Pre-normalized searchable fields of one item. */
-    class Target(label: String, packageName: String, extraTerms: List<String> = emptyList()) {
+    /**
+     * Pre-normalized searchable fields of one item. [pinyin] holds alternative spellings of a Chinese
+     * label, e.g. full pinyin and initials ("weixin", "wx").
+     */
+    class Target(
+        label: String,
+        packageName: String,
+        extraTerms: List<String> = emptyList(),
+        pinyin: List<String> = emptyList(),
+    ) {
         val label = normalize(label)
         val labelWords = this.label.split(wordSeparators).filter { it.isNotEmpty() }
         val packageName = normalize(packageName)
         val packageSegments = this.packageName.split('.')
         val extraTerms = extraTerms.map(::normalize)
+        val pinyin = pinyin.map(::normalize)
     }
 
     /** Relevance score, or null when some keyword matches nothing. Higher is better. */
@@ -47,8 +56,10 @@ object Search {
     private fun keywordScore(keyword: String, target: Target): Int? = when {
         target.label.startsWith(keyword) -> 100
         target.labelWords.any { it.startsWith(keyword) } -> 80
+        target.pinyin.any { it.startsWith(keyword) } -> 70
         target.label.contains(keyword) -> 60
         target.packageSegments.any { it.startsWith(keyword) } -> 50
+        target.pinyin.any { it.contains(keyword) } -> 45
         target.packageName.contains(keyword) -> 40
         target.extraTerms.any { it.contains(keyword) } -> 30
         else -> null

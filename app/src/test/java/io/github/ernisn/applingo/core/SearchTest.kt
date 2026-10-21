@@ -49,6 +49,16 @@ class SearchTest {
     }
 
     @Test
+    fun `pinyin spellings match chinese labels`() {
+        val wechat = Search.Target("微信", "com.tencent.mm", pinyin = listOf("weixin", "wx"))
+        assertNotNull(score("wx", wechat))
+        assertNotNull(score("weix", wechat))
+        assertNotNull(score("wei xin", wechat))
+        assertNotNull(score("微信", wechat))
+        assertNull(score("wq", wechat))
+    }
+
+    @Test
     fun `empty query matches everything`() {
         assertEquals(0, score("   ", chrome))
     }

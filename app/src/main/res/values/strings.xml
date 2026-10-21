@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Applingo</string>
 
     <!-- Common actions -->
@@ -23,6 +23,15 @@
     <string name="action_collapse">Hide regions</string>
     <string name="action_sort">Sort</string>
     <string name="action_clear_search">Clear search</string>
+    <string name="action_select_all">Select all</string>
+    <string name="action_check_now">Check now</string>
+    <string name="action_forget">Forget</string>
+    <string name="action_clear_activity">Clear</string>
+
+    <!-- Navigation -->
+    <string name="nav_apps">Apps</string>
+    <string name="nav_managed">My languages</string>
+    <string name="nav_settings">Settings</string>
 
     <!-- App list -->
     <string name="search_hint">Search apps or languages</string>
@@ -40,6 +49,65 @@
     <string name="sort_with_locale_first">Apps with a language first</string>
     <string name="app_badge_system">System</string>
     <string name="app_badge_disabled">Disabled</string>
+    <plurals name="selection_count">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+
+    <!-- My languages -->
+    <string name="managed_section_apps">Apps</string>
+    <string name="managed_empty">No app has a language of its own yet.</string>
+    <string name="managed_section_activity">Recent activity</string>
+    <string name="managed_activity_empty">Nothing yet.</string>
+    <plurals name="managed_summary_count">
+        <item quantity="one">%1$d app with its own language</item>
+        <item quantity="other">%1$d apps with their own language</item>
+    </plurals>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d needs attention</item>
+        <item quantity="other">%1$d need attention</item>
+    </plurals>
+    <string name="managed_last_check_never">Not checked yet</string>
+    <string name="managed_last_check" tools:ignore="PluralsCandidate">Last check %1$s · %2$d restored · %3$d picked up</string>
+    <string name="managed_not_installed">Not installed</string>
+    <string name="activity_applied">Set to %1$s</string>
+    <string name="activity_reset">Back to the system language</string>
+    <string name="activity_repaired">Restored after the system changed it: %1$s → %2$s</string>
+    <string name="activity_mismatch">Changed by the system to %1$s (yours: %2$s); automatic repair is off</string>
+    <string name="activity_adopted">Picked up %1$s</string>
+    <string name="activity_imported">Imported %1$s</string>
+    <string name="activity_failed">Could not write: %1$s</string>
+
+    <!-- Settings -->
+    <string name="settings_shizuku_connected">Connected as %1$s</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_dynamic_color">Wallpaper colors</string>
+    <string name="settings_dynamic_color_summary">Use colors from your wallpaper</string>
+    <string name="settings_seed_color">Theme color</string>
+    <string name="settings_pure_black">Pure black</string>
+    <string name="settings_pure_black_summary">Black background in dark theme</string>
+    <string name="settings_section_keeping">Keeping languages</string>
+    <string name="settings_auto_repair">Restore automatically</string>
+    <string name="settings_auto_repair_summary">When the system drops or trims a language you chose, write it back. When off, it is only reported.</string>
+    <string name="settings_background_check">Check in the background</string>
+    <string name="settings_background_check_summary">Check periodically even when Applingo isn\'t open (needs Shizuku running at that time)</string>
+    <string name="settings_background_interval">Check every</string>
+    <string name="settings_hours" tools:ignore="PluralsCandidate">%1$d h</string>
+    <string name="settings_section_data">Data</string>
+    <string name="settings_export">Export</string>
+    <string name="settings_export_summary">Save your app languages to a file</string>
+    <string name="settings_import">Import</string>
+    <string name="settings_import_summary">Load app languages from an exported file and apply them</string>
+    <string name="settings_section_about">About</string>
+    <string name="settings_own_language">Applingo\'s language</string>
+    <string name="settings_source">Source code</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_license">MIT License</string>
+    <string name="time_just_now">just now</string>
 
     <!-- Shizuku -->
     <string name="shizuku_title" translatable="false">Shizuku</string>
@@ -62,7 +130,7 @@
     <string name="status_none">Follows the system language</string>
     <string name="status_applied">Active</string>
     <string name="status_pending">Saved — will be applied when Shizuku connects</string>
-    <string name="status_mismatch">The system currently has: %1$s. Applingo will restore your choice.</string>
+    <string name="status_mismatch">The system currently has %1$s, which differs from your choice.</string>
     <string name="info_version">Version</string>
     <string name="info_sdk">SDK</string>
     <string name="info_sdk_value">Target %1$d · Min %2$d</string>
@@ -84,6 +152,10 @@
 
     <!-- Picker -->
     <string name="picker_title">Language · %1$s</string>
+    <plurals name="picker_title_batch">
+        <item quantity="one">Language · %1$d app</item>
+        <item quantity="other">Language · %1$d apps</item>
+    </plurals>
     <string name="picker_selected">Selected, in order of priority</string>
     <string name="picker_selected_empty">None — the app follows the system language</string>
     <string name="picker_search_hint">Search languages</string>
@@ -99,6 +171,19 @@
     <string name="message_needs_shizuku">This needs Shizuku to be running</string>
     <string name="message_restart_failed">Could not restart the app: %1$s</string>
     <string name="message_reconcile_failed">Could not check app languages: %1$s</string>
+    <string name="message_check_ok">All app languages are as you set them</string>
+    <plurals name="message_batch_applied">
+        <item quantity="one">Applied to %1$d app</item>
+        <item quantity="other">Applied to %1$d apps</item>
+    </plurals>
+    <string name="message_batch_failed" tools:ignore="PluralsCandidate">Failed for %1$d of %2$d apps</string>
+    <string name="message_exported">Exported</string>
+    <string name="message_export_failed">Export failed: %1$s</string>
+    <plurals name="message_imported">
+        <item quantity="one">Imported %1$d app</item>
+        <item quantity="other">Imported %1$d apps</item>
+    </plurals>
+    <string name="message_import_failed">Import failed: %1$s</string>
     <plurals name="message_repaired">
         <item quantity="one">Restored the language of %1$d app</item>
         <item quantity="other">Restored the languages of %1$d apps</item>

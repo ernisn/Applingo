@@ -1,6 +1,8 @@
 package io.github.ernisn.applingo.ui.applist
 
-import androidx.compose.foundation.clickable
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,12 +30,15 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -45,6 +50,9 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -52,12 +60,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -72,6 +82,7 @@ import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
 import io.github.ernisn.applingo.ui.components.focusableOnlyAfterTouch
+import io.github.ernisn.applingo.ui.picker.BatchLocalePickerDialog
 
 @Composable
 fun AppListPane(
@@ -88,17 +99,35 @@ fun AppListPane(
         listState.scrollToItem(0)
     }
 
+    val selecting = state.selection.isNotEmpty()
+    var showBatchPicker by rememberSaveable { mutableStateOf(false) }
+    BackHandler(enabled = selecting) { viewModel.clearSelection() }
+
+    if (showBatchPicker && selecting) {
+        BatchLocalePickerDialog(viewModel, count = state.selection.size, onDismiss = { showBatchPicker = false })
+    }
+
     Scaffold(
         topBar = {
-            SearchHeader(
-                query = state.query,
-                onQueryChange = viewModel::onQueryChange,
-                sort = state.preferences.sort,
-                withLocaleFirst = state.preferences.withLocaleFirst,
-                onSortChange = { sort -> viewModel.updatePreferences { it.copy(sort = sort) } },
-                onWithLocaleFirstChange = { value -> viewModel.updatePreferences { it.copy(withLocaleFirst = value) } },
-                onRefresh = viewModel::refresh,
-            )
+            if (selecting) {
+                SelectionBar(
+                    count = state.selection.size,
+                    onClose = viewModel::clearSelection,
+                    onSelectAll = { viewModel.selectAll(state.rows.map { it.app.packageName }) },
+                    onChangeLanguage = { showBatchPicker = true },
+                    onFollowSystem = { viewModel.applyToSelection(emptyList()) },
+                )
+            } else {
+                SearchHeader(
+                    query = state.query,
+                    onQueryChange = viewModel::onQueryChange,
+                    sort = state.preferences.sort,
+                    withLocaleFirst = state.preferences.withLocaleFirst,
+                    onSortChange = { sort -> viewModel.updatePreferences { it.copy(sort = sort) } },
+                    onWithLocaleFirstChange = { value -> viewModel.updatePreferences { it.copy(withLocaleFirst = value) } },
+                    onRefresh = viewModel::refresh,
+                )
+            }
         },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
@@ -137,10 +166,15 @@ fun AppListPane(
                         contentPadding = PaddingValues(bottom = 16.dp),
                     ) {
                         items(state.rows, key = { it.app.packageName }) { row ->
+                            val packageName = row.app.packageName
                             AppListItem(
                                 row = row,
-                                selected = row.app.packageName == selectedPackage,
-                                onClick = { onOpenApp(row.app.packageName) },
+                                selected = packageName == selectedPackage,
+                                checked = if (selecting) packageName in state.selection else null,
+                                onClick = {
+                                    if (selecting) viewModel.toggleSelection(packageName) else onOpenApp(packageName)
+                                },
+                                onLongClick = { viewModel.toggleSelection(packageName) },
                             )
                         }
                         item { Spacer(Modifier.navigationBarsPadding()) }
@@ -277,16 +311,58 @@ private fun FilterRow(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppListItem(row: AppRow, selected: Boolean, onClick: () -> Unit) {
+private fun SelectionBar(
+    count: Int,
+    onClose: () -> Unit,
+    onSelectAll: () -> Unit,
+    onChangeLanguage: () -> Unit,
+    onFollowSystem: () -> Unit,
+) {
+    TopAppBar(
+        title = { Text(pluralStringResource(R.plurals.selection_count, count, count)) },
+        navigationIcon = {
+            IconButton(onClick = onClose) {
+                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.action_close))
+            }
+        },
+        actions = {
+            TextButton(onClick = onSelectAll) { Text(stringResource(R.string.action_select_all)) }
+            TextButton(onClick = onFollowSystem) { Text(stringResource(R.string.action_reset_to_system)) }
+            IconButton(onClick = onChangeLanguage) {
+                Icon(painterResource(R.drawable.ic_translate), contentDescription = stringResource(R.string.action_change_language))
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun AppListItem(
+    row: AppRow,
+    selected: Boolean,
+    checked: Boolean?,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
     ListItem(
-        modifier = Modifier.clickable(onClick = onClick),
-        colors = if (selected) {
+        modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        colors = if (selected || checked == true) {
             ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         } else {
             ListItemDefaults.colors()
         },
-        leadingContent = { AppIcon(row.app.packageName, row.app.lastUpdateTime) },
+        leadingContent = {
+            if (checked != null) {
+                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                    Checkbox(checked = checked, onCheckedChange = null)
+                }
+            } else {
+                AppIcon(row.app.packageName, row.app.lastUpdateTime)
+            }
+        },
         headlineContent = { Text(row.app.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         supportingContent = {
             val prefix = when {
@@ -302,7 +378,7 @@ private fun AppListItem(row: AppRow, selected: Boolean, onClick: () -> Unit) {
             )
         },
         trailingContent = if (row.locales.isNotEmpty()) {
-            { LocaleBadge(row.locales, row.status) }
+            { LocaleBadge(row.locales, row.status, onHighlight = selected || checked == true) }
         } else {
             null
         },
@@ -310,11 +386,16 @@ private fun AppListItem(row: AppRow, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun LocaleBadge(locales: List<String>, status: LocaleStatus) {
+internal fun LocaleBadge(locales: List<String>, status: LocaleStatus, onHighlight: Boolean = false) {
     val (container, content) = when (status) {
         LocaleStatus.Mismatch -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
         LocaleStatus.Pending -> MaterialTheme.colorScheme.surfaceContainerHighest to MaterialTheme.colorScheme.onSurfaceVariant
-        else -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
+        // Highlighted rows already use secondaryContainer; keep the badge distinguishable on them.
+        else -> if (onHighlight) {
+            MaterialTheme.colorScheme.surface to MaterialTheme.colorScheme.onSurface
+        } else {
+            MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
+        }
     }
     Surface(shape = RoundedCornerShape(8.dp), color = container, contentColor = content) {
         Row(

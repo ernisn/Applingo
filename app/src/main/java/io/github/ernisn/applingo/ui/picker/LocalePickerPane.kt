@@ -53,7 +53,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -70,11 +73,7 @@ private val chainSaver = listSaver<SnapshotStateList<String>, String>(
     restore = { it.toMutableStateList() },
 )
 
-/**
- * Edits the ordered locale chain of one app: the app uses the first locale it has resources for,
- * then the next, and finally the system languages.
- */
-@OptIn(ExperimentalMaterial3Api::class)
+/** Picker for one app, shown as the extra pane next to (or instead of) its detail pane. */
 @Composable
 fun LocalePickerPane(
     viewModel: MainViewModel,
@@ -83,16 +82,75 @@ fun LocalePickerPane(
     onClose: () -> Unit,
 ) {
     val rows by viewModel.rows.collectAsStateWithLifecycle()
-    val catalog by viewModel.catalog.collectAsStateWithLifecycle()
     val row = rows[packageName]
     val initial = remember(packageName) { row?.locales.orEmpty() }
-    val chain = rememberSaveable(packageName, saver = chainSaver) { initial.toMutableStateList() }
-    var query by rememberSaveable(packageName) { mutableStateOf("") }
-    val expanded = remember(packageName) { mutableStateListOf<String>() }
-    val uiLocale = LocalConfiguration.current.locales[0]
     val declared by produceState<List<String>?>(null, packageName) {
         value = viewModel.extras(packageName).declaredLocales
     }
+    LocalePickerContent(
+        viewModel = viewModel,
+        stateKey = packageName,
+        title = stringResource(R.string.picker_title, row?.app?.label ?: packageName),
+        initial = initial,
+        declared = declared,
+        closeAsBack = closeAsBack,
+        onApply = { chain ->
+            viewModel.applyLocales(packageName, chain)
+            onClose()
+        },
+        onClose = onClose,
+    )
+}
+
+/** Full-screen picker that applies one chain to every app selected in the list. */
+@Composable
+fun BatchLocalePickerDialog(viewModel: MainViewModel, count: Int, onDismiss: () -> Unit) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+    ) {
+        Surface(Modifier.fillMaxSize()) {
+            LocalePickerContent(
+                viewModel = viewModel,
+                stateKey = "batch",
+                title = pluralStringResource(R.plurals.picker_title_batch, count, count),
+                initial = emptyList(),
+                declared = null,
+                closeAsBack = false,
+                batch = true,
+                onApply = { chain ->
+                    viewModel.applyToSelection(chain)
+                    onDismiss()
+                },
+                onClose = onDismiss,
+            )
+        }
+    }
+}
+
+/**
+ * Edits an ordered locale chain: an app uses the first locale it has resources for, then the next,
+ * and finally the system languages.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LocalePickerContent(
+    viewModel: MainViewModel,
+    stateKey: String,
+    title: String,
+    initial: List<String>,
+    declared: List<String>?,
+    closeAsBack: Boolean,
+    onApply: (List<String>) -> Unit,
+    onClose: () -> Unit,
+    /** Applies to several apps: nothing to compare against, but an empty chain must not reset them all. */
+    batch: Boolean = false,
+) {
+    val catalog by viewModel.catalog.collectAsStateWithLifecycle()
+    val chain = rememberSaveable(stateKey, saver = chainSaver) { initial.toMutableStateList() }
+    var query by rememberSaveable(stateKey) { mutableStateOf("") }
+    val expanded = remember(stateKey) { mutableStateListOf<String>() }
+    val uiLocale = LocalConfiguration.current.locales[0]
     val systemOptions = remember(uiLocale) { viewModel.systemLocales.map { LocaleCatalog.option(it, uiLocale) } }
     val declaredOptions = remember(declared, uiLocale) { declared.orEmpty().map { LocaleCatalog.option(it, uiLocale) } }
 
@@ -103,13 +161,7 @@ fun LocalePickerPane(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.picker_title, row?.app?.label ?: packageName),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
+                title = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
                         if (closeAsBack) {
@@ -135,11 +187,8 @@ fun LocalePickerPane(
                         Text(stringResource(R.string.action_follow_system))
                     }
                     Button(
-                        onClick = {
-                            viewModel.applyLocales(packageName, chain.toList())
-                            onClose()
-                        },
-                        enabled = chain.toList() != initial,
+                        onClick = { onApply(chain.toList()) },
+                        enabled = if (batch) chain.isNotEmpty() else chain.toList() != initial,
                     ) { Text(stringResource(R.string.action_apply)) }
                 }
             }

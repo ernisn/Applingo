@@ -21,6 +21,15 @@
     <string name="action_collapse">收起地区</string>
     <string name="action_sort">排序</string>
     <string name="action_clear_search">清除搜索</string>
+    <string name="action_select_all">全选</string>
+    <string name="action_check_now">立即检查</string>
+    <string name="action_forget">忘记</string>
+    <string name="action_clear_activity">清空</string>
+
+    <!-- Navigation -->
+    <string name="nav_apps">应用</string>
+    <string name="nav_managed">已设置</string>
+    <string name="nav_settings">设置</string>
 
     <!-- App list -->
     <string name="search_hint">搜索应用、包名或语言</string>
@@ -38,6 +47,62 @@
     <string name="sort_with_locale_first">已设置语言的排在前面</string>
     <string name="app_badge_system">系统</string>
     <string name="app_badge_disabled">已停用</string>
+    <plurals name="selection_count">
+        <item quantity="other">已选 %1$d 个</item>
+    </plurals>
+
+    <!-- My languages -->
+    <string name="managed_section_apps">应用</string>
+    <string name="managed_empty">还没有为任何应用单独设置语言。</string>
+    <string name="managed_section_activity">最近活动</string>
+    <string name="managed_activity_empty">暂无记录。</string>
+    <plurals name="managed_summary_count">
+        <item quantity="other">%1$d 个应用使用单独的语言</item>
+    </plurals>
+    <plurals name="managed_summary_attention">
+        <item quantity="other">%1$d 个需要注意</item>
+    </plurals>
+    <string name="managed_last_check_never">尚未检查</string>
+    <string name="managed_last_check">上次检查 %1$s · 恢复 %2$d 个 · 导入 %3$d 个</string>
+    <string name="managed_not_installed">未安装</string>
+    <string name="activity_applied">设置为 %1$s</string>
+    <string name="activity_reset">恢复跟随系统语言</string>
+    <string name="activity_repaired">被系统更改后已恢复：%1$s → %2$s</string>
+    <string name="activity_mismatch">被系统改为 %1$s（你的设置：%2$s），自动恢复已关闭</string>
+    <string name="activity_adopted">导入现有设置：%1$s</string>
+    <string name="activity_imported">从文件导入：%1$s</string>
+    <string name="activity_failed">写入失败：%1$s</string>
+
+    <!-- Settings -->
+    <string name="settings_shizuku_connected">已连接，身份：%1$s</string>
+    <string name="settings_section_appearance">外观</string>
+    <string name="settings_theme">主题</string>
+    <string name="settings_theme_system">跟随系统</string>
+    <string name="settings_theme_light">浅色</string>
+    <string name="settings_theme_dark">深色</string>
+    <string name="settings_dynamic_color">壁纸取色</string>
+    <string name="settings_dynamic_color_summary">使用壁纸中的颜色</string>
+    <string name="settings_seed_color">主题色</string>
+    <string name="settings_pure_black">纯黑背景</string>
+    <string name="settings_pure_black_summary">深色主题下使用纯黑背景</string>
+    <string name="settings_section_keeping">保持语言</string>
+    <string name="settings_auto_repair">自动恢复</string>
+    <string name="settings_auto_repair_summary">系统清除或删减了你设置的语言时，自动写回。关闭后只记录不修复。</string>
+    <string name="settings_background_check">后台检查</string>
+    <string name="settings_background_check_summary">即使没有打开 Applingo 也定期检查（需要当时 Shizuku 正在运行）</string>
+    <string name="settings_background_interval">检查间隔</string>
+    <string name="settings_hours">%1$d 小时</string>
+    <string name="settings_section_data">数据</string>
+    <string name="settings_export">导出</string>
+    <string name="settings_export_summary">把应用语言设置保存为文件</string>
+    <string name="settings_import">导入</string>
+    <string name="settings_import_summary">从导出的文件读取应用语言设置并应用</string>
+    <string name="settings_section_about">关于</string>
+    <string name="settings_own_language">Applingo 的语言</string>
+    <string name="settings_source">源代码</string>
+    <string name="settings_version">版本</string>
+    <string name="settings_license">MIT 许可证</string>
+    <string name="time_just_now">刚刚</string>
 
     <!-- Shizuku -->
     <string name="shizuku_not_installed">Applingo 需要 Shizuku（或 Sui）才能更改其他应用的语言。请先安装并启动。</string>
@@ -59,7 +124,7 @@
     <string name="status_none">跟随系统语言</string>
     <string name="status_applied">已生效</string>
     <string name="status_pending">已保存，Shizuku 连接后应用</string>
-    <string name="status_mismatch">系统当前为：%1$s。Applingo 会恢复你的设置。</string>
+    <string name="status_mismatch">系统当前为 %1$s，与你的设置不同。</string>
     <string name="info_version">版本</string>
     <string name="info_sdk">SDK</string>
     <string name="info_sdk_value">目标 %1$d · 最低 %2$d</string>
@@ -80,6 +145,9 @@
 
     <!-- Picker -->
     <string name="picker_title">语言 · %1$s</string>
+    <plurals name="picker_title_batch">
+        <item quantity="other">语言 · %1$d 个应用</item>
+    </plurals>
     <string name="picker_selected">已选（按优先级排列）</string>
     <string name="picker_selected_empty">未选择，应用跟随系统语言</string>
     <string name="picker_search_hint">搜索语言</string>
@@ -95,6 +163,17 @@
     <string name="message_needs_shizuku">需要 Shizuku 正在运行</string>
     <string name="message_restart_failed">无法重启应用：%1$s</string>
     <string name="message_reconcile_failed">无法检查应用语言：%1$s</string>
+    <string name="message_check_ok">所有应用的语言都与你的设置一致</string>
+    <plurals name="message_batch_applied">
+        <item quantity="other">已应用到 %1$d 个应用</item>
+    </plurals>
+    <string name="message_batch_failed">%2$d 个应用中有 %1$d 个失败</string>
+    <string name="message_exported">已导出</string>
+    <string name="message_export_failed">导出失败：%1$s</string>
+    <plurals name="message_imported">
+        <item quantity="other">已导入 %1$d 个应用</item>
+    </plurals>
+    <string name="message_import_failed">导入失败：%1$s</string>
     <plurals name="message_repaired">
         <item quantity="other">已恢复 %1$d 个应用的语言设置</item>
     </plurals>

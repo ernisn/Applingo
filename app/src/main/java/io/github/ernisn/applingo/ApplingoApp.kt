@@ -1,6 +1,8 @@
 package io.github.ernisn.applingo
 
 import android.app.Application
+import io.github.ernisn.applingo.background.BackgroundCheckWorker
+import io.github.ernisn.applingo.data.ActivityLog
 import io.github.ernisn.applingo.data.AppRepository
 import io.github.ernisn.applingo.data.DesiredLocaleStore
 import io.github.ernisn.applingo.data.LocaleController
@@ -9,6 +11,8 @@ import io.github.ernisn.applingo.shizuku.ShizukuManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class ApplingoApp : Application() {
@@ -24,13 +28,14 @@ class ApplingoApp : Application() {
 }
 
 /** Process-wide singletons, created once in [ApplingoApp.onCreate]. */
-class AppContainer(app: Application) {
+class AppContainer(private val app: Application) {
 
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     val shizuku = ShizukuManager(app, scope)
     val apps = AppRepository(app)
     val preferences = UiPreferences(app)
-    val locales = LocaleController(app, scope, shizuku, apps, DesiredLocaleStore(app))
+    val activityLog = ActivityLog(app)
+    val locales = LocaleController(app, scope, shizuku, apps, DesiredLocaleStore(app), preferences, activityLog)
 
     fun start() {
         shizuku.start()
@@ -38,6 +43,12 @@ class AppContainer(app: Application) {
         scope.launch {
             apps.loadSnapshot()
             refreshApps()
+        }
+        scope.launch {
+            preferences.settings
+                .map { it.backgroundCheck to it.backgroundCheckHours }
+                .distinctUntilChanged()
+                .collect { (enabled, hours) -> BackgroundCheckWorker.schedule(app, enabled, hours) }
         }
     }
 

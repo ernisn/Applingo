@@ -1,7 +1,9 @@
 package io.github.ernisn.applingo.ui
 
 import android.app.Application
+import android.app.LocaleConfig
 import android.app.LocaleManager
+import android.os.LocaleList
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -10,20 +12,24 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import io.github.ernisn.applingo.ApplingoApp
 import io.github.ernisn.applingo.AppContainer
+import io.github.ernisn.applingo.ApplingoApp
 import io.github.ernisn.applingo.R
 import io.github.ernisn.applingo.core.LanguageGroup
 import io.github.ernisn.applingo.core.LocaleCatalog
 import io.github.ernisn.applingo.core.LocaleTags
 import io.github.ernisn.applingo.core.Search
+import io.github.ernisn.applingo.data.ActivityEntry
 import io.github.ernisn.applingo.data.AppExtras
 import io.github.ernisn.applingo.data.AppInfo
+import io.github.ernisn.applingo.data.AppSettings
 import io.github.ernisn.applingo.data.AppSort
 import io.github.ernisn.applingo.data.AppTypeFilter
 import io.github.ernisn.applingo.data.ApplyResult
+import io.github.ernisn.applingo.data.CheckSummary
 import io.github.ernisn.applingo.data.DesiredLocale
 import io.github.ernisn.applingo.data.ListPreferences
+import io.github.ernisn.applingo.data.Pinyin
 import io.github.ernisn.applingo.data.UserMessage
 import io.github.ernisn.applingo.data.loadAppExtras
 import io.github.ernisn.applingo.shizuku.ServiceUnavailableException
@@ -34,15 +40,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.Collator
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 
 enum class LocaleStatus {
     /** No per-app locale: the app follows the system. */
@@ -51,7 +60,7 @@ enum class LocaleStatus {
     Applied,
     /** Recorded, but not confirmed with the system yet (Shizuku not connected). */
     Pending,
-    /** The system differs from the record; the next check will repair it. */
+    /** The system differs from the record; the next check will repair it (or report it). */
     Mismatch,
 }
 
@@ -72,6 +81,24 @@ data class AppListState(
     val query: String = "",
     val preferences: ListPreferences = ListPreferences(),
     val shizuku: ShizukuState = ShizukuState.Checking,
+    val selection: Set<String> = emptySet(),
+)
+
+/** One app Applingo keeps a record for; [row] is null when the app isn't installed. */
+data class ManagedApp(
+    val packageName: String,
+    val label: String,
+    val locales: List<String>,
+    val status: LocaleStatus,
+    val row: AppRow?,
+)
+
+data class ManagedState(
+    val apps: List<ManagedApp> = emptyList(),
+    val activity: List<ActivityEntry> = emptyList(),
+    val lastCheck: CheckSummary? = null,
+    val checking: Boolean = false,
+    val shizuku: ShizukuState = ShizukuState.Checking,
 )
 
 class MainViewModel(private val app: Application, private val container: AppContainer) : ViewModel() {
@@ -80,9 +107,14 @@ class MainViewModel(private val app: Application, private val container: AppCont
     private val shizuku = container.shizuku
 
     private val query = MutableStateFlow("")
+    private val _selection = MutableStateFlow<Set<String>>(emptySet())
     private val localMessages = Channel<UserMessage>(Channel.BUFFERED)
+    private val pinyinCache = ConcurrentHashMap<String, List<String>>()
 
     val messages: Flow<UserMessage> = merge(locales.messages, localMessages.receiveAsFlow())
+
+    val settings: StateFlow<AppSettings> =
+        container.preferences.settings.stateIn(viewModelScope, SharingStarted.Eagerly, AppSettings())
 
     /** Every app with its locale state, rebuilt only when apps or locales change (not per keystroke). */
     val rows: StateFlow<Map<String, AppRow>> =
@@ -93,11 +125,11 @@ class MainViewModel(private val app: Application, private val container: AppCont
 
     val listState: StateFlow<AppListState> = combine(
         combine(container.apps.apps, rows) { apps, rows -> (apps != null) to rows },
-        query,
+        combine(query, _selection) { query, selection -> query to selection },
         container.preferences.list,
         shizuku.state,
         container.apps.refreshing,
-    ) { (loaded, rows), query, preferences, shizukuState, refreshing ->
+    ) { (loaded, rows), (query, selection), preferences, shizukuState, refreshing ->
         AppListState(
             loading = !loaded,
             refreshing = refreshing,
@@ -105,8 +137,38 @@ class MainViewModel(private val app: Application, private val container: AppCont
             query = query,
             preferences = preferences,
             shizuku = shizukuState,
+            selection = selection,
         )
     }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppListState())
+
+    val managedState: StateFlow<ManagedState> = combine(
+        combine(locales.desired, rows, locales.actual) { desired, rows, actual -> Triple(desired, rows, actual) },
+        container.activityLog.entries,
+        locales.lastCheck,
+        locales.checking,
+        shizuku.state,
+    ) { (desired, rows, actual), activity, lastCheck, checking, shizukuState ->
+        val managed = buildMap {
+            desired.values.forEach { put(it.packageName, it) }
+        }.keys + rows.values.filter { it.locales.isNotEmpty() }.map { it.app.packageName }
+        val collator = Collator.getInstance(uiLocale())
+        ManagedState(
+            apps = managed.map { packageName ->
+                val row = rows[packageName]
+                ManagedApp(
+                    packageName = packageName,
+                    label = row?.app?.label ?: packageName,
+                    locales = row?.locales ?: desired[packageName]?.locales.orEmpty(),
+                    status = row?.status ?: if (actual.containsKey(packageName)) LocaleStatus.Applied else LocaleStatus.Pending,
+                    row = row,
+                )
+            }.sortedWith(compareBy<ManagedApp> { it.row == null }.thenBy { it.status != LocaleStatus.Mismatch }.thenBy(collator) { it.label }),
+            activity = activity,
+            lastCheck = lastCheck,
+            checking = checking,
+            shizuku = shizukuState,
+        )
+    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ManagedState())
 
     /** All languages for the picker, built once on first use. */
     val catalog: StateFlow<List<LanguageGroup>?> = MutableStateFlow<List<LanguageGroup>?>(null).also { flow ->
@@ -115,6 +177,10 @@ class MainViewModel(private val app: Application, private val container: AppCont
 
     val systemLocales: List<String>
         get() = LocaleTags.parse(app.getSystemService(LocaleManager::class.java).systemLocales.toLanguageTags())
+
+    val versionName: String = app.packageManager.getPackageInfo(app.packageName, 0).versionName.orEmpty()
+
+    // --- App list --------------------------------------------------------------------------------
 
     fun onQueryChange(value: String) {
         // Single-line search: pasted line breaks become spaces instead of breaking the match.
@@ -134,11 +200,27 @@ class MainViewModel(private val app: Application, private val container: AppCont
         if (System.currentTimeMillis() - container.apps.lastRefreshAt > FOREGROUND_REFRESH_MS) refresh()
     }
 
+    fun toggleSelection(packageName: String) {
+        _selection.update { if (packageName in it) it - packageName else it + packageName }
+    }
+
+    fun selectAll(packageNames: Collection<String>) {
+        _selection.update { it + packageNames }
+    }
+
+    fun clearSelection() {
+        _selection.value = emptySet()
+    }
+
+    // --- Shizuku ---------------------------------------------------------------------------------
+
     fun requestShizukuPermission() = shizuku.requestPermission()
 
     fun retryShizuku() = shizuku.retry()
 
     fun shizukuLaunchIntent(): Intent? = shizuku.managerLaunchIntent()
+
+    // --- Locales ---------------------------------------------------------------------------------
 
     suspend fun extras(packageName: String): AppExtras = loadAppExtras(app, packageName)
 
@@ -146,17 +228,31 @@ class MainViewModel(private val app: Application, private val container: AppCont
         viewModelScope.launch {
             val message = try {
                 when (locales.apply(packageName, chain)) {
-                    ApplyResult.Applied -> if (chain.isEmpty()) {
-                        UserMessage(app.getString(R.string.message_reset), restartPackage = packageName)
-                    } else {
-                        UserMessage(app.getString(R.string.message_applied), restartPackage = packageName)
-                    }
+                    ApplyResult.Applied -> UserMessage(
+                        app.getString(if (chain.isEmpty()) R.string.message_reset else R.string.message_applied),
+                        restartPackage = packageName,
+                    )
                     ApplyResult.Saved -> UserMessage(app.getString(R.string.message_saved_pending))
                 }
             } catch (e: Exception) {
                 UserMessage(app.getString(R.string.message_apply_failed, e.message ?: e.toString()))
             }
             localMessages.send(message)
+        }
+    }
+
+    /** Applies [chain] to every selected app and leaves selection mode. */
+    fun applyToSelection(chain: List<String>) {
+        val packages = _selection.value
+        clearSelection()
+        viewModelScope.launch {
+            val failed = locales.applyMany(packages, chain)
+            val text = if (failed == 0) {
+                app.resources.getQuantityString(R.plurals.message_batch_applied, packages.size, packages.size)
+            } else {
+                app.getString(R.string.message_batch_failed, failed, packages.size)
+            }
+            localMessages.send(UserMessage(text))
         }
     }
 
@@ -172,6 +268,66 @@ class MainViewModel(private val app: Application, private val container: AppCont
         }
     }
 
+    fun checkNow() {
+        viewModelScope.launch {
+            container.apps.refresh()
+            val summary = locales.reconcileNow(announce = true)
+            val text = when {
+                summary == null -> app.getString(R.string.message_needs_shizuku)
+                summary.repaired + summary.adopted + summary.mismatched + summary.failed == 0 ->
+                    app.getString(R.string.message_check_ok)
+                else -> null
+            }
+            text?.let { localMessages.send(UserMessage(it)) }
+        }
+    }
+
+    fun forget(packageName: String) {
+        viewModelScope.launch { locales.forget(packageName) }
+    }
+
+    fun clearActivity() {
+        viewModelScope.launch { container.activityLog.clear() }
+    }
+
+    // --- Settings --------------------------------------------------------------------------------
+
+    fun updateSettings(transform: (AppSettings) -> AppSettings) {
+        viewModelScope.launch { container.preferences.updateSettings(transform) }
+    }
+
+    fun exportTo(uri: Uri) {
+        viewModelScope.launch {
+            val text = try {
+                val json = locales.exportJson()
+                withContext(Dispatchers.IO) {
+                    app.contentResolver.openOutputStream(uri, "wt")!!.use { it.write(json.encodeToByteArray()) }
+                }
+                app.getString(R.string.message_exported)
+            } catch (e: Exception) {
+                app.getString(R.string.message_export_failed, e.message ?: e.toString())
+            }
+            localMessages.send(UserMessage(text))
+        }
+    }
+
+    fun importFrom(uri: Uri) {
+        viewModelScope.launch {
+            val text = try {
+                val json = withContext(Dispatchers.IO) {
+                    app.contentResolver.openInputStream(uri)!!.use { it.readBytes().decodeToString() }
+                }
+                val count = locales.importJson(json)
+                app.resources.getQuantityString(R.plurals.message_imported, count, count)
+            } catch (e: Exception) {
+                app.getString(R.string.message_import_failed, e.message ?: e.toString())
+            }
+            localMessages.send(UserMessage(text))
+        }
+    }
+
+    // --- Intents ---------------------------------------------------------------------------------
+
     fun launchIntent(packageName: String): Intent? =
         app.packageManager.getLaunchIntentForPackage(packageName)?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
@@ -182,6 +338,25 @@ class MainViewModel(private val app: Application, private val container: AppCont
     fun systemLanguageIntent(packageName: String): Intent =
         Intent(Settings.ACTION_APP_LOCALE_SETTINGS, Uri.fromParts("package", packageName, null))
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    // --- Applingo's own language ------------------------------------------------------------------
+    // Set in-app with the public per-app API: Samsung's own region picker in system settings crashes.
+
+    /** UI languages Applingo ships, from its generated LocaleConfig. */
+    val ownLocaleOptions: List<String> by lazy {
+        LocaleTags.parse(LocaleConfig(app).supportedLocales?.toLanguageTags())
+    }
+
+    fun ownLocale(): String? =
+        app.getSystemService(LocaleManager::class.java).applicationLocales.toLanguageTags().ifEmpty { null }
+
+    /** Changes Applingo's UI language (null follows the system); the activity is recreated by the system. */
+    fun setOwnLocale(tag: String?) {
+        app.getSystemService(LocaleManager::class.java).applicationLocales =
+            tag?.let { LocaleList.forLanguageTags(it) } ?: LocaleList.getEmptyLocaleList()
+    }
+
+    // --- Internals -------------------------------------------------------------------------------
 
     private fun buildRow(app: AppInfo, desired: DesiredLocale?, actual: List<String>?): AppRow {
         val wanted = desired?.locales.orEmpty()
@@ -196,13 +371,14 @@ class MainViewModel(private val app: Application, private val container: AppCont
         }
         val ui = uiLocale()
         val localeTerms = shown.flatMap { listOf(it, LocaleTags.nativeName(it), LocaleTags.localizedName(it, ui)) }
+        val pinyin = pinyinCache.getOrPut(app.label) { Pinyin.spellings(app.label) }
         return AppRow(
             app = app,
             locales = shown,
             systemLocales = actual,
             status = status,
             setAt = desired?.updatedAt ?: 0,
-            searchTarget = Search.Target(app.label, app.packageName, localeTerms),
+            searchTarget = Search.Target(app.label, app.packageName, localeTerms, pinyin),
         )
     }
 
