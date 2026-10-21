@@ -42,22 +42,45 @@ jobs:
           fi
           echo "name=$name" >> "$GITHUB_OUTPUT"
 
-      - name: Decode signing key
+      # Fails fast with a readable message instead of a Gradle stack trace, without printing any secret.
+      - name: Decode and check signing key
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [[ -z "$KEYSTORE_BASE64" ]]; then
-            echo "::error::Repository secret KEYSTORE_BASE64 is not set"
+          for s in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [[ -z "${!s}" ]]; then echo "::error::Repository secret $s is not set"; exit 1; fi
+          done
+          ks="$RUNNER_TEMP/release.keystore"
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '\r\n ' | base64 --decode > "$ks"
+
+          # Values set from a Windows shell often carry a trailing CR/LF; keep only the first line.
+          first_line() { local v="$1"; printf '%s' "${v%%[$'\r\n']*}"; }
+          export STORE_PW="$(first_line "$KEYSTORE_PASSWORD")"
+          alias="$(first_line "$KEY_ALIAS")"
+          key_pw="$(first_line "$KEY_PASSWORD")"
+          echo "::add-mask::$STORE_PW"; echo "::add-mask::$alias"; echo "::add-mask::$key_pw"
+
+          if ! keytool -list -keystore "$ks" -storepass:env STORE_PW > /dev/null 2>&1; then
+            echo "::error::Cannot open the keystore: KEYSTORE_PASSWORD is wrong or KEYSTORE_BASE64 is not a valid keystore"
             exit 1
           fi
-          printf '%s' "$KEYSTORE_BASE64" | tr -d '\r\n ' | base64 --decode > "$RUNNER_TEMP/release.keystore"
-          echo "APPLINGO_KEYSTORE_FILE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+          if ! keytool -list -keystore "$ks" -storepass:env STORE_PW -alias "$alias" > /dev/null 2>&1; then
+            count=$(keytool -list -keystore "$ks" -storepass:env STORE_PW | grep -c 'PrivateKeyEntry' || true)
+            echo "::error::KEY_ALIAS matches no key in the keystore (it holds $count private key entries). Check the alias with keytool -list."
+            exit 1
+          fi
+          {
+            echo "APPLINGO_KEYSTORE_FILE=$ks"
+            echo "APPLINGO_KEYSTORE_PASSWORD=$STORE_PW"
+            echo "APPLINGO_KEY_ALIAS=$alias"
+            echo "APPLINGO_KEY_PASSWORD=$key_pw"
+          } >> "$GITHUB_ENV"
 
       - name: Build signed APK
         env:
-          APPLINGO_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          APPLINGO_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          APPLINGO_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           VERSION_NAME: ${{ steps.version.outputs.name }}
         run: ./gradlew assembleRelease -PappVersionName="$VERSION_NAME" --stacktrace
 
