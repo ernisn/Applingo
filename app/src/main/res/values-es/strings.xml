@@ -5,7 +5,6 @@
     <string name="action_back">Atrás</string>
     <string name="action_close">Cerrar</string>
     <string name="action_retry">Reintentar</string>
-    <string name="action_refresh">Actualizar</string>
     <string name="action_apply">Aplicar</string>
     <string name="action_open">Abrir</string>
     <string name="action_restart_app">Reiniciar app</string>
@@ -30,7 +29,8 @@
 
     <!-- Navigation -->
     <string name="nav_apps">Apps</string>
-    <string name="nav_managed">Mis idiomas</string>
+    <string name="nav_managed">Configuradas</string>
+    <string name="managed_title">Apps configuradas</string>
     <string name="nav_settings">Ajustes</string>
 
     <!-- App list -->
@@ -41,7 +41,6 @@
     <string name="filter_user">Usuario</string>
     <string name="filter_system">Sistema</string>
     <string name="filter_all">Todas</string>
-    <string name="filter_only_with_locale">Con idioma</string>
     <string name="sort_name">Nombre</string>
     <string name="sort_recently_set">Configuradas recientemente</string>
     <string name="sort_recently_updated">Actualizadas recientemente</string>
@@ -101,6 +100,7 @@
     <string name="settings_background_check_summary">Comprobar periódicamente aunque Applingo no esté abierto (Shizuku debe estar en ejecución en ese momento)</string>
     <string name="settings_background_interval">Comprobar cada</string>
     <string name="settings_section_app_list">Lista de apps</string>
+    <string name="settings_start_filter">Filtro predeterminado</string>
     <string name="settings_refresh_on_launch">Actualizar al abrir</string>
     <string name="settings_refresh_on_launch_summary">Volver a analizar las apps instaladas cada vez que se abre Applingo. Hace que tarde más en abrirse; si está desactivado, desliza la lista hacia abajo para actualizar.</string>
     <string name="settings_hours">%1$d h</string>
@@ -135,8 +135,6 @@
     <string name="locale_follow_system">Idioma del sistema</string>
     <string name="locale_system_fallback">Predeterminado, prioridad más baja · %1$s</string>
     <string name="detail_order_hint">La app usa el primer idioma que admite, de arriba abajo.</string>
-    <string name="status_none">Sigue el idioma del sistema</string>
-    <string name="status_applied">Activo</string>
     <string name="status_pending">Guardado: se aplicará cuando Shizuku se conecte</string>
     <string name="status_mismatch">El sistema tiene ahora %1$s, distinto de lo que elegiste.</string>
     <string name="info_version">Versión</string>
@@ -175,8 +173,8 @@
     <string name="picker_section_all">Todos los idiomas</string>
 
     <!-- Messages -->
-    <string name="message_applied">Idioma aplicado</string>
-    <string name="message_reset">La app vuelve a seguir el idioma del sistema</string>
+    <string name="message_applied">Idioma aplicado. Se verá al reiniciar la app.</string>
+    <string name="message_reset">De nuevo el idioma del sistema. Se verá al reiniciar la app.</string>
     <string name="message_saved_pending">Guardado. Se aplicará cuando Shizuku se conecte.</string>
     <string name="message_apply_failed">No se pudo aplicar: %1$s</string>
     <string name="message_needs_shizuku">Para esto, Shizuku debe estar en ejecución</string>
@@ -208,5 +206,21 @@
         <item quantity="one">Idioma existente de %1$d app adoptado</item>
         <item quantity="many">Idiomas existentes de %1$d apps adoptados</item>
         <item quantity="other">Idiomas existentes de %1$d apps adoptados</item>
+    </plurals>
+
+    <!-- Undo countdown before a change is written -->
+    <string name="action_undo">Deshacer</string>
+    <string name="pending_apply">Cambiando el idioma de %1$s</string>
+    <string name="pending_reset">%1$s volverá a seguir el idioma del sistema</string>
+    <string name="pending_forget">Olvidando %1$s</string>
+    <plurals name="pending_batch_apply">
+        <item quantity="one">Cambiando el idioma de %1$d app</item>
+        <item quantity="many">Cambiando el idioma de %1$d apps</item>
+        <item quantity="other">Cambiando el idioma de %1$d apps</item>
+    </plurals>
+    <plurals name="pending_batch_reset">
+        <item quantity="one">%1$d app volverá a seguir el idioma del sistema</item>
+        <item quantity="many">%1$d apps volverán a seguir el idioma del sistema</item>
+        <item quantity="other">%1$d apps volverán a seguir el idioma del sistema</item>
     </plurals>
 </resources>

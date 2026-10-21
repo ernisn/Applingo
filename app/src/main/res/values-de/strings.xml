@@ -4,7 +4,6 @@
     <string name="action_back">Zurück</string>
     <string name="action_close">Schließen</string>
     <string name="action_retry">Erneut versuchen</string>
-    <string name="action_refresh">Aktualisieren</string>
     <string name="action_apply">Übernehmen</string>
     <string name="action_open">Öffnen</string>
     <string name="action_restart_app">App neu starten</string>
@@ -29,7 +28,8 @@
 
     <!-- Navigation -->
     <string name="nav_apps">Apps</string>
-    <string name="nav_managed">Meine Sprachen</string>
+    <string name="nav_managed">Eingestellt</string>
+    <string name="managed_title">Eingestellte Apps</string>
     <string name="nav_settings">Einstellungen</string>
 
     <!-- App list -->
@@ -40,7 +40,6 @@
     <string name="filter_user">Nutzer</string>
     <string name="filter_system">System</string>
     <string name="filter_all">Alle</string>
-    <string name="filter_only_with_locale">Sprache festgelegt</string>
     <string name="sort_name">Name</string>
     <string name="sort_recently_set">Zuletzt festgelegt</string>
     <string name="sort_recently_updated">Zuletzt aktualisiert</string>
@@ -97,6 +96,7 @@
     <string name="settings_background_check_summary">Regelmäßig prüfen, auch wenn Applingo nicht geöffnet ist (Shizuku muss dann laufen)</string>
     <string name="settings_background_interval">Prüfen alle</string>
     <string name="settings_section_app_list">App-Liste</string>
+    <string name="settings_start_filter">Standardfilter</string>
     <string name="settings_refresh_on_launch">Beim Start aktualisieren</string>
     <string name="settings_refresh_on_launch_summary">Installierte Apps bei jedem Öffnen von Applingo neu einlesen. Verlangsamt das Öffnen; ist dies aus, die Liste zum Aktualisieren nach unten ziehen.</string>
     <string name="settings_hours">%1$d Std.</string>
@@ -131,8 +131,6 @@
     <string name="locale_follow_system">Systemsprache</string>
     <string name="locale_system_fallback">Standard, niedrigste Priorität · %1$s</string>
     <string name="detail_order_hint">Die App verwendet von oben nach unten die erste Sprache, die sie unterstützt.</string>
-    <string name="status_none">Folgt der Systemsprache</string>
-    <string name="status_applied">Aktiv</string>
     <string name="status_pending">Gespeichert – wird angewendet, sobald Shizuku verbunden ist</string>
     <string name="status_mismatch">Das System verwendet derzeit %1$s und weicht damit von deiner Wahl ab.</string>
     <string name="info_version">Version</string>
@@ -169,8 +167,8 @@
     <string name="picker_section_all">Alle Sprachen</string>
 
     <!-- Messages -->
-    <string name="message_applied">Sprache angewendet</string>
-    <string name="message_reset">Die App verwendet wieder die Systemsprache</string>
+    <string name="message_applied">Sprache angewendet. Sie gilt nach einem Neustart der App.</string>
+    <string name="message_reset">Wieder Systemsprache. Das gilt nach einem Neustart der App.</string>
     <string name="message_saved_pending">Gespeichert. Wird angewendet, sobald Shizuku verbunden ist.</string>
     <string name="message_apply_failed">Anwenden fehlgeschlagen: %1$s</string>
     <string name="message_needs_shizuku">Dafür muss Shizuku laufen</string>
@@ -198,5 +196,19 @@
     <plurals name="message_adopted">
         <item quantity="one">Vorhandene Sprache von %1$d App übernommen</item>
         <item quantity="other">Vorhandene Sprachen von %1$d Apps übernommen</item>
+    </plurals>
+
+    <!-- Undo countdown before a change is written -->
+    <string name="action_undo">Rückgängig</string>
+    <string name="pending_apply">Sprache von %1$s wird geändert</string>
+    <string name="pending_reset">%1$s wird auf die Systemsprache zurückgesetzt</string>
+    <string name="pending_forget">%1$s wird vergessen</string>
+    <plurals name="pending_batch_apply">
+        <item quantity="one">Sprache von %1$d App wird geändert</item>
+        <item quantity="other">Sprache von %1$d Apps wird geändert</item>
+    </plurals>
+    <plurals name="pending_batch_reset">
+        <item quantity="one">%1$d App wird auf die Systemsprache zurückgesetzt</item>
+        <item quantity="other">%1$d Apps werden auf die Systemsprache zurückgesetzt</item>
     </plurals>
 </resources>

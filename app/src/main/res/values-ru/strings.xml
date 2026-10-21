@@ -4,7 +4,6 @@
     <string name="action_back">Назад</string>
     <string name="action_close">Закрыть</string>
     <string name="action_retry">Повторить</string>
-    <string name="action_refresh">Обновить</string>
     <string name="action_apply">Применить</string>
     <string name="action_open">Открыть</string>
     <string name="action_restart_app">Перезапустить</string>
@@ -29,7 +28,8 @@
 
     <!-- Navigation -->
     <string name="nav_apps">Приложения</string>
-    <string name="nav_managed">Мои языки</string>
+    <string name="nav_managed">Настроенные</string>
+    <string name="managed_title">Настроенные приложения</string>
     <string name="nav_settings">Настройки</string>
 
     <!-- App list -->
@@ -40,7 +40,6 @@
     <string name="filter_user">Пользовательские</string>
     <string name="filter_system">Системные</string>
     <string name="filter_all">Все</string>
-    <string name="filter_only_with_locale">С языком</string>
     <string name="sort_name">По названию</string>
     <string name="sort_recently_set">Недавно настроенные</string>
     <string name="sort_recently_updated">Недавно обновлённые</string>
@@ -103,6 +102,7 @@
     <string name="settings_background_check_summary">Периодически проверять, даже когда Applingo закрыт (в этот момент должен работать Shizuku)</string>
     <string name="settings_background_interval">Проверять каждые</string>
     <string name="settings_section_app_list">Список приложений</string>
+    <string name="settings_start_filter">Фильтр по умолчанию</string>
     <string name="settings_refresh_on_launch">Обновлять при запуске</string>
     <string name="settings_refresh_on_launch_summary">Заново сканировать установленные приложения при каждом открытии Applingo. Замедляет открытие; если выключено, потяните список вниз, чтобы обновить.</string>
     <string name="settings_hours">%1$d ч</string>
@@ -137,8 +137,6 @@
     <string name="locale_follow_system">Язык системы</string>
     <string name="locale_system_fallback">По умолчанию, самый низкий приоритет · %1$s</string>
     <string name="detail_order_hint">Приложение использует первый поддерживаемый язык сверху вниз.</string>
-    <string name="status_none">Используется язык системы</string>
-    <string name="status_applied">Действует</string>
     <string name="status_pending">Сохранено — будет применено после подключения Shizuku</string>
     <string name="status_mismatch">Сейчас в системе %1$s — это отличается от вашего выбора.</string>
     <string name="info_version">Версия</string>
@@ -179,8 +177,8 @@
     <string name="picker_section_all">Все языки</string>
 
     <!-- Messages -->
-    <string name="message_applied">Язык применён</string>
-    <string name="message_reset">Приложение снова использует язык системы</string>
+    <string name="message_applied">Язык применён. Изменение вступит в силу после перезапуска приложения.</string>
+    <string name="message_reset">Снова язык системы. Изменение вступит в силу после перезапуска приложения.</string>
     <string name="message_saved_pending">Сохранено. Будет применено после подключения Shizuku.</string>
     <string name="message_apply_failed">Не удалось применить: %1$s</string>
     <string name="message_needs_shizuku">Для этого должен работать Shizuku</string>
@@ -216,5 +214,23 @@
         <item quantity="few">Переняты текущие языки %1$d приложений</item>
         <item quantity="many">Переняты текущие языки %1$d приложений</item>
         <item quantity="other">Переняты текущие языки %1$d приложения</item>
+    </plurals>
+
+    <!-- Undo countdown before a change is written -->
+    <string name="action_undo">Отменить</string>
+    <string name="pending_apply">Смена языка приложения %1$s</string>
+    <string name="pending_reset">Приложение %1$s вернётся к языку системы</string>
+    <string name="pending_forget">Приложение %1$s будет забыто</string>
+    <plurals name="pending_batch_apply">
+        <item quantity="one">Смена языка в %1$d приложении</item>
+        <item quantity="few">Смена языка в %1$d приложениях</item>
+        <item quantity="many">Смена языка в %1$d приложениях</item>
+        <item quantity="other">Смена языка в %1$d приложения</item>
+    </plurals>
+    <plurals name="pending_batch_reset">
+        <item quantity="one">%1$d приложение вернётся к языку системы</item>
+        <item quantity="few">%1$d приложения вернутся к языку системы</item>
+        <item quantity="many">%1$d приложений вернутся к языку системы</item>
+        <item quantity="other">%1$d приложения вернутся к языку системы</item>
     </plurals>
 </resources>

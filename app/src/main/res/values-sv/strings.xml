@@ -4,7 +4,6 @@
     <string name="action_back">Tillbaka</string>
     <string name="action_close">Stäng</string>
     <string name="action_retry">Försök igen</string>
-    <string name="action_refresh">Uppdatera</string>
     <string name="action_apply">Tillämpa</string>
     <string name="action_open">Öppna</string>
     <string name="action_restart_app">Starta om appen</string>
@@ -29,7 +28,8 @@
 
     <!-- Navigation -->
     <string name="nav_apps">Appar</string>
-    <string name="nav_managed">Mina språk</string>
+    <string name="nav_managed">Inställda</string>
+    <string name="managed_title">Inställda appar</string>
     <string name="nav_settings">Inställningar</string>
 
     <!-- App list -->
@@ -40,7 +40,6 @@
     <string name="filter_user">Användare</string>
     <string name="filter_system">System</string>
     <string name="filter_all">Alla</string>
-    <string name="filter_only_with_locale">Språk inställt</string>
     <string name="sort_name">Namn</string>
     <string name="sort_recently_set">Nyligen inställda</string>
     <string name="sort_recently_updated">Nyligen uppdaterade</string>
@@ -97,6 +96,7 @@
     <string name="settings_background_check_summary">Kontrollera regelbundet även när Applingo inte är öppen (Shizuku måste köras då)</string>
     <string name="settings_background_interval">Kontrollera var</string>
     <string name="settings_section_app_list">Applista</string>
+    <string name="settings_start_filter">Standardfilter</string>
     <string name="settings_refresh_on_launch">Uppdatera vid start</string>
     <string name="settings_refresh_on_launch_summary">Sök igenom installerade appar varje gång Applingo öppnas. Gör att det tar längre tid att öppna; när det är av, dra ned listan för att uppdatera.</string>
     <string name="settings_hours">%1$d h</string>
@@ -131,8 +131,6 @@
     <string name="locale_follow_system">Systemspråk</string>
     <string name="locale_system_fallback">Standard, lägsta prioritet · %1$s</string>
     <string name="detail_order_hint">Appen använder det första språket den stöder, uppifrån och ned.</string>
-    <string name="status_none">Följer systemspråket</string>
-    <string name="status_applied">Aktivt</string>
     <string name="status_pending">Sparat – tillämpas när Shizuku ansluter</string>
     <string name="status_mismatch">Systemet har nu %1$s, vilket skiljer sig från ditt val.</string>
     <string name="info_version">Version</string>
@@ -169,8 +167,8 @@
     <string name="picker_section_all">Alla språk</string>
 
     <!-- Messages -->
-    <string name="message_applied">Språket tillämpat</string>
-    <string name="message_reset">Appen följer systemspråket igen</string>
+    <string name="message_applied">Språket tillämpat. Det gäller när appen har startats om.</string>
+    <string name="message_reset">Systemspråket igen. Det gäller när appen har startats om.</string>
     <string name="message_saved_pending">Sparat. Tillämpas när Shizuku ansluter.</string>
     <string name="message_apply_failed">Kunde inte tillämpa: %1$s</string>
     <string name="message_needs_shizuku">Det här kräver att Shizuku körs</string>
@@ -198,5 +196,19 @@
     <plurals name="message_adopted">
         <item quantity="one">Befintligt språk för %1$d app övertaget</item>
         <item quantity="other">Befintliga språk för %1$d appar övertagna</item>
+    </plurals>
+
+    <!-- Undo countdown before a change is written -->
+    <string name="action_undo">Ångra</string>
+    <string name="pending_apply">Språket för %1$s ändras</string>
+    <string name="pending_reset">%1$s kommer att följa systemspråket igen</string>
+    <string name="pending_forget">%1$s glöms bort</string>
+    <plurals name="pending_batch_apply">
+        <item quantity="one">Språket ändras för %1$d app</item>
+        <item quantity="other">Språket ändras för %1$d appar</item>
+    </plurals>
+    <plurals name="pending_batch_reset">
+        <item quantity="one">%1$d app kommer att följa systemspråket igen</item>
+        <item quantity="other">%1$d appar kommer att följa systemspråket igen</item>
     </plurals>
 </resources>

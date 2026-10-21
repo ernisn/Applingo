@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import io.github.ernisn.applingo.R
+import io.github.ernisn.applingo.ui.theme.ControlShape
 import io.github.ernisn.applingo.shizuku.ShizukuState
 
 private const val SHIZUKU_DOWNLOAD_URL = "https://shizuku.rikka.app/download/"
@@ -65,22 +66,22 @@ fun ShizukuStatusCard(
                     val openShizuku = shizukuLaunchIntent()
                     when (state) {
                         ShizukuState.Connecting -> CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-                        ShizukuState.NotInstalled -> FilledTonalButton(onClick = {
+                        ShizukuState.NotInstalled -> Button(shape = ControlShape, onClick = {
                             context.startActivity(
                                 Intent(Intent.ACTION_VIEW, SHIZUKU_DOWNLOAD_URL.toUri())
                                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
                             )
                         }) { Text(stringResource(R.string.shizuku_action_get)) }
-                        ShizukuState.PermissionRequired -> FilledTonalButton(onClick = onRequestPermission) {
+                        ShizukuState.PermissionRequired -> Button(onClick = onRequestPermission, shape = ControlShape) {
                             Text(stringResource(R.string.shizuku_action_grant))
                         }
                         else -> {
                             if (state !is ShizukuState.Failed && openShizuku != null) {
-                                TextButton(onClick = { context.startActivity(openShizuku) }) {
+                                TextButton(onClick = { context.startActivity(openShizuku) }, shape = ControlShape) {
                                     Text(stringResource(R.string.shizuku_action_open))
                                 }
                             }
-                            FilledTonalButton(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
+                            Button(onClick = onRetry, shape = ControlShape) { Text(stringResource(R.string.action_retry)) }
                         }
                     }
                 }

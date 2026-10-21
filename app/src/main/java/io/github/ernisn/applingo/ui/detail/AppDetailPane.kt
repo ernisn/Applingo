@@ -22,17 +22,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
@@ -51,8 +52,11 @@ import io.github.ernisn.applingo.ui.AppIcon
 import io.github.ernisn.applingo.ui.AppRow
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.components.LanguageActions
 import io.github.ernisn.applingo.ui.components.LocalePriorityList
+import io.github.ernisn.applingo.ui.components.PackageLine
 import io.github.ernisn.applingo.ui.safeArea
+import io.github.ernisn.applingo.ui.theme.ControlShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +79,15 @@ fun AppDetailPane(
         topBar = {
             TopAppBar(
                 windowInsets = WindowInsets(0),
-                title = { Text(row?.app?.label ?: packageName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                // Small: the header card right below names the app again, next to its icon.
+                title = {
+                    Text(
+                        text = row?.app?.label ?: packageName,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
                 navigationIcon = {
                     if (showBack) {
                         IconButton(onClick = onBack) {
@@ -94,7 +106,7 @@ fun AppDetailPane(
         }
         // A plain scrolling column rather than a LazyColumn: there are only four cards, and a lazy list
         // pre-measures the off-screen ones while the pane is still animating its width, leaving them
-        // stuck at that narrower size.
+        // stuck at that narrower size. Each app starts at the top: the caller keys this pane by app.
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
@@ -130,13 +142,14 @@ fun EmptyDetailPane() {
 private fun HeaderCard(row: AppRow) {
     Card(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp)) {
-            AppIcon(row.app.packageName, row.app.lastUpdateTime, size = 56.dp)
+            AppIcon(row.app.packageName, row.app.lastUpdateTime, size = 56.dp, dimmed = !row.app.isEnabled)
             Spacer(Modifier.width(16.dp))
+            // Name, package and version together are about as tall as the icon.
             Column {
-                Text(row.app.label, style = MaterialTheme.typography.titleLarge)
-                Text(row.app.packageName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                row.app.versionName?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(row.app.label, style = MaterialTheme.typography.titleMedium)
+                CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant) {
+                    PackageLine(row.app)
+                    row.app.versionName?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                 }
             }
         }
@@ -154,41 +167,31 @@ private fun LanguageCard(row: AppRow, systemLocales: List<String>, onEdit: () ->
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             LocalePriorityList(chain = row.locales, systemLocales = systemLocales)
-            val (statusText, isProblem) = when (row.status) {
-                LocaleStatus.None -> stringResource(R.string.status_none) to false
-                LocaleStatus.Applied -> stringResource(R.string.status_applied) to false
-                LocaleStatus.Pending -> stringResource(R.string.status_pending) to false
-                LocaleStatus.Mismatch -> stringResource(R.string.status_mismatch, chainText(row.systemLocales.orEmpty())) to true
-            }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (isProblem) Icon(Icons.Filled.Warning, null, tint = MaterialTheme.colorScheme.error)
-                Text(
-                    statusText,
+            // Only states that need a word: "active" and "follows the system" are what the list
+            // above already shows.
+            when (row.status) {
+                LocaleStatus.None, LocaleStatus.Applied -> Unit
+                LocaleStatus.Pending -> Text(
+                    stringResource(R.string.status_pending),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (isProblem) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
-            ) {
-                if (row.locales.isNotEmpty()) {
-                    OutlinedButton(
-                        onClick = onReset,
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
-                    ) {
-                        Text(stringResource(R.string.action_reset_to_system), textAlign = TextAlign.Center, maxLines = 2)
-                    }
-                }
-                Button(
-                    onClick = onEdit,
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                LocaleStatus.Mismatch -> Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(stringResource(R.string.action_change_language), textAlign = TextAlign.Center, maxLines = 2)
+                    Icon(Icons.Filled.Warning, null, tint = MaterialTheme.colorScheme.error)
+                    Text(
+                        stringResource(R.string.status_mismatch, chainText(row.systemLocales.orEmpty())),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
                 }
             }
+            LanguageActions(
+                onFollowSystem = if (row.locales.isNotEmpty()) onReset else null,
+                onChangeLanguage = onEdit,
+            )
         }
     }
 }
@@ -234,6 +237,7 @@ private fun ActionsCard(viewModel: MainViewModel, row: AppRow, extras: AppExtras
                     pair.forEach { action ->
                         OutlinedButton(
                             onClick = action.onClick,
+                            shape = ControlShape,
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                             modifier = Modifier.weight(1f).fillMaxHeight(),
                         ) {

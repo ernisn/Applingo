@@ -4,7 +4,6 @@
     <string name="action_back">Πίσω</string>
     <string name="action_close">Κλείσιμο</string>
     <string name="action_retry">Επανάληψη</string>
-    <string name="action_refresh">Ανανέωση</string>
     <string name="action_apply">Εφαρμογή</string>
     <string name="action_open">Άνοιγμα</string>
     <string name="action_restart_app">Επανεκκίνηση εφαρμογής</string>
@@ -29,7 +28,8 @@
 
     <!-- Navigation -->
     <string name="nav_apps">Εφαρμογές</string>
-    <string name="nav_managed">Οι γλώσσες μου</string>
+    <string name="nav_managed">Ρυθμισμένες</string>
+    <string name="managed_title">Ρυθμισμένες εφαρμογές</string>
     <string name="nav_settings">Ρυθμίσεις</string>
 
     <!-- App list -->
@@ -40,7 +40,6 @@
     <string name="filter_user">Χρήστη</string>
     <string name="filter_system">Συστήματος</string>
     <string name="filter_all">Όλες</string>
-    <string name="filter_only_with_locale">Με γλώσσα</string>
     <string name="sort_name">Όνομα</string>
     <string name="sort_recently_set">Πρόσφατα ορισμένες</string>
     <string name="sort_recently_updated">Πρόσφατα ενημερωμένες</string>
@@ -97,6 +96,7 @@
     <string name="settings_background_check_summary">Περιοδικός έλεγχος ακόμη και όταν το Applingo δεν είναι ανοιχτό (το Shizuku πρέπει να εκτελείται εκείνη τη στιγμή)</string>
     <string name="settings_background_interval">Έλεγχος κάθε</string>
     <string name="settings_section_app_list">Λίστα εφαρμογών</string>
+    <string name="settings_start_filter">Προεπιλεγμένο φίλτρο</string>
     <string name="settings_refresh_on_launch">Ανανέωση κατά την εκκίνηση</string>
     <string name="settings_refresh_on_launch_summary">Νέα σάρωση των εγκατεστημένων εφαρμογών σε κάθε άνοιγμα του Applingo. Επιβραδύνει το άνοιγμα· όταν είναι ανενεργό, σύρετε τη λίστα προς τα κάτω για ανανέωση.</string>
     <string name="settings_hours">%1$d ώρ.</string>
@@ -131,8 +131,6 @@
     <string name="locale_follow_system">Γλώσσα συστήματος</string>
     <string name="locale_system_fallback">Προεπιλογή, χαμηλότερη προτεραιότητα · %1$s</string>
     <string name="detail_order_hint">Η εφαρμογή χρησιμοποιεί την πρώτη γλώσσα που υποστηρίζει, από πάνω προς τα κάτω.</string>
-    <string name="status_none">Ακολουθεί τη γλώσσα του συστήματος</string>
-    <string name="status_applied">Ενεργή</string>
     <string name="status_pending">Αποθηκεύτηκε — θα εφαρμοστεί όταν συνδεθεί το Shizuku</string>
     <string name="status_mismatch">Το σύστημα έχει τώρα %1$s, που διαφέρει από την επιλογή σας.</string>
     <string name="info_version">Έκδοση</string>
@@ -169,8 +167,8 @@
     <string name="picker_section_all">Όλες οι γλώσσες</string>
 
     <!-- Messages -->
-    <string name="message_applied">Η γλώσσα εφαρμόστηκε</string>
-    <string name="message_reset">Η εφαρμογή ακολουθεί ξανά τη γλώσσα του συστήματος</string>
+    <string name="message_applied">Η γλώσσα εφαρμόστηκε. Ισχύει μετά την επανεκκίνηση της εφαρμογής.</string>
+    <string name="message_reset">Ξανά η γλώσσα του συστήματος. Ισχύει μετά την επανεκκίνηση της εφαρμογής.</string>
     <string name="message_saved_pending">Αποθηκεύτηκε. Θα εφαρμοστεί όταν συνδεθεί το Shizuku.</string>
     <string name="message_apply_failed">Δεν ήταν δυνατή η εφαρμογή: %1$s</string>
     <string name="message_needs_shizuku">Για αυτό πρέπει να εκτελείται το Shizuku</string>
@@ -198,5 +196,19 @@
     <plurals name="message_adopted">
         <item quantity="one">Υιοθετήθηκε η υπάρχουσα γλώσσα %1$d εφαρμογής</item>
         <item quantity="other">Υιοθετήθηκαν οι υπάρχουσες γλώσσες %1$d εφαρμογών</item>
+    </plurals>
+
+    <!-- Undo countdown before a change is written -->
+    <string name="action_undo">Αναίρεση</string>
+    <string name="pending_apply">Αλλαγή γλώσσας: %1$s</string>
+    <string name="pending_reset">Επαναφορά στη γλώσσα του συστήματος: %1$s</string>
+    <string name="pending_forget">Διαγραφή από τη λίστα: %1$s</string>
+    <plurals name="pending_batch_apply">
+        <item quantity="one">Αλλαγή γλώσσας σε %1$d εφαρμογή</item>
+        <item quantity="other">Αλλαγή γλώσσας σε %1$d εφαρμογές</item>
+    </plurals>
+    <plurals name="pending_batch_reset">
+        <item quantity="one">Επαναφορά %1$d εφαρμογής στη γλώσσα του συστήματος</item>
+        <item quantity="other">Επαναφορά %1$d εφαρμογών στη γλώσσα του συστήματος</item>
     </plurals>
 </resources>

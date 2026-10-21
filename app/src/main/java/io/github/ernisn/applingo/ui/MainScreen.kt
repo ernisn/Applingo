@@ -1,6 +1,12 @@
 package io.github.ernisn.applingo.ui
 
+import android.os.SystemClock
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,10 +18,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -26,28 +40,42 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.AnimatedPaneScope
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
+import androidx.compose.material3.adaptive.layout.PaneExpansionAnchor
+import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
+import androidx.compose.material3.adaptive.layout.rememberPaneExpansionState
 import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.findRootCoordinates
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.Constraints
 import kotlin.math.roundToInt
@@ -56,6 +84,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ernisn.applingo.R
 import io.github.ernisn.applingo.ui.applist.AppListPane
 import io.github.ernisn.applingo.ui.detail.AppDetailPane
@@ -63,6 +92,7 @@ import io.github.ernisn.applingo.ui.detail.EmptyDetailPane
 import io.github.ernisn.applingo.ui.managed.ManagedPane
 import io.github.ernisn.applingo.ui.picker.LocalePickerPane
 import io.github.ernisn.applingo.ui.settings.SettingsScreen
+import io.github.ernisn.applingo.ui.theme.ControlShape
 import kotlinx.coroutines.launch
 
 private enum class Destination(val label: Int) { Apps(R.string.nav_apps), Managed(R.string.nav_managed), Settings(R.string.nav_settings) }
@@ -81,21 +111,24 @@ fun MainScreen(viewModel: MainViewModel) {
     var destination by rememberSaveable { mutableStateOf(Destination.Apps) }
     val stateHolder = rememberSaveableStateHolder()
     val snackbarHostState = remember { SnackbarHostState() }
-    val restartLabel = stringResource(R.string.action_restart_app)
+    var bottomBarHeight by remember { mutableIntStateOf(0) }
     val useRail = with(LocalDensity.current) {
         LocalWindowInfo.current.containerSize.width.toDp() >= RAIL_MIN_WIDTH_DP.dp
     }
 
     LaunchedEffect(Unit) {
         viewModel.messages.collect { message ->
-            val result = snackbarHostState.showSnackbar(
-                message = message.text,
-                actionLabel = message.restartPackage?.let { restartLabel },
-                withDismissAction = message.restartPackage == null,
-                duration = if (message.restartPackage != null) SnackbarDuration.Long else SnackbarDuration.Short,
-            )
-            if (result == SnackbarResult.ActionPerformed) message.restartPackage?.let(viewModel::restartApp)
+            snackbarHostState.showSnackbar(message.text, withDismissAction = true, duration = SnackbarDuration.Short)
         }
+    }
+
+    val pendingChange by viewModel.pendingChange.collectAsStateWithLifecycle()
+    // Kept while the countdown fades out after it ends.
+    var lastPendingChange by remember { mutableStateOf<PendingChange?>(null) }
+    if (pendingChange != null && pendingChange != lastPendingChange) lastPendingChange = pendingChange
+    // A countdown takes the place of whatever message is showing.
+    LaunchedEffect(pendingChange?.id) {
+        if (pendingChange != null) snackbarHostState.currentSnackbarData?.dismiss()
     }
 
     // Back from another destination returns to the app list before leaving Applingo.
@@ -114,32 +147,50 @@ fun MainScreen(viewModel: MainViewModel) {
                     Destination.Settings -> SettingsScreen(viewModel)
                 }
             }
-            // With the rail the content reaches the end and bottom edges; with the bottom bar only the sides.
+            // Messages keep clear of whatever covers the bottom of the content: next to the rail the
+            // system bar or the keyboard, above the bottom bar only the part of the keyboard that
+            // reaches past the bar.
             val snackbarInsets = if (useRail) {
-                WindowInsets.safeDrawing.only(WindowInsetsSides.End + WindowInsetsSides.Bottom)
+                WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)
             } else {
+                val keyboard = WindowInsets.ime.getBottom(LocalDensity.current)
                 WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
+                    .add(WindowInsets(bottom = (keyboard - bottomBarHeight).coerceAtLeast(0)))
             }
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.align(Alignment.BottomCenter).windowInsetsPadding(snackbarInsets),
-            ) { data ->
-                // The default inverse colors put a light snackbar on a dark theme.
-                Snackbar(
-                    snackbarData = data,
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                    actionColor = MaterialTheme.colorScheme.primary,
-                    dismissActionContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            Box(Modifier.align(Alignment.BottomCenter).windowInsetsPadding(snackbarInsets)) {
+                AnimatedVisibility(
+                    visible = pendingChange != null,
+                    enter = fadeIn() + scaleIn(initialScale = 0.8f),
+                    exit = fadeOut(),
+                ) {
+                    lastPendingChange?.let { UndoCountdownSnackbar(it, onUndo = viewModel::undoPendingChange) }
+                }
+                // Messages that arrive during a countdown wait until it is over.
+                if (pendingChange == null) {
+                    SnackbarHost(hostState = snackbarHostState) { data ->
+                        // The default inverse colors put a light snackbar on a dark theme.
+                        Snackbar(
+                            snackbarData = data,
+                            shape = ControlShape,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            actionColor = MaterialTheme.colorScheme.primary,
+                            dismissActionContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
             }
         }
     }
 
+    // The bars stay put behind the keyboard instead of riding on top of it and taking room from the
+    // content (a search with the keyboard open showed only a few results).
+    val barInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
+
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         if (useRail) {
             Row(Modifier.fillMaxSize()) {
-                NavigationRail(windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Start + WindowInsetsSides.Vertical)) {
+                NavigationRail(windowInsets = barInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Vertical)) {
                     Spacer(Modifier.weight(1f))
                     Destination.entries.forEach { item ->
                         NavigationRailItem(
@@ -151,13 +202,24 @@ fun MainScreen(viewModel: MainViewModel) {
                     }
                     Spacer(Modifier.weight(1f))
                 }
-                // Breathing room between the rail (whose labels can be as wide as it is) and the first pane.
-                content(Modifier.weight(1f).fillMaxHeight().padding(start = 12.dp))
+                // Breathing room between the rail (whose labels can be as wide as it is) and the first
+                // pane, matched at the far edge. The bar or cutout there is kept out at this level, so
+                // side-by-side panes split only the usable width and come out equally wide.
+                content(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.End))
+                        .padding(horizontal = 12.dp),
+                )
             }
         } else {
             Column(Modifier.fillMaxSize()) {
                 content(Modifier.weight(1f).fillMaxWidth())
-                NavigationBar(windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)) {
+                NavigationBar(
+                    windowInsets = barInsets.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
+                    modifier = Modifier.onSizeChanged { bottomBarHeight = it.height },
+                ) {
                     Destination.entries.forEach { item ->
                         NavigationBarItem(
                             selected = item == destination,
@@ -181,6 +243,10 @@ fun MainScreen(viewModel: MainViewModel) {
  * measured there, at the size left over after the overlaps. (Foundation's `fitInside` with the
  * SafeDrawing rulers moved the content down by the status bar but kept its full height, pushing the
  * bottom of every pane off screen.)
+ *
+ * Only the part of the element inside the window counts: a pane sliding in or out is partly off
+ * screen, and counting that part as overlapping the bar on that side squeezed its content into a
+ * narrow strip that widened as the pane slid in.
  */
 @Composable
 fun Modifier.safeArea(): Modifier {
@@ -204,10 +270,10 @@ fun Modifier.safeArea(): Modifier {
                 val origin = coords.positionInWindow()
                 val x = origin.x.roundToInt()
                 val y = origin.y.roundToInt()
-                left = (insets.getLeft(this@layout, direction) - x).coerceAtLeast(0)
-                top = (insets.getTop(this@layout) - y).coerceAtLeast(0)
-                right = (x + width - (window.width - insets.getRight(this@layout, direction))).coerceAtLeast(0)
-                bottom = (y + height - (window.height - insets.getBottom(this@layout))).coerceAtLeast(0)
+                left = overlap(x, x + width, 0, insets.getLeft(this@layout, direction))
+                top = overlap(y, y + height, 0, insets.getTop(this@layout))
+                right = overlap(x, x + width, window.width - insets.getRight(this@layout, direction), window.width)
+                bottom = overlap(y, y + height, window.height - insets.getBottom(this@layout), window.height)
             }
             val placeable = measurable.measure(
                 Constraints.fixed(
@@ -216,6 +282,59 @@ fun Modifier.safeArea(): Modifier {
                 ),
             )
             placeable.place(left, top)
+        }
+    }
+}
+
+/** Length of the overlap between the ranges [start, end) and [barStart, barEnd). */
+private fun overlap(start: Int, end: Int, barStart: Int, barEnd: Int): Int =
+    (minOf(end, barEnd) - maxOf(start, barStart)).coerceAtLeast(0)
+
+/**
+ * [value] as it was when this pane started animating out, so its top bar (back arrow or close
+ * button) doesn't change, and shift the title, while the pane is still sliding away.
+ */
+@Composable
+private fun AnimatedPaneScope.heldWhileExiting(value: Boolean): Boolean {
+    var held by remember { mutableStateOf(value) }
+    if (transition.targetState != EnterExitState.PostExit) held = value
+    return held
+}
+
+/**
+ * A change about to be written: a ring running down with the seconds left, what will happen, and
+ * Undo. Times come from the uptime clock, so the countdown stays right across rotation (the timer
+ * itself runs in the ViewModel).
+ */
+@Composable
+private fun UndoCountdownSnackbar(change: PendingChange, onUndo: () -> Unit) {
+    var now by remember { mutableLongStateOf(SystemClock.uptimeMillis()) }
+    LaunchedEffect(change.id) {
+        while (true) withFrameMillis { now = SystemClock.uptimeMillis() }
+    }
+    val remaining = (change.startedAt + change.durationMillis - now).coerceIn(0, change.durationMillis)
+    Snackbar(
+        modifier = Modifier.padding(12.dp),
+        action = { TextButton(onClick = onUndo, shape = ControlShape) { Text(stringResource(R.string.action_undo)) } },
+        shape = ControlShape,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Announcing every tick would drown out the message itself.
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(32.dp).clearAndSetSemantics {}) {
+                CircularProgressIndicator(
+                    progress = { remaining.toFloat() / change.durationMillis },
+                    modifier = Modifier.fillMaxSize(),
+                    strokeWidth = 3.dp,
+                )
+                Text(
+                    text = ((remaining + 999) / 1000).toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+            Spacer(Modifier.width(16.dp))
+            Text(change.text, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
     }
 }
@@ -231,6 +350,14 @@ private fun DestinationIcon(destination: Destination) = when (destination) {
  * List | app detail | language picker. One pane at a time on phones, list + detail side by side from
  * medium widths (landscape, tablets, unfolded foldables); back and predictive back are handled by the
  * scaffold navigator.
+ *
+ * A pane saves its state while hidden and gets it back when shown again, whichever app it then
+ * shows: each app's detail and picker therefore get their own keyed subtree, or one app's unsaved
+ * picker choices (and search, and scroll position) turned up in the next app's.
+ *
+ * Two panes share the width equally. There is no spacer between them: each pane already keeps its
+ * content 16 dp from its edges, and the default 24 dp spacer on top of that left a gap twice as wide
+ * as the outer margins, making the second pane look narrower.
  */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -238,7 +365,14 @@ private fun AppsListDetail(
     viewModel: MainViewModel,
     listPane: @Composable (selected: String?, onOpen: (String) -> Unit) -> Unit,
 ) {
-    val navigator = rememberListDetailPaneScaffoldNavigator<String>()
+    val navigator = rememberListDetailPaneScaffoldNavigator<String>(
+        scaffoldDirective = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo())
+            .copy(horizontalPartitionSpacerSize = 0.dp),
+    )
+    val expansion = rememberPaneExpansionState(
+        anchors = listOf(PaneExpansionAnchor.Proportion(0.5f)),
+        initialAnchoredIndex = 0,
+    )
     val scope = rememberCoroutineScope()
 
     // Keep showing the last app while panes animate away, instead of flashing an empty pane.
@@ -251,6 +385,7 @@ private fun AppsListDetail(
 
     NavigableListDetailPaneScaffold(
         navigator = navigator,
+        paneExpansionState = expansion,
         listPane = {
             AnimatedPane {
                 listPane(selected) { packageName ->
@@ -264,27 +399,32 @@ private fun AppsListDetail(
                 if (packageName == null) {
                     EmptyDetailPane()
                 } else {
-                    AppDetailPane(
-                        viewModel = viewModel,
-                        packageName = packageName,
-                        showBack = listHidden,
-                        onBack = { scope.launch { navigator.navigateBack() } },
-                        onEditLanguages = {
-                            scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Extra, packageName) }
-                        },
-                    )
+                    // Keyed by app, as explained in this function's comment.
+                    key(packageName) {
+                        AppDetailPane(
+                            viewModel = viewModel,
+                            packageName = packageName,
+                            showBack = heldWhileExiting(listHidden),
+                            onBack = { scope.launch { navigator.navigateBack() } },
+                            onEditLanguages = {
+                                scope.launch { navigator.navigateTo(ListDetailPaneScaffoldRole.Extra, packageName) }
+                            },
+                        )
+                    }
                 }
             }
         },
         extraPane = {
             AnimatedPane {
                 lastPackage?.let { packageName ->
-                    LocalePickerPane(
-                        viewModel = viewModel,
-                        packageName = packageName,
-                        closeAsBack = detailHidden,
-                        onClose = { scope.launch { navigator.navigateBack() } },
-                    )
+                    key(packageName) {
+                        LocalePickerPane(
+                            viewModel = viewModel,
+                            packageName = packageName,
+                            closeAsBack = heldWhileExiting(detailHidden),
+                            onClose = { scope.launch { navigator.navigateBack() } },
+                        )
+                    }
                 }
             }
         },

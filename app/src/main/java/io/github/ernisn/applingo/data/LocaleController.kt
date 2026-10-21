@@ -31,8 +31,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-/** A short, user-facing message, optionally offering to restart an app. */
-data class UserMessage(val text: String, val restartPackage: String? = null)
+/** A short, user-facing message. */
+data class UserMessage(val text: String)
 
 /** Outcome of writing a choice: applied right away, or saved until Shizuku connects. */
 enum class ApplyResult { Applied, Saved }
@@ -304,8 +304,8 @@ class LocaleController(
         message = message,
     )
 
-    private fun post(text: String, restartPackage: String? = null) {
-        _messages.trySend(UserMessage(text, restartPackage))
+    private fun post(text: String) {
+        _messages.trySend(UserMessage(text))
     }
 
     private companion object {

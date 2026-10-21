@@ -13,34 +13,21 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,7 +41,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -65,8 +51,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -82,9 +66,14 @@ import io.github.ernisn.applingo.ui.AppRow
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.safeArea
+import io.github.ernisn.applingo.ui.components.AppTypeFilterRow
+import io.github.ernisn.applingo.ui.components.LanguageActions
+import io.github.ernisn.applingo.ui.components.PackageLine
+import io.github.ernisn.applingo.ui.components.SearchField
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
-import io.github.ernisn.applingo.ui.components.focusableOnlyAfterTouch
 import io.github.ernisn.applingo.ui.picker.BatchLocalePickerDialog
+import io.github.ernisn.applingo.ui.theme.ControlShape
+import io.github.ernisn.applingo.ui.theme.FieldShape
 
 @Composable
 fun AppListPane(
@@ -100,7 +89,7 @@ fun AppListPane(
 
     // A new query, filter or order is a new list: start at its top instead of keeping the scroll
     // anchored to whichever app happened to be first before.
-    LaunchedEffect(state.query, state.preferences) {
+    LaunchedEffect(state.query, state.typeFilter, state.preferences) {
         listState.scrollToItem(0)
     }
 
@@ -121,16 +110,13 @@ fun AppListPane(
                     count = state.selection.size,
                     onClose = viewModel::clearSelection,
                     onSelectAll = { viewModel.selectAll(state.rows.map { it.app.packageName }) },
-                    onChangeLanguage = { showBatchPicker = true },
-                    onFollowSystem = { viewModel.applyToSelection(emptyList()) },
                 )
             } else {
                 SearchHeader(
                     query = queryText,
                     onQueryChange = { value ->
-                        // Single-line search: pasted line breaks become spaces instead of breaking the match.
-                        queryText = value.replace(Regex("[\\r\\n]+"), " ")
-                        viewModel.onQueryChange(queryText)
+                        queryText = value
+                        viewModel.onQueryChange(value)
                     },
                     sort = state.preferences.sort,
                     reverseOrder = state.preferences.reverseOrder,
@@ -138,8 +124,20 @@ fun AppListPane(
                     onSortChange = { sort -> viewModel.updatePreferences { it.copy(sort = sort) } },
                     onReverseOrderChange = { value -> viewModel.updatePreferences { it.copy(reverseOrder = value) } },
                     onWithLocaleFirstChange = { value -> viewModel.updatePreferences { it.copy(withLocaleFirst = value) } },
-                    onRefresh = viewModel::refresh,
                 )
+            }
+        },
+        // The batch actions sit at the bottom, like the detail page's language buttons, so the top bar
+        // only needs the count and Select all and fits a narrow pane in any language.
+        bottomBar = {
+            if (selecting) {
+                Surface(tonalElevation = 3.dp) {
+                    LanguageActions(
+                        onFollowSystem = { viewModel.applyToSelection(emptyList()) },
+                        onChangeLanguage = { showBatchPicker = true },
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    )
+                }
             }
         },
     ) { padding ->
@@ -150,12 +148,13 @@ fun AppListPane(
                 onRetry = viewModel::retryShizuku,
                 shizukuLaunchIntent = viewModel::shizukuLaunchIntent,
             )
-            FilterRow(
-                typeFilter = state.preferences.typeFilter,
-                typeFilterEnabled = state.query.isBlank(),
-                onlyWithLocale = state.preferences.onlyWithLocale,
-                onTypeFilterChange = { filter -> viewModel.updatePreferences { it.copy(typeFilter = filter) } },
-                onOnlyWithLocaleChange = { value -> viewModel.updatePreferences { it.copy(onlyWithLocale = value) } },
+            // A search covers every app, which the row shows by switching to All while it is disabled.
+            val searching = state.query.isNotBlank()
+            AppTypeFilterRow(
+                selected = if (searching) AppTypeFilter.All else state.typeFilter,
+                onSelect = viewModel::setTypeFilter,
+                enabled = !searching,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
             )
             PullToRefreshBox(
                 isRefreshing = state.refreshing,
@@ -207,143 +206,64 @@ private fun SearchHeader(
     onSortChange: (AppSort) -> Unit,
     onReverseOrderChange: (Boolean) -> Unit,
     onWithLocaleFirstChange: (Boolean) -> Unit,
-    onRefresh: () -> Unit,
 ) {
-    val focusManager = LocalFocusManager.current
     var menuOpen by remember { mutableStateOf(false) }
-    Surface(
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()
-            .height(56.dp),
+    SearchField(
+        query = query,
+        onQueryChange = onQueryChange,
+        placeholder = stringResource(R.string.search_hint),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 16.dp, end = 4.dp)) {
-            Icon(Icons.Filled.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            Box(Modifier.weight(1f).padding(horizontal = 12.dp), contentAlignment = Alignment.CenterStart) {
-                if (query.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.search_hint),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                    )
-                }
-                BasicTextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    keyboardOptions = KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusableOnlyAfterTouch(),
-                )
+        Box {
+            IconButton(onClick = { menuOpen = true }) {
+                Icon(painterResource(R.drawable.ic_sort), contentDescription = stringResource(R.string.action_sort))
             }
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Filled.Clear, contentDescription = stringResource(R.string.action_clear_search))
-                }
-            }
-            Box {
-                IconButton(onClick = { menuOpen = true }) {
-                    Icon(painterResource(R.drawable.ic_sort), contentDescription = stringResource(R.string.action_sort))
-                }
-                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    AppSort.entries.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(stringResource(option.labelRes())) },
-                            leadingIcon = { RadioButton(selected = option == sort, onClick = null) },
-                            onClick = {
-                                onSortChange(option)
-                                menuOpen = false
-                            },
-                        )
-                    }
-                    HorizontalDivider()
+            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, shape = FieldShape) {
+                AppSort.entries.forEach { option ->
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.sort_reverse)) },
-                        leadingIcon = { Checkbox(checked = reverseOrder, onCheckedChange = null) },
-                        onClick = { onReverseOrderChange(!reverseOrder) },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.sort_with_locale_first)) },
-                        leadingIcon = { Checkbox(checked = withLocaleFirst, onCheckedChange = null) },
-                        onClick = { onWithLocaleFirstChange(!withLocaleFirst) },
-                    )
-                    HorizontalDivider()
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.action_refresh)) },
-                        leadingIcon = { Icon(Icons.Filled.Refresh, contentDescription = null) },
+                        text = { Text(stringResource(option.labelRes())) },
+                        leadingIcon = { RadioButton(selected = option == sort, onClick = null) },
                         onClick = {
-                            onRefresh()
+                            onSortChange(option)
                             menuOpen = false
                         },
                     )
                 }
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.sort_reverse)) },
+                    leadingIcon = { Checkbox(checked = reverseOrder, onCheckedChange = null) },
+                    onClick = { onReverseOrderChange(!reverseOrder) },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.sort_with_locale_first)) },
+                    leadingIcon = { Checkbox(checked = withLocaleFirst, onCheckedChange = null) },
+                    onClick = { onWithLocaleFirstChange(!withLocaleFirst) },
+                )
             }
         }
-    }
-}
-
-@Composable
-private fun FilterRow(
-    typeFilter: AppTypeFilter,
-    typeFilterEnabled: Boolean,
-    onlyWithLocale: Boolean,
-    onTypeFilterChange: (AppTypeFilter) -> Unit,
-    onOnlyWithLocaleChange: (Boolean) -> Unit,
-) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp),
-    ) {
-        AppTypeFilter.entries.forEach { filter ->
-            FilterChip(
-                selected = typeFilterEnabled && filter == typeFilter || !typeFilterEnabled && filter == AppTypeFilter.All,
-                onClick = { onTypeFilterChange(filter) },
-                enabled = typeFilterEnabled,
-                label = { Text(stringResource(filter.labelRes())) },
-            )
-        }
-        VerticalDivider(Modifier.height(24.dp))
-        FilterChip(
-            selected = onlyWithLocale,
-            onClick = { onOnlyWithLocaleChange(!onlyWithLocale) },
-            label = { Text(stringResource(R.string.filter_only_with_locale)) },
-        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SelectionBar(
-    count: Int,
-    onClose: () -> Unit,
-    onSelectAll: () -> Unit,
-    onChangeLanguage: () -> Unit,
-    onFollowSystem: () -> Unit,
-) {
+private fun SelectionBar(count: Int, onClose: () -> Unit, onSelectAll: () -> Unit) {
     TopAppBar(
-        title = { Text(pluralStringResource(R.plurals.selection_count, count, count)) },
+        title = {
+            Text(
+                text = pluralStringResource(R.plurals.selection_count, count, count),
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
         navigationIcon = {
             IconButton(onClick = onClose) {
                 Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.action_close))
             }
         },
         actions = {
-            TextButton(onClick = onSelectAll) { Text(stringResource(R.string.action_select_all)) }
-            TextButton(onClick = onFollowSystem) { Text(stringResource(R.string.action_reset_to_system)) }
-            IconButton(onClick = onChangeLanguage) {
-                Icon(painterResource(R.drawable.ic_translate), contentDescription = stringResource(R.string.action_change_language))
-            }
+            TextButton(onClick = onSelectAll, shape = ControlShape) { Text(stringResource(R.string.action_select_all)) }
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
         windowInsets = WindowInsets(0),
@@ -372,23 +292,11 @@ private fun AppListItem(
                     Checkbox(checked = checked, onCheckedChange = null)
                 }
             } else {
-                AppIcon(row.app.packageName, row.app.lastUpdateTime)
+                AppIcon(row.app.packageName, row.app.lastUpdateTime, dimmed = !row.app.isEnabled)
             }
         },
         headlineContent = { Text(row.app.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        supportingContent = {
-            val prefix = when {
-                !row.app.isEnabled -> stringResource(R.string.app_badge_disabled) + " · "
-                row.app.isSystem -> stringResource(R.string.app_badge_system) + " · "
-                else -> ""
-            }
-            Text(
-                text = prefix + row.app.packageName,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        },
+        supportingContent = { PackageLine(row.app) },
         trailingContent = if (row.locales.isNotEmpty()) {
             { LocaleBadge(row.locales, row.status, onHighlight = selected || checked == true) }
         } else {
@@ -432,11 +340,4 @@ private fun AppSort.labelRes(): Int = when (this) {
     AppSort.RecentlySet -> R.string.sort_recently_set
     AppSort.RecentlyUpdated -> R.string.sort_recently_updated
     AppSort.RecentlyInstalled -> R.string.sort_recently_installed
-}
-
-private fun AppTypeFilter.labelRes(): Int = when (this) {
-    AppTypeFilter.Launchable -> R.string.filter_launchable
-    AppTypeFilter.User -> R.string.filter_user
-    AppTypeFilter.System -> R.string.filter_system
-    AppTypeFilter.All -> R.string.filter_all
 }

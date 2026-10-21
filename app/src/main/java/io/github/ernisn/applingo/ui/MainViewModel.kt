@@ -4,6 +4,7 @@ import android.app.Application
 import android.app.LocaleConfig
 import android.app.LocaleManager
 import android.os.LocaleList
+import android.os.SystemClock
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -35,7 +36,9 @@ import io.github.ernisn.applingo.data.loadAppExtras
 import io.github.ernisn.applingo.shizuku.ServiceUnavailableException
 import io.github.ernisn.applingo.shizuku.ShizukuState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -79,6 +82,7 @@ data class AppListState(
     val refreshing: Boolean = false,
     val rows: List<AppRow> = emptyList(),
     val query: String = "",
+    val typeFilter: AppTypeFilter = AppTypeFilter.Launchable,
     val preferences: ListPreferences = ListPreferences(),
     val shizuku: ShizukuState = ShizukuState.Checking,
     val selection: Set<String> = emptySet(),
@@ -92,6 +96,9 @@ data class ManagedApp(
     val status: LocaleStatus,
     val row: AppRow?,
 )
+
+/** A change counting down to being written; [startedAt] is in [SystemClock.uptimeMillis] time. */
+data class PendingChange(val id: Long, val text: String, val startedAt: Long, val durationMillis: Long)
 
 data class ManagedState(
     val apps: List<ManagedApp> = emptyList(),
@@ -107,11 +114,22 @@ class MainViewModel(private val app: Application, private val container: AppCont
     private val shizuku = container.shizuku
 
     private val query = MutableStateFlow("")
+    /** The filter picked in the list this session; until then the one from settings. */
+    private val chosenFilter = MutableStateFlow<AppTypeFilter?>(null)
     private val _selection = MutableStateFlow<Set<String>>(emptySet())
     private val localMessages = Channel<UserMessage>(Channel.BUFFERED)
     private val pinyinCache = ConcurrentHashMap<String, List<String>>()
 
+    private val _pendingChange = MutableStateFlow<PendingChange?>(null)
+    private var pendingWrite: (suspend () -> Unit)? = null
+    private var pendingUndo: (() -> Unit)? = null
+    private var pendingTimer: Job? = null
+    private var lastPendingId = 0L
+
     val messages: Flow<UserMessage> = merge(locales.messages, localMessages.receiveAsFlow())
+
+    /** The language change waiting out its undo period, if any. */
+    val pendingChange: StateFlow<PendingChange?> = _pendingChange.asStateFlow()
 
     val settings: StateFlow<AppSettings> =
         container.preferences.settings.stateIn(viewModelScope, SharingStarted.Eagerly, AppSettings())
@@ -123,18 +141,24 @@ class MainViewModel(private val app: Application, private val container: AppCont
                 ?: emptyMap()
         }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
+    // The stored settings rather than [settings]: its placeholder would show the default filter for a
+    // moment before switching to the one chosen in settings.
+    private val typeFilter: Flow<AppTypeFilter> =
+        combine(chosenFilter, container.preferences.settings) { chosen, settings -> chosen ?: settings.startFilter }
+
     val listState: StateFlow<AppListState> = combine(
         combine(container.apps.apps, rows) { apps, rows -> (apps != null) to rows },
-        combine(query, _selection) { query, selection -> query to selection },
+        combine(query, typeFilter, _selection) { query, filter, selection -> Triple(query, filter, selection) },
         container.preferences.list,
         shizuku.state,
         container.apps.refreshing,
-    ) { (loaded, rows), (query, selection), preferences, shizukuState, refreshing ->
+    ) { (loaded, rows), (query, filter, selection), preferences, shizukuState, refreshing ->
         AppListState(
             loading = !loaded,
             refreshing = refreshing,
-            rows = filterAndSort(rows.values, query, preferences),
+            rows = filterAndSort(rows.values, query, filter, preferences),
             query = query,
+            typeFilter = filter,
             preferences = preferences,
             shizuku = shizukuState,
             selection = selection,
@@ -184,6 +208,10 @@ class MainViewModel(private val app: Application, private val container: AppCont
 
     fun onQueryChange(value: String) {
         query.value = value
+    }
+
+    fun setTypeFilter(filter: AppTypeFilter) {
+        chosenFilter.value = filter
     }
 
     fun updatePreferences(transform: (ListPreferences) -> ListPreferences) {
@@ -242,13 +270,14 @@ class MainViewModel(private val app: Application, private val container: AppCont
 
     suspend fun extras(packageName: String): AppExtras = loadAppExtras(app, packageName)
 
+    /** Sets [chain] for the app (empty: back to the system language) once the undo period is over. */
     fun applyLocales(packageName: String, chain: List<String>) {
-        viewModelScope.launch {
+        val label = rows.value[packageName]?.app?.label ?: packageName
+        afterUndoPeriod(app.getString(if (chain.isEmpty()) R.string.pending_reset else R.string.pending_apply, label)) {
             val message = try {
                 when (locales.apply(packageName, chain)) {
                     ApplyResult.Applied -> UserMessage(
                         app.getString(if (chain.isEmpty()) R.string.message_reset else R.string.message_applied),
-                        restartPackage = packageName,
                     )
                     ApplyResult.Saved -> UserMessage(app.getString(R.string.message_saved_pending))
                 }
@@ -259,11 +288,16 @@ class MainViewModel(private val app: Application, private val container: AppCont
         }
     }
 
-    /** Applies [chain] to every selected app and leaves selection mode. */
+    /** Applies [chain] to every selected app once the undo period is over; undo selects them again. */
     fun applyToSelection(chain: List<String>) {
         val packages = _selection.value
         clearSelection()
-        viewModelScope.launch {
+        val countdown = app.resources.getQuantityString(
+            if (chain.isEmpty()) R.plurals.pending_batch_reset else R.plurals.pending_batch_apply,
+            packages.size,
+            packages.size,
+        )
+        afterUndoPeriod(countdown, onUndo = { _selection.update { it + packages } }) {
             val failed = locales.applyMany(packages, chain)
             val text = if (failed == 0) {
                 app.resources.getQuantityString(R.plurals.message_batch_applied, packages.size, packages.size)
@@ -301,7 +335,50 @@ class MainViewModel(private val app: Application, private val container: AppCont
     }
 
     fun forget(packageName: String) {
-        viewModelScope.launch { locales.forget(packageName) }
+        afterUndoPeriod(app.getString(R.string.pending_forget, packageName)) { locales.forget(packageName) }
+    }
+
+    // --- Undo period -----------------------------------------------------------------------------
+    // Changing, clearing or forgetting a language is written only after a short countdown, so a
+    // mis-tap can be taken back before the previous choice is lost.
+
+    private fun afterUndoPeriod(text: String, onUndo: () -> Unit = {}, write: suspend () -> Unit) {
+        // One countdown at a time. The waiting change was confirmed too, so it is written now
+        // rather than dropped.
+        writePendingNow()
+        pendingWrite = write
+        pendingUndo = onUndo
+        _pendingChange.value = PendingChange(++lastPendingId, text, SystemClock.uptimeMillis(), UNDO_PERIOD_MS)
+        pendingTimer = viewModelScope.launch {
+            delay(UNDO_PERIOD_MS)
+            pendingTimer = null
+            writePendingNow()
+        }
+    }
+
+    fun undoPendingChange() {
+        pendingTimer?.cancel()
+        pendingTimer = null
+        pendingWrite = null
+        pendingUndo?.invoke()
+        pendingUndo = null
+        _pendingChange.value = null
+    }
+
+    private fun writePendingNow() {
+        val write = pendingWrite ?: return
+        pendingTimer?.cancel()
+        pendingTimer = null
+        pendingWrite = null
+        pendingUndo = null
+        _pendingChange.value = null
+        // App-wide scope: the write goes through even if this screen is closed for good meanwhile.
+        container.scope.launch { write() }
+    }
+
+    /** Leaving Applingo during a countdown writes the change instead of silently dropping it. */
+    override fun onCleared() {
+        writePendingNow()
     }
 
     fun clearActivity() {
@@ -402,15 +479,19 @@ class MainViewModel(private val app: Application, private val container: AppCont
         )
     }
 
-    private fun filterAndSort(rows: Collection<AppRow>, query: String, preferences: ListPreferences): List<AppRow> {
+    private fun filterAndSort(
+        rows: Collection<AppRow>,
+        query: String,
+        typeFilter: AppTypeFilter,
+        preferences: ListPreferences,
+    ): List<AppRow> {
         val keywords = Search.keywords(query)
         val collator = Collator.getInstance(uiLocale())
         val byName = compareBy<AppRow, String>(collator) { it.app.label }
-        val visible = rows.filter { !preferences.onlyWithLocale || it.locales.isNotEmpty() }
 
         if (keywords.isNotEmpty()) {
             // Searching always covers every app, so nothing is hidden behind the type filter.
-            return visible.mapNotNull { row -> Search.score(keywords, row.searchTarget)?.let { row to it } }
+            return rows.mapNotNull { row -> Search.score(keywords, row.searchTarget)?.let { row to it } }
                 .sortedWith(compareByDescending<Pair<AppRow, Int>> { it.second }.thenBy(collator) { it.first.app.label })
                 .map { it.first }
         }
@@ -427,8 +508,8 @@ class MainViewModel(private val app: Application, private val container: AppCont
         } else {
             directed
         }
-        return visible.filter { row ->
-            when (preferences.typeFilter) {
+        return rows.filter { row ->
+            when (typeFilter) {
                 AppTypeFilter.Launchable -> row.app.isLaunchable
                 AppTypeFilter.User -> !row.app.isSystem
                 AppTypeFilter.System -> row.app.isSystem
@@ -441,6 +522,7 @@ class MainViewModel(private val app: Application, private val container: AppCont
 
     companion object {
         private const val FOREGROUND_REFRESH_MS = 30_000L
+        private const val UNDO_PERIOD_MS = 5_000L
 
         val Factory = viewModelFactory {
             initializer {

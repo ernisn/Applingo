@@ -17,8 +17,6 @@ enum class AppSort { Name, RecentlySet, RecentlyUpdated, RecentlyInstalled }
 enum class ThemeMode { System, Light, Dark }
 
 data class ListPreferences(
-    val typeFilter: AppTypeFilter = AppTypeFilter.Launchable,
-    val onlyWithLocale: Boolean = false,
     val sort: AppSort = AppSort.Name,
     /** Reverses the natural order of [sort] (A→Z for names, newest first for dates). */
     val reverseOrder: Boolean = false,
@@ -40,6 +38,8 @@ data class AppSettings(
      * right away, which the background check and pull-to-refresh keep up to date.
      */
     val refreshOnLaunch: Boolean = false,
+    /** The app list's filter each time Applingo opens; switching it in the list lasts until then. */
+    val startFilter: AppTypeFilter = AppTypeFilter.Launchable,
 )
 
 /** Seed colors offered when dynamic color is off (ARGB). */
@@ -60,8 +60,6 @@ class UiPreferences(context: Context) {
     suspend fun update(transform: (ListPreferences) -> ListPreferences) {
         store.edit { prefs ->
             val next = transform(prefs.toListPreferences())
-            prefs[TYPE_FILTER] = next.typeFilter.name
-            prefs[ONLY_WITH_LOCALE] = next.onlyWithLocale
             prefs[SORT] = next.sort.name
             prefs[REVERSE_ORDER] = next.reverseOrder
             prefs[WITH_LOCALE_FIRST] = next.withLocaleFirst
@@ -79,14 +77,13 @@ class UiPreferences(context: Context) {
             prefs[BACKGROUND_CHECK] = next.backgroundCheck
             prefs[BACKGROUND_CHECK_HOURS_KEY] = next.backgroundCheckHours
             prefs[REFRESH_ON_LAUNCH] = next.refreshOnLaunch
+            prefs[START_FILTER] = next.startFilter.name
         }
     }
 
     private fun Preferences.toListPreferences(): ListPreferences {
         val defaults = ListPreferences()
         return ListPreferences(
-            typeFilter = enumOr(this[TYPE_FILTER], defaults.typeFilter),
-            onlyWithLocale = this[ONLY_WITH_LOCALE] ?: defaults.onlyWithLocale,
             sort = enumOr(this[SORT], defaults.sort),
             reverseOrder = this[REVERSE_ORDER] ?: defaults.reverseOrder,
             withLocaleFirst = this[WITH_LOCALE_FIRST] ?: defaults.withLocaleFirst,
@@ -105,6 +102,7 @@ class UiPreferences(context: Context) {
             backgroundCheckHours = this[BACKGROUND_CHECK_HOURS_KEY]?.takeIf { it in BACKGROUND_CHECK_HOURS }
                 ?: defaults.backgroundCheckHours,
             refreshOnLaunch = this[REFRESH_ON_LAUNCH] ?: defaults.refreshOnLaunch,
+            startFilter = enumOr(this[START_FILTER], defaults.startFilter),
         )
     }
 
@@ -112,8 +110,7 @@ class UiPreferences(context: Context) {
         enumValues<E>().firstOrNull { it.name == name } ?: default
 
     private companion object {
-        val TYPE_FILTER = stringPreferencesKey("type_filter")
-        val ONLY_WITH_LOCALE = booleanPreferencesKey("only_with_locale")
+        val START_FILTER = stringPreferencesKey("start_filter")
         val SORT = stringPreferencesKey("sort")
         val WITH_LOCALE_FIRST = booleanPreferencesKey("with_locale_first")
         val REVERSE_ORDER = booleanPreferencesKey("reverse_order")

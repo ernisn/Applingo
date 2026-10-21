@@ -4,7 +4,6 @@
     <string name="action_back">Terug</string>
     <string name="action_close">Sluiten</string>
     <string name="action_retry">Opnieuw proberen</string>
-    <string name="action_refresh">Vernieuwen</string>
     <string name="action_apply">Toepassen</string>
     <string name="action_open">Openen</string>
     <string name="action_restart_app">App herstarten</string>
@@ -29,7 +28,8 @@
 
     <!-- Navigation -->
     <string name="nav_apps">Apps</string>
-    <string name="nav_managed">Mijn talen</string>
+    <string name="nav_managed">Ingesteld</string>
+    <string name="managed_title">Ingestelde apps</string>
     <string name="nav_settings">Instellingen</string>
 
     <!-- App list -->
@@ -40,7 +40,6 @@
     <string name="filter_user">Gebruiker</string>
     <string name="filter_system">Systeem</string>
     <string name="filter_all">Alle</string>
-    <string name="filter_only_with_locale">Taal ingesteld</string>
     <string name="sort_name">Naam</string>
     <string name="sort_recently_set">Onlangs ingesteld</string>
     <string name="sort_recently_updated">Onlangs bijgewerkt</string>
@@ -97,6 +96,7 @@
     <string name="settings_background_check_summary">Regelmatig controleren, ook als Applingo niet geopend is (Shizuku moet dan actief zijn)</string>
     <string name="settings_background_interval">Controleren elke</string>
     <string name="settings_section_app_list">App-lijst</string>
+    <string name="settings_start_filter">Standaardfilter</string>
     <string name="settings_refresh_on_launch">Vernieuwen bij openen</string>
     <string name="settings_refresh_on_launch_summary">Geïnstalleerde apps opnieuw scannen telkens als Applingo opent. Maakt openen trager; als dit uit staat, trek de lijst omlaag om te vernieuwen.</string>
     <string name="settings_hours">%1$d u</string>
@@ -131,8 +131,6 @@
     <string name="locale_follow_system">Systeemtaal</string>
     <string name="locale_system_fallback">Standaard, laagste prioriteit · %1$s</string>
     <string name="detail_order_hint">De app gebruikt van boven naar beneden de eerste taal die ze ondersteunt.</string>
-    <string name="status_none">Volgt de systeemtaal</string>
-    <string name="status_applied">Actief</string>
     <string name="status_pending">Opgeslagen – wordt toegepast zodra Shizuku verbonden is</string>
     <string name="status_mismatch">Het systeem gebruikt nu %1$s, wat afwijkt van je keuze.</string>
     <string name="info_version">Versie</string>
@@ -169,8 +167,8 @@
     <string name="picker_section_all">Alle talen</string>
 
     <!-- Messages -->
-    <string name="message_applied">Taal toegepast</string>
-    <string name="message_reset">De app volgt weer de systeemtaal</string>
+    <string name="message_applied">Taal toegepast. Dit werkt na het herstarten van de app.</string>
+    <string name="message_reset">Weer de systeemtaal. Dit werkt na het herstarten van de app.</string>
     <string name="message_saved_pending">Opgeslagen. Wordt toegepast zodra Shizuku verbonden is.</string>
     <string name="message_apply_failed">Kon niet toepassen: %1$s</string>
     <string name="message_needs_shizuku">Hiervoor moet Shizuku actief zijn</string>
@@ -198,5 +196,19 @@
     <plurals name="message_adopted">
         <item quantity="one">Bestaande taal van %1$d app overgenomen</item>
         <item quantity="other">Bestaande talen van %1$d apps overgenomen</item>
+    </plurals>
+
+    <!-- Undo countdown before a change is written -->
+    <string name="action_undo">Ongedaan maken</string>
+    <string name="pending_apply">Taal van %1$s wordt gewijzigd</string>
+    <string name="pending_reset">%1$s gaat weer de systeemtaal volgen</string>
+    <string name="pending_forget">%1$s wordt vergeten</string>
+    <plurals name="pending_batch_apply">
+        <item quantity="one">Taal van %1$d app wordt gewijzigd</item>
+        <item quantity="other">Taal van %1$d apps wordt gewijzigd</item>
+    </plurals>
+    <plurals name="pending_batch_reset">
+        <item quantity="one">%1$d app gaat weer de systeemtaal volgen</item>
+        <item quantity="other">%1$d apps gaan weer de systeemtaal volgen</item>
     </plurals>
 </resources>

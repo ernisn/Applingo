@@ -63,7 +63,9 @@ import io.github.ernisn.applingo.data.ThemeMode
 import io.github.ernisn.applingo.shizuku.ShizukuState
 import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.safeArea
+import io.github.ernisn.applingo.ui.components.AppTypeFilterRow
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
+import io.github.ernisn.applingo.ui.theme.ControlShape
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -148,7 +150,8 @@ fun SettingsScreen(viewModel: MainViewModel) {
                                 SegmentedButton(
                                     selected = settings.themeMode == mode,
                                     onClick = { viewModel.updateSettings { it.copy(themeMode = mode) } },
-                                    shape = SegmentedButtonDefaults.itemShape(index, modes.size),
+                                    shape = SegmentedButtonDefaults.itemShape(index, modes.size, baseShape = ControlShape),
+                                    icon = {},
                                 ) {
                                     Text(
                                         stringResource(
@@ -230,7 +233,8 @@ fun SettingsScreen(viewModel: MainViewModel) {
                                     SegmentedButton(
                                         selected = settings.backgroundCheckHours == hours,
                                         onClick = { viewModel.updateSettings { it.copy(backgroundCheckHours = hours) } },
-                                        shape = SegmentedButtonDefaults.itemShape(index, BACKGROUND_CHECK_HOURS.size),
+                                        shape = SegmentedButtonDefaults.itemShape(index, BACKGROUND_CHECK_HOURS.size, baseShape = ControlShape),
+                                        icon = {},
                                     ) { Text(stringResource(R.string.settings_hours, hours)) }
                                 }
                             }
@@ -240,6 +244,18 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
 
             sectionHeader(R.string.settings_section_app_list)
+            item {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_start_filter)) },
+                    supportingContent = {
+                        AppTypeFilterRow(
+                            selected = settings.startFilter,
+                            onSelect = { filter -> viewModel.updateSettings { it.copy(startFilter = filter) } },
+                            modifier = Modifier.padding(top = 8.dp),
+                        )
+                    },
+                )
+            }
             item {
                 SwitchRow(
                     title = stringResource(R.string.settings_refresh_on_launch),
@@ -322,7 +338,7 @@ private fun OwnLanguageDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) } },
+        dismissButton = { TextButton(onClick = onDismiss, shape = ControlShape) { Text(stringResource(R.string.action_close)) } },
     )
 }
 

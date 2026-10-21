@@ -23,7 +23,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -52,9 +52,11 @@ import io.github.ernisn.applingo.ui.AppIcon
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.safeArea
+import io.github.ernisn.applingo.ui.theme.ControlShape
 import io.github.ernisn.applingo.ui.ManagedApp
 import io.github.ernisn.applingo.ui.ManagedState
 import io.github.ernisn.applingo.ui.applist.LocaleBadge
+import io.github.ernisn.applingo.ui.components.PackageLine
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
 
 private const val MAX_ACTIVITY_SHOWN = 100
@@ -68,7 +70,7 @@ fun ManagedPane(viewModel: MainViewModel, selectedPackage: String?, onOpenApp: (
     Scaffold(
         modifier = Modifier.safeArea(),
         contentWindowInsets = WindowInsets(0),
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.nav_managed)) }, windowInsets = WindowInsets(0)) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.managed_title)) }, windowInsets = WindowInsets(0)) },
     ) { padding ->
         LazyColumn(
             contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = 16.dp),
@@ -109,7 +111,9 @@ fun ManagedPane(viewModel: MainViewModel, selectedPackage: String?, onOpenApp: (
                         modifier = Modifier.weight(1f),
                     )
                     if (state.activity.isNotEmpty()) {
-                        TextButton(onClick = viewModel::clearActivity) { Text(stringResource(R.string.action_clear_activity)) }
+                        TextButton(onClick = viewModel::clearActivity, shape = ControlShape) {
+                            Text(stringResource(R.string.action_clear_activity))
+                        }
                     }
                 }
             }
@@ -158,9 +162,11 @@ private fun SummaryCard(state: ManagedState, onCheckNow: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 if (state.checking) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-                FilledTonalButton(
+                // Filled: the tonal container color is too close to the card's in the light theme.
+                Button(
                     onClick = onCheckNow,
                     enabled = !state.checking && state.shizuku is ShizukuState.Connected,
+                    shape = ControlShape,
                 ) { Text(stringResource(R.string.action_check_now)) }
             }
         }
@@ -180,20 +186,24 @@ private fun ManagedAppItem(managed: ManagedApp, selected: Boolean, onOpen: () ->
         leadingContent = {
             val row = managed.row
             if (row != null) {
-                AppIcon(row.app.packageName, row.app.lastUpdateTime)
+                AppIcon(row.app.packageName, row.app.lastUpdateTime, dimmed = !row.app.isEnabled)
             } else {
                 Box(Modifier.size(40.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape))
             }
         },
         headlineContent = { Text(managed.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         supportingContent = {
-            Text(
-                text = if (installed) managed.packageName
-                else stringResource(R.string.managed_not_installed) + " · " + managed.packageName,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodySmall,
-            )
+            val row = managed.row
+            if (row != null) {
+                PackageLine(row.app)
+            } else {
+                Text(
+                    text = stringResource(R.string.managed_not_installed) + " · " + managed.packageName,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         },
         trailingContent = {
             if (installed) {

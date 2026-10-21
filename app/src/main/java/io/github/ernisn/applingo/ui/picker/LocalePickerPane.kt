@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -16,15 +17,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,18 +32,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -53,13 +52,12 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -69,8 +67,10 @@ import io.github.ernisn.applingo.core.LocaleOption
 import io.github.ernisn.applingo.core.Search
 import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.components.EditablePriorityList
-import io.github.ernisn.applingo.ui.components.focusableOnlyAfterTouch
+import io.github.ernisn.applingo.ui.components.SearchField
 import io.github.ernisn.applingo.ui.safeArea
+import io.github.ernisn.applingo.ui.theme.ControlShape
+import kotlinx.coroutines.launch
 
 private val chainSaver = listSaver<SnapshotStateList<String>, String>(
     save = { it.toList() },
@@ -162,13 +162,27 @@ private fun LocalePickerContent(
         if (!chain.remove(tag)) chain.add(tag)
     }
 
+    // Searching brings the field to the top, so the keyboard covers results rather than the field
+    // and what is right below it; it stays there while the results change.
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    var searchFocused by remember { mutableStateOf(false) }
+    fun showSearchAtTop() {
+        scope.launch { listState.animateScrollToItem(SEARCH_ITEM_INDEX) }
+    }
+    LaunchedEffect(query) {
+        if (searchFocused) listState.scrollToItem(SEARCH_ITEM_INDEX)
+    }
+
     Scaffold(
         modifier = Modifier.safeArea(),
         contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 windowInsets = WindowInsets(0),
-                title = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                title = {
+                    Text(text = title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
                         if (closeAsBack) {
@@ -188,21 +202,24 @@ private fun LocalePickerContent(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                 ) {
-                    TextButton(onClick = { chain.clear() }, enabled = chain.isNotEmpty()) {
+                    TextButton(onClick = { chain.clear() }, enabled = chain.isNotEmpty(), shape = ControlShape) {
                         Text(stringResource(R.string.action_follow_system))
                     }
                     Button(
                         onClick = { onApply(chain.toList()) },
                         enabled = if (batch) chain.isNotEmpty() else chain.toList() != initial,
+                        shape = ControlShape,
                     ) { Text(stringResource(R.string.action_apply)) }
                 }
             }
         },
     ) { padding ->
         LazyColumn(
+            state = listState,
             contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding()),
             modifier = Modifier.fillMaxSize(),
         ) {
+            // Header, chain and divider come before the search field: SEARCH_ITEM_INDEX counts them.
             sectionHeader(R.string.picker_selected)
             item(key = "chain") {
                 Column(Modifier.padding(horizontal = 16.dp)) {
@@ -216,8 +233,16 @@ private fun LocalePickerContent(
                 }
             }
             item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
-            item {
-                LocaleSearchField(query = query, onQueryChange = { query = it.replace(Regex("[\\r\\n]+"), " ") })
+            item(key = "search") {
+                SearchField(
+                    query = query,
+                    onQueryChange = { query = it },
+                    placeholder = stringResource(R.string.picker_search_hint),
+                    onFocused = ::showSearchAtTop,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .onFocusChanged { searchFocused = it.hasFocus },
+                )
             }
 
             val groups = catalog
@@ -249,6 +274,8 @@ private fun LocalePickerContent(
                     items(matches, key = { "search:${it.tag}" }) { option ->
                         OptionRow(option, selected = option.tag in chain, onClick = { toggle(option.tag) })
                     }
+                    // Room to scroll the field to the top even when only a few languages match.
+                    item(key = "search-room") { Spacer(Modifier.fillParentMaxHeight()) }
                 }
                 else -> {
                     if (declaredOptions.isNotEmpty()) {
@@ -305,31 +332,6 @@ private fun LazyListScope.sectionHeader(title: Int) {
 }
 
 @Composable
-private fun LocaleSearchField(query: String, onQueryChange: (String) -> Unit) {
-    val focusManager = LocalFocusManager.current
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        singleLine = true,
-        placeholder = { Text(stringResource(R.string.picker_search_hint)) },
-        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-        trailingIcon = {
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Filled.Clear, contentDescription = stringResource(R.string.action_clear_search))
-                }
-            }
-        },
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .focusableOnlyAfterTouch(),
-    )
-}
-
-@Composable
 private fun OptionRow(
     option: LocaleOption,
     selected: Boolean,
@@ -364,3 +366,6 @@ private fun OptionRow(
 }
 
 private const val MAX_RESULTS = 100
+
+/** Position of the search field in the picker's list. */
+private const val SEARCH_ITEM_INDEX = 3

@@ -1,24 +1,32 @@
 # Applingo
 
-Force a per-app language on any Android app, powered by [Shizuku](https://shizuku.rikka.app/).
+Set the language of any Android app, using [Shizuku](https://shizuku.rikka.app/).
 
-> **Status:** early development — no release yet.
+Android 13 added per-app languages, but the system settings only offer them for apps that declare support, and the system may clear the setting when an app updates. Applingo sets a language for any app and keeps it set.
 
-Applingo is a modern take on [Language Selector](https://github.com/VegaBobo/Language-Selector). Goals:
+## Features
 
-- Set any language (or an ordered fallback chain such as `ja → en`) for any app, even apps that don't declare support for it — Android falls back gracefully.
-- Settings survive app updates: Applingo remembers what you chose and repairs it if the system resets it.
-- Fast, cached app list with forgiving search (case/whitespace-insensitive, multi-keyword, pinyin), filters and sorting.
-- Material 3 UI that adapts to phones, landscape, tablets and foldables.
+- Set any language for any app, including languages the app doesn't list. 
+- Set multiple languages in order as preference, for example Japanese then English, and the app uses the first one it supports.
+- Persistent language configuration. Applingo can check language settings in the background and put them back if the system drops them.
+- Export and import your settings.
 
-**Requirements:** Android 13 (API 33) or newer, Shizuku (or Sui) running.
+## Requirements
 
-See [docs/DESIGN.md](docs/DESIGN.md) for the design and [docs/RELEASING.md](docs/RELEASING.md) for building and releasing (both in Chinese).
+- Android 13 or newer
+- Shizuku, installed and running
 
-## 中文简介
+## Install & Usage
 
-（开发中）Applingo 的目标是借助 Shizuku 为任意应用强制设置语言（支持多语言回退链），设置在应用更新后依然保持；提供带缓存的快速应用列表、宽容的搜索/过滤/排序，以及适配手机、横屏、平板和折叠屏的 Material 3 界面。需要 Android 13 及以上和运行中的 Shizuku。设计文档见 [docs/DESIGN.md](docs/DESIGN.md)。
+Download the latest apk file from [Releases](https://github.com/ernisn/Applingo/releases) and open it to install.  
 
-## License
+1. Start Shizuku (see its [setup guide](https://shizuku.rikka.app/guide/setup/)).
+2. Open Applingo and allow it to use Shizuku when asked.
+3. Pick an app, tap **Change language**, choose one or more languages and tap **Apply**.
+4. Restart the app if it doesn't switch right away.
 
-[MIT](LICENSE)
+To undo it later, open the app in Applingo and tap **Follow system**.
+
+## License & Disclaimer
+
+[MIT](LICENSE). The development of Applingo was AI-assisted.

@@ -9,9 +9,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -41,20 +46,32 @@ private object AppIconCache {
     }
 }
 
-/** App icon loaded off the main thread and cached in memory; [versionKey] busts the cache on updates. */
+private val Greyscale = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
+
+/**
+ * App icon loaded off the main thread and cached in memory; [versionKey] busts the cache on updates.
+ * [dimmed] greys it out, for disabled apps.
+ */
 @Composable
-fun AppIcon(packageName: String, versionKey: Long, modifier: Modifier = Modifier, size: Dp = 40.dp) {
+fun AppIcon(packageName: String, versionKey: Long, modifier: Modifier = Modifier, size: Dp = 40.dp, dimmed: Boolean = false) {
     val context = LocalContext.current
     val sizePx = with(LocalDensity.current) { size.roundToPx() }
     val key = "$packageName@$versionKey@$sizePx"
-    val icon by produceState(AppIconCache.get(key), key) {
-        if (value == null) {
-            value = withContext(Dispatchers.IO) { AppIconCache.load(context, key, packageName, sizePx) }
-        }
+    // Keyed state rather than produceState: that keeps its previous value when the key changes, so a
+    // pane showing another app (or an updated one) went on showing the old icon.
+    var icon by remember(key) { mutableStateOf(AppIconCache.get(key)) }
+    LaunchedEffect(key) {
+        if (icon == null) icon = withContext(Dispatchers.IO) { AppIconCache.load(context, key, packageName, sizePx) }
     }
     val bitmap = icon
     if (bitmap != null) {
-        Image(bitmap = bitmap, contentDescription = null, modifier = modifier.size(size))
+        Image(
+            bitmap = bitmap,
+            contentDescription = null,
+            modifier = modifier.size(size),
+            alpha = if (dimmed) 0.6f else 1f,
+            colorFilter = if (dimmed) Greyscale else null,
+        )
     } else {
         Box(
             modifier

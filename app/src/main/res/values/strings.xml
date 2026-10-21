@@ -6,7 +6,6 @@
     <string name="action_back">Back</string>
     <string name="action_close">Close</string>
     <string name="action_retry">Retry</string>
-    <string name="action_refresh">Refresh</string>
     <string name="action_apply">Apply</string>
     <string name="action_open">Open</string>
     <string name="action_restart_app">Restart app</string>
@@ -31,7 +30,8 @@
 
     <!-- Navigation -->
     <string name="nav_apps">Apps</string>
-    <string name="nav_managed">My languages</string>
+    <string name="nav_managed">Configured</string>
+    <string name="managed_title">Configured apps</string>
     <string name="nav_settings">Settings</string>
 
     <!-- App list -->
@@ -42,7 +42,6 @@
     <string name="filter_user">User</string>
     <string name="filter_system">System</string>
     <string name="filter_all">All</string>
-    <string name="filter_only_with_locale">Language set</string>
     <string name="sort_name">Name</string>
     <string name="sort_recently_set">Recently set</string>
     <string name="sort_recently_updated">Recently updated</string>
@@ -99,6 +98,7 @@
     <string name="settings_background_check_summary">Check periodically even when Applingo isn\'t open (needs Shizuku running at that time)</string>
     <string name="settings_background_interval">Check every</string>
     <string name="settings_section_app_list">App list</string>
+    <string name="settings_start_filter">Default filter</string>
     <string name="settings_refresh_on_launch">Refresh on launch</string>
     <string name="settings_refresh_on_launch_summary">Rescan installed apps every time Applingo opens. Slows down opening; when off, pull down the list to refresh.</string>
     <string name="settings_hours" tools:ignore="PluralsCandidate">%1$d h</string>
@@ -134,8 +134,6 @@
     <string name="locale_follow_system">System language</string>
     <string name="locale_system_fallback">Default, lowest priority · %1$s</string>
     <string name="detail_order_hint">The app uses the first language it supports, from top to bottom.</string>
-    <string name="status_none">Follows the system language</string>
-    <string name="status_applied">Active</string>
     <string name="status_pending">Saved — will be applied when Shizuku connects</string>
     <string name="status_mismatch">The system currently has %1$s, which differs from your choice.</string>
     <string name="info_version">Version</string>
@@ -172,8 +170,8 @@
     <string name="picker_section_all">All languages</string>
 
     <!-- Messages -->
-    <string name="message_applied">Language applied</string>
-    <string name="message_reset">The app follows the system language again</string>
+    <string name="message_applied">Language applied. It takes effect after the app restarts.</string>
+    <string name="message_reset">Back to the system language. It takes effect after the app restarts.</string>
     <string name="message_saved_pending">Saved. It will be applied when Shizuku connects.</string>
     <string name="message_apply_failed">Could not apply: %1$s</string>
     <string name="message_needs_shizuku">This needs Shizuku to be running</string>
@@ -201,5 +199,19 @@
     <plurals name="message_adopted">
         <item quantity="one">Picked up the existing language of %1$d app</item>
         <item quantity="other">Picked up existing languages of %1$d apps</item>
+    </plurals>
+
+    <!-- Undo countdown before a change is written -->
+    <string name="action_undo">Undo</string>
+    <string name="pending_apply">Applying the new language to %1$s</string>
+    <string name="pending_reset">Switching %1$s back to the system language</string>
+    <string name="pending_forget">Forgetting %1$s</string>
+    <plurals name="pending_batch_apply">
+        <item quantity="one">Applying the new language to %1$d app</item>
+        <item quantity="other">Applying the new language to %1$d apps</item>
+    </plurals>
+    <plurals name="pending_batch_reset">
+        <item quantity="one">Switching %1$d app back to the system language</item>
+        <item quantity="other">Switching %1$d apps back to the system language</item>
     </plurals>
 </resources>
