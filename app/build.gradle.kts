@@ -19,14 +19,21 @@ val appVersionCode: Int = run {
 }
 
 // Release signing: environment variables (CI) take precedence over keystore.properties (local, git-ignored).
-// Without either, release builds fall back to the debug key so they can still be built and tested locally.
+// Unless all four values are present, release builds fall back to the debug key so they can still be built locally.
 val keystoreProperties = Properties().apply {
     val file = rootProject.file("keystore.properties")
     if (file.exists()) file.inputStream().use(::load)
 }
 fun signingValue(env: String, key: String): String? =
-    providers.environmentVariable(env).orNull ?: keystoreProperties.getProperty(key)
+    (providers.environmentVariable(env).orNull ?: keystoreProperties.getProperty(key))?.takeIf { it.isNotBlank() }
 val releaseStoreFile = signingValue("APPLINGO_KEYSTORE_FILE", "storeFile")
+val releaseStorePassword = signingValue("APPLINGO_KEYSTORE_PASSWORD", "storePassword")
+val releaseKeyAlias = signingValue("APPLINGO_KEY_ALIAS", "keyAlias")
+val releaseKeyPassword = signingValue("APPLINGO_KEY_PASSWORD", "keyPassword")
+val hasReleaseSigning = listOf(releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword).all { it != null }
+if (!hasReleaseSigning && releaseStoreFile != null) {
+    logger.warn("Release signing is incomplete (check keystore.properties); release builds will use the debug key.")
+}
 
 android {
     namespace = "io.github.ernisn.applingo"
@@ -41,12 +48,12 @@ android {
     }
 
     signingConfigs {
-        if (releaseStoreFile != null) {
+        if (hasReleaseSigning) {
             create("release") {
-                storeFile = file(releaseStoreFile)
-                storePassword = signingValue("APPLINGO_KEYSTORE_PASSWORD", "storePassword")
-                keyAlias = signingValue("APPLINGO_KEY_ALIAS", "keyAlias")
-                keyPassword = signingValue("APPLINGO_KEY_PASSWORD", "keyPassword")
+                storeFile = rootProject.file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
             }
         }
     }

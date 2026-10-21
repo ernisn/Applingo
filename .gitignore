@@ -22,6 +22,8 @@ output-metadata.json
 # Signing — never commit keys or their passwords
 *.jks
 *.keystore
+*.p12
+*.pfx
 keystore.properties
 
 # OS
