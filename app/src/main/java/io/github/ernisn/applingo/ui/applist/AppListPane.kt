@@ -48,6 +48,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,6 +71,7 @@ import io.github.ernisn.applingo.ui.AppRow
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
+import io.github.ernisn.applingo.ui.components.focusableOnlyAfterTouch
 
 @Composable
 fun AppListPane(
@@ -79,6 +81,12 @@ fun AppListPane(
 ) {
     val state by viewModel.listState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+
+    // A new query, filter or order is a new list: start at its top instead of keeping the scroll
+    // anchored to whichever app happened to be first before.
+    LaunchedEffect(state.query, state.preferences) {
+        listState.scrollToItem(0)
+    }
 
     Scaffold(
         topBar = {
@@ -183,7 +191,9 @@ private fun SearchHeader(
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     keyboardOptions = KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusableOnlyAfterTouch(),
                 )
             }
             if (query.isNotEmpty()) {

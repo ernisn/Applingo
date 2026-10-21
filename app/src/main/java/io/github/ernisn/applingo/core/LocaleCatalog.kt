@@ -8,7 +8,8 @@ data class LocaleOption(
     val nativeName: String,
     val localizedName: String,
 ) {
-    val searchTarget = Search.Target(nativeName, tag, listOf(localizedName))
+    // The UI-language name ranks first: searching "japan" should find "Japanese" before "English (Japan)".
+    val searchTarget = Search.Target(localizedName, tag, listOf(nativeName))
 }
 
 /** A language ("pt") with its regional/script variants ("pt-BR", "pt-PT", ...). */

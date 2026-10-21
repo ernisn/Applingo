@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -62,6 +63,7 @@ import io.github.ernisn.applingo.core.LocaleCatalog
 import io.github.ernisn.applingo.core.LocaleOption
 import io.github.ernisn.applingo.core.Search
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.components.focusableOnlyAfterTouch
 
 private val chainSaver = listSaver<SnapshotStateList<String>, String>(
     save = { it.toList() },
@@ -126,6 +128,7 @@ fun LocalePickerPane(
                     modifier = Modifier
                         .fillMaxWidth()
                         .navigationBarsPadding()
+                        .imePadding()
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                 ) {
                     TextButton(onClick = { chain.clear() }, enabled = chain.isNotEmpty()) {
@@ -198,7 +201,8 @@ fun LocalePickerPane(
                     val matches = groups.asSequence()
                         .flatMap { sequenceOf(it.language) + it.variants }
                         .mapNotNull { option -> Search.score(keywords, option.searchTarget)?.let { option to it } }
-                        .sortedByDescending { it.second }
+                        // Plain languages before their regional variants when equally relevant.
+                        .sortedWith(compareByDescending<Pair<LocaleOption, Int>> { it.second }.thenBy { it.first.tag.length })
                         .map { it.first }
                         .take(MAX_RESULTS)
                         .toList()
@@ -289,7 +293,8 @@ private fun LocaleSearchField(query: String, onQueryChange: (String) -> Unit) {
         keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .focusableOnlyAfterTouch(),
     )
 }
 
