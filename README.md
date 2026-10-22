@@ -15,11 +15,11 @@ Android 13 added per-app languages, but the system settings only offer them for 
 
 Vertical display example:
 
-![Pic1.jpg](\Screenshots\Pic1.jpg)
+![Pic1.jpg](/Screenshots/Pic1.jpg)
 
 Foldable display example:
 
-![Pic2.jpg](\Screenshots\Pic2.jpg)
+![Pic2.jpg](/Screenshots/Pic2.jpg)
 
 ## Requirements
 
