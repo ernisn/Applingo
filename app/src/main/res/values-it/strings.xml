@@ -21,6 +21,8 @@
     <string name="action_sort">Ordina e filtra</string>
     <string name="action_clear_search">Cancella ricerca</string>
     <string name="action_select_all">Seleziona tutto</string>
+    <string name="action_select_apps">Seleziona app</string>
+    <string name="action_rescan_apps">Nuova scansione app</string>
     <string name="action_check_now">Controlla ora</string>
     <string name="action_forget">Rimuovi voce</string>
     <string name="action_clear_activity">Cancella</string>
@@ -109,6 +111,7 @@
     <string name="settings_start_filter">Scheda predefinita</string>
     <string name="settings_refresh_on_launch">Nuova scansione all’avvio</string>
     <string name="settings_refresh_on_launch_summary">Rallenta l’avvio. Se disattivata, viene mostrato l’elenco in cache; trascina verso il basso per aggiornare.</string>
+    <string name="settings_refresh_on_launch_summary_dpad">Rallenta l’avvio. Se disattivata, viene mostrato l’elenco in cache; avvia una nuova scansione dal menu dell’elenco.</string>
     <string name="settings_hours">%1$d h</string>
     <string name="settings_section_data">Dati</string>
     <string name="settings_export">Esporta</string>
@@ -174,6 +177,7 @@
     <string name="picker_selected_empty">Nessuna selezione; l’app segue la lingua di sistema.</string>
     <string name="picker_search_hint">Cerca lingue</string>
     <string name="picker_order_hint">Viene usata la prima lingua supportata; la lingua di sistema è l’ultima alternativa. Trascina ≡ per riordinare.</string>
+    <string name="picker_order_hint_dpad">Viene usata la prima lingua supportata; la lingua di sistema è l’ultima alternativa. Per riordinare premi OK su ≡, poi su o giù.</string>
     <string name="picker_section_declared">Dichiarate dall’app</string>
     <string name="picker_section_system">Lingue di sistema</string>
     <string name="picker_section_all">Tutte le lingue</string>

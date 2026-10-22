@@ -21,6 +21,8 @@
     <string name="action_sort">Sortieren und filtern</string>
     <string name="action_clear_search">Suche löschen</string>
     <string name="action_select_all">Alle auswählen</string>
+    <string name="action_select_apps">Apps auswählen</string>
+    <string name="action_rescan_apps">Apps neu einlesen</string>
     <string name="action_check_now">Jetzt prüfen</string>
     <string name="action_forget">Eintrag entfernen</string>
     <string name="action_clear_activity">Leeren</string>
@@ -106,6 +108,7 @@
     <string name="settings_start_filter">Standard-Tab</string>
     <string name="settings_refresh_on_launch">Beim Start neu einlesen</string>
     <string name="settings_refresh_on_launch_summary">Verlangsamt den Start. Wenn aus, wird die zwischengespeicherte Liste angezeigt; zum Aktualisieren nach unten ziehen.</string>
+    <string name="settings_refresh_on_launch_summary_dpad">Verlangsamt den Start. Wenn aus, wird die zwischengespeicherte Liste angezeigt; zum Aktualisieren im Listenmenü neu einlesen.</string>
     <string name="settings_hours">%1$d Std.</string>
     <string name="settings_section_data">Daten</string>
     <string name="settings_export">Exportieren</string>
@@ -169,6 +172,7 @@
     <string name="picker_selected_empty">Keine Auswahl; die App folgt der Systemsprache.</string>
     <string name="picker_search_hint">Sprachen suchen</string>
     <string name="picker_order_hint">Die erste unterstützte Sprache wird verwendet; die Systemsprache ist der letzte Fallback. Zum Sortieren ≡ ziehen.</string>
+    <string name="picker_order_hint_dpad">Die erste unterstützte Sprache wird verwendet; die Systemsprache ist der letzte Fallback. Zum Sortieren OK auf ≡ drücken, dann nach oben oder unten.</string>
     <string name="picker_section_declared">Von der App angegeben</string>
     <string name="picker_section_system">Systemsprachen</string>
     <string name="picker_section_all">Alle Sprachen</string>

@@ -21,6 +21,8 @@
     <string name="action_sort">Sorteren en filteren</string>
     <string name="action_clear_search">Zoekopdracht wissen</string>
     <string name="action_select_all">Alles selecteren</string>
+    <string name="action_select_apps">Apps selecteren</string>
+    <string name="action_rescan_apps">Apps opnieuw scannen</string>
     <string name="action_check_now">Nu controleren</string>
     <string name="action_forget">Vermelding verwijderen</string>
     <string name="action_clear_activity">Wissen</string>
@@ -106,6 +108,7 @@
     <string name="settings_start_filter">Standaardtabblad</string>
     <string name="settings_refresh_on_launch">Opnieuw scannen bij starten</string>
     <string name="settings_refresh_on_launch_summary">Vertraagt het starten. Uitgeschakeld wordt de gecachte lijst getoond; trek omlaag om te vernieuwen.</string>
+    <string name="settings_refresh_on_launch_summary_dpad">Vertraagt het starten. Uitgeschakeld wordt de gecachte lijst getoond; scan opnieuw via het lijstmenu.</string>
     <string name="settings_hours">%1$d u</string>
     <string name="settings_section_data">Gegevens</string>
     <string name="settings_export">Exporteren</string>
@@ -169,6 +172,7 @@
     <string name="picker_selected_empty">Niets geselecteerd; de app volgt de systeemtaal.</string>
     <string name="picker_search_hint">Talen zoeken</string>
     <string name="picker_order_hint">De eerste ondersteunde taal wordt gebruikt; de systeemtaal is de laatste terugval. Sleep ≡ om te herschikken.</string>
+    <string name="picker_order_hint_dpad">De eerste ondersteunde taal wordt gebruikt; de systeemtaal is de laatste terugval. Druk op OK op ≡ en dan omhoog of omlaag om te herschikken.</string>
     <string name="picker_section_declared">Opgegeven door de app</string>
     <string name="picker_section_system">Systeemtalen</string>
     <string name="picker_section_all">Alle talen</string>

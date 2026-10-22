@@ -21,6 +21,8 @@
     <string name="action_sort">Sortera och filtrera</string>
     <string name="action_clear_search">Rensa sökning</string>
     <string name="action_select_all">Markera alla</string>
+    <string name="action_select_apps">Markera appar</string>
+    <string name="action_rescan_apps">Skanna om appar</string>
     <string name="action_check_now">Kontrollera nu</string>
     <string name="action_forget">Ta bort post</string>
     <string name="action_clear_activity">Rensa</string>
@@ -106,6 +108,7 @@
     <string name="settings_start_filter">Standardflik</string>
     <string name="settings_refresh_on_launch">Skanna om vid start</string>
     <string name="settings_refresh_on_launch_summary">Gör starten långsammare. När den är av visas den cachade listan; dra nedåt för att uppdatera.</string>
+    <string name="settings_refresh_on_launch_summary_dpad">Gör starten långsammare. När den är av visas den cachade listan; skanna om från listmenyn.</string>
     <string name="settings_hours">%1$d h</string>
     <string name="settings_section_data">Data</string>
     <string name="settings_export">Exportera</string>
@@ -169,6 +172,7 @@
     <string name="picker_selected_empty">Inget valt; appen följer systemspråket.</string>
     <string name="picker_search_hint">Sök språk</string>
     <string name="picker_order_hint">Det första språket som stöds används; systemspråket är sista reserv. Dra ≡ för att ändra ordning.</string>
+    <string name="picker_order_hint_dpad">Det första språket som stöds används; systemspråket är sista reserv. Tryck på OK på ≡ och sedan upp eller ned för att ändra ordning.</string>
     <string name="picker_section_declared">Angivna av appen</string>
     <string name="picker_section_system">Systemspråk</string>
     <string name="picker_section_all">Alla språk</string>

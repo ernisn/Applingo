@@ -21,6 +21,8 @@
     <string name="action_sort">Trier et filtrer</string>
     <string name="action_clear_search">Effacer la recherche</string>
     <string name="action_select_all">Tout sélectionner</string>
+    <string name="action_select_apps">Sélectionner des apps</string>
+    <string name="action_rescan_apps">Réanalyser les apps</string>
     <string name="action_check_now">Vérifier maintenant</string>
     <string name="action_forget">Supprimer l’entrée</string>
     <string name="action_clear_activity">Effacer</string>
@@ -109,6 +111,7 @@
     <string name="settings_start_filter">Onglet par défaut</string>
     <string name="settings_refresh_on_launch">Réanalyser au démarrage</string>
     <string name="settings_refresh_on_launch_summary">Ralentit le démarrage. Désactivé, la liste en cache est affichée ; balayez vers le bas pour actualiser.</string>
+    <string name="settings_refresh_on_launch_summary_dpad">Ralentit le démarrage. Désactivé, la liste en cache est affichée ; réanalysez depuis le menu de la liste.</string>
     <string name="settings_hours">%1$d h</string>
     <string name="settings_section_data">Données</string>
     <string name="settings_export">Exporter</string>
@@ -174,6 +177,7 @@
     <string name="picker_selected_empty">Aucune sélection ; l’app suit la langue du système.</string>
     <string name="picker_search_hint">Rechercher des langues</string>
     <string name="picker_order_hint">La première langue prise en charge est utilisée ; la langue du système sert de dernier recours. Faites glisser ≡ pour réorganiser.</string>
+    <string name="picker_order_hint_dpad">La première langue prise en charge est utilisée ; la langue du système sert de dernier recours. Pour réorganiser, appuyez sur OK sur ≡, puis haut ou bas.</string>
     <string name="picker_section_declared">Déclarées par l’app</string>
     <string name="picker_section_system">Langues du système</string>
     <string name="picker_section_all">Toutes les langues</string>

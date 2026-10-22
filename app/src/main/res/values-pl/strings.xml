@@ -21,6 +21,8 @@
     <string name="action_sort">Sortuj i filtruj</string>
     <string name="action_clear_search">Wyczyść wyszukiwanie</string>
     <string name="action_select_all">Zaznacz wszystko</string>
+    <string name="action_select_apps">Zaznacz aplikacje</string>
+    <string name="action_rescan_apps">Skanuj aplikacje</string>
     <string name="action_check_now">Sprawdź teraz</string>
     <string name="action_forget">Usuń wpis</string>
     <string name="action_clear_activity">Wyczyść</string>
@@ -112,6 +114,7 @@
     <string name="settings_start_filter">Domyślna karta</string>
     <string name="settings_refresh_on_launch">Skanuj przy uruchomieniu</string>
     <string name="settings_refresh_on_launch_summary">Spowalnia uruchamianie. Po wyłączeniu wyświetlana jest lista z pamięci podręcznej; przeciągnij w dół, aby odświeżyć.</string>
+    <string name="settings_refresh_on_launch_summary_dpad">Spowalnia uruchamianie. Po wyłączeniu wyświetlana jest lista z pamięci podręcznej; skanuj ponownie z menu listy.</string>
     <string name="settings_hours">%1$d godz.</string>
     <string name="settings_section_data">Dane</string>
     <string name="settings_export">Eksportuj</string>
@@ -179,6 +182,7 @@
     <string name="picker_selected_empty">Brak wyboru; aplikacja używa języka systemu.</string>
     <string name="picker_search_hint">Szukaj języków</string>
     <string name="picker_order_hint">Używany jest pierwszy obsługiwany język; język systemu jest ostatnią rezerwą. Przeciągnij ≡, aby zmienić kolejność.</string>
+    <string name="picker_order_hint_dpad">Używany jest pierwszy obsługiwany język; język systemu jest ostatnią rezerwą. Aby zmienić kolejność, naciśnij OK na ≡, a potem w górę lub w dół.</string>
     <string name="picker_section_declared">Deklarowane przez aplikację</string>
     <string name="picker_section_system">Języki systemu</string>
     <string name="picker_section_all">Wszystkie języki</string>

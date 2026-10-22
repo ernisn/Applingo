@@ -65,6 +65,7 @@ import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.components.AppTypeFilterRow
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
+import io.github.ernisn.applingo.ui.components.isDpadDevice
 import io.github.ernisn.applingo.ui.theme.ControlShape
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -267,7 +268,10 @@ fun SettingsScreen(viewModel: MainViewModel) {
             item {
                 SwitchRow(
                     title = stringResource(R.string.settings_refresh_on_launch),
-                    summary = stringResource(R.string.settings_refresh_on_launch_summary),
+                    // D-pad devices have no pull to refresh (see AppListPane).
+                    summary = stringResource(
+                        if (isDpadDevice()) R.string.settings_refresh_on_launch_summary_dpad else R.string.settings_refresh_on_launch_summary,
+                    ),
                     checked = settings.refreshOnLaunch,
                     onCheckedChange = { value -> viewModel.updateSettings { it.copy(refreshOnLaunch = value) } },
                 )

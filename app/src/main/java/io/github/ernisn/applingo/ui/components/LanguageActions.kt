@@ -27,6 +27,8 @@ fun LanguageActions(
     onFollowSystem: (() -> Unit)?,
     onChangeLanguage: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    changeLanguageModifier: Modifier = Modifier,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -35,6 +37,7 @@ fun LanguageActions(
         if (onFollowSystem != null) {
             OutlinedButton(
                 onClick = onFollowSystem,
+                enabled = enabled,
                 shape = ControlShape,
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                 modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -44,9 +47,10 @@ fun LanguageActions(
         }
         Button(
             onClick = onChangeLanguage,
+            enabled = enabled,
             shape = ControlShape,
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-            modifier = Modifier.weight(1f).fillMaxHeight(),
+            modifier = changeLanguageModifier.weight(1f).fillMaxHeight(),
         ) {
             Text(stringResource(R.string.action_change_language), textAlign = TextAlign.Center, maxLines = 2)
         }

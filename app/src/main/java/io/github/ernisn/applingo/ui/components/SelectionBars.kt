@@ -25,7 +25,9 @@ import io.github.ernisn.applingo.ui.theme.ControlShape
 /*
  * While apps are selected in a list, its top bar shows only the count and Select all, and the batch
  * actions sit at the bottom like the detail page's language buttons, so both fit a narrow pane in
- * any language. Shared by the app list and the Configured list.
+ * any language. On a D-pad device the actions sit right under the top bar instead, where Up from
+ * the top of the list reaches them (see [isDpadDevice]). Shared by the app list and the Configured
+ * list.
  */
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,13 +55,24 @@ fun SelectionTopBar(count: Int, onClose: () -> Unit, onSelectAll: () -> Unit) {
     )
 }
 
+/** The batch actions; disabled while nothing is picked yet (selecting started from a menu). */
 @Composable
-fun SelectionActionsBar(onFollowSystem: () -> Unit, onChangeLanguage: () -> Unit) {
-    Surface(tonalElevation = 3.dp) {
+fun SelectionActionsBar(
+    count: Int,
+    onFollowSystem: () -> Unit,
+    onChangeLanguage: () -> Unit,
+    underTopBar: Boolean = false,
+) {
+    // Under the top bar it continues that bar's color rather than starting a second bar.
+    Surface(
+        color = if (underTopBar) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface,
+        tonalElevation = if (underTopBar) 0.dp else 3.dp,
+    ) {
         LanguageActions(
             onFollowSystem = onFollowSystem,
             onChangeLanguage = onChangeLanguage,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            enabled = count > 0,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = if (underTopBar) 0.dp else 12.dp, bottom = 12.dp),
         )
     }
 }

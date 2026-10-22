@@ -22,6 +22,8 @@
     <string name="action_sort">Ordenar y filtrar</string>
     <string name="action_clear_search">Borrar búsqueda</string>
     <string name="action_select_all">Seleccionar todo</string>
+    <string name="action_select_apps">Seleccionar apps</string>
+    <string name="action_rescan_apps">Volver a escanear apps</string>
     <string name="action_check_now">Comprobar ahora</string>
     <string name="action_forget">Eliminar registro</string>
     <string name="action_clear_activity">Borrar</string>
@@ -110,6 +112,7 @@
     <string name="settings_start_filter">Pestaña predeterminada</string>
     <string name="settings_refresh_on_launch">Volver a escanear al iniciar</string>
     <string name="settings_refresh_on_launch_summary">Ralentiza el inicio. Si está desactivado, se muestra la lista en caché; desliza hacia abajo para actualizar.</string>
+    <string name="settings_refresh_on_launch_summary_dpad">Ralentiza el inicio. Si está desactivado, se muestra la lista en caché; vuelve a escanear desde el menú de la lista.</string>
     <string name="settings_hours">%1$d h</string>
     <string name="settings_section_data">Datos</string>
     <string name="settings_export">Exportar</string>
@@ -175,6 +178,7 @@
     <string name="picker_selected_empty">Ninguno seleccionado; la app sigue el idioma del sistema.</string>
     <string name="picker_search_hint">Buscar idiomas</string>
     <string name="picker_order_hint">Se usa el primer idioma compatible; el idioma del sistema es el último recurso. Arrastra ≡ para reordenar.</string>
+    <string name="picker_order_hint_dpad">Se usa el primer idioma compatible; el idioma del sistema es el último recurso. Para reordenar, pulsa OK en ≡ y luego arriba o abajo.</string>
     <string name="picker_section_declared">Declarados por la app</string>
     <string name="picker_section_system">Idiomas del sistema</string>
     <string name="picker_section_all">Todos los idiomas</string>

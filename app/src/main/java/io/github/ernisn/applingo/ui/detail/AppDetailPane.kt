@@ -3,6 +3,9 @@ package io.github.ernisn.applingo.ui.detail
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.text.format.DateFormat
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,12 +35,20 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -53,9 +64,11 @@ import io.github.ernisn.applingo.ui.AppRow
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.components.FavoriteButton
+import io.github.ernisn.applingo.ui.components.FocusOnReturn
 import io.github.ernisn.applingo.ui.components.LanguageActions
 import io.github.ernisn.applingo.ui.components.LocalePriorityList
 import io.github.ernisn.applingo.ui.components.PackageLine
+import io.github.ernisn.applingo.ui.components.isDpadDevice
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.theme.ControlShape
 
@@ -65,6 +78,7 @@ fun AppDetailPane(
     viewModel: MainViewModel,
     packageName: String,
     showBack: Boolean,
+    pickerOpen: Boolean,
     onBack: () -> Unit,
     onEditLanguages: () -> Unit,
 ) {
@@ -73,6 +87,14 @@ fun AppDetailPane(
     val extras by produceState<AppExtras?>(null, packageName, row?.app?.lastUpdateTime) {
         value = viewModel.extras(packageName)
     }
+
+    // Once the language picker closes, D-pad focus goes back to Change language. Saved: one pane at
+    // a time, this pane is gone while the picker is shown.
+    val changeLanguageFocus = remember { FocusRequester() }
+    val starFocus = remember { FocusRequester() }
+    var pickerWasOpen by rememberSaveable { mutableStateOf(false) }
+    if (pickerOpen) pickerWasOpen = true
+    FocusOnReturn(returned = pickerWasOpen && !pickerOpen, changeLanguageFocus) { pickerWasOpen = false }
 
     Scaffold(
         modifier = Modifier.safeArea(),
@@ -108,19 +130,25 @@ fun AppDetailPane(
         // A plain scrolling column rather than a LazyColumn: there are only four cards, and a lazy list
         // pre-measures the off-screen ones while the pane is still animating its width, leaving them
         // stuck at that narrower size. Each app starts at the top: the caller keys this pane by app.
+        // The top bar's height goes outside the scrolling column, not inside: a column reaching up
+        // behind the bar starts above the back button, so D-pad focus search doesn't count it as
+        // below the button, and Down skipped the whole page.
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
+                .padding(top = padding.calculateTopPadding())
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, top = padding.calculateTopPadding(), bottom = 16.dp),
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
         ) {
-            HeaderCard(row, onToggleFavorite = { viewModel.toggleFavoriteApp(packageName) })
+            HeaderCard(row, onToggleFavorite = { viewModel.toggleFavoriteApp(packageName) }, starFocus = starFocus)
             LanguageCard(
                 row = row,
                 systemLocales = viewModel.systemLocales,
                 onEdit = onEditLanguages,
                 onReset = { viewModel.applyLocales(packageName, emptyList()) },
+                changeLanguageFocus = changeLanguageFocus,
+                starFocus = starFocus,
             )
             ActionsCard(viewModel, row, extras)
             InfoCard(row, extras)
@@ -141,7 +169,7 @@ fun EmptyDetailPane() {
 
 /** Icon, name, package and version, with the star that adds the app to the list's Favorites tab. */
 @Composable
-private fun HeaderCard(row: AppRow, onToggleFavorite: () -> Unit) {
+private fun HeaderCard(row: AppRow, onToggleFavorite: () -> Unit, starFocus: FocusRequester) {
     Card(Modifier.fillMaxWidth()) {
         // The star's touch target reaches into the card's padding, so the star itself lines up with
         // the card's content.
@@ -159,13 +187,20 @@ private fun HeaderCard(row: AppRow, onToggleFavorite: () -> Unit) {
                     row.app.versionName?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                 }
             }
-            FavoriteButton(favorite = row.favorite, onToggle = onToggleFavorite)
+            FavoriteButton(favorite = row.favorite, onToggle = onToggleFavorite, modifier = Modifier.focusRequester(starFocus))
         }
     }
 }
 
 @Composable
-private fun LanguageCard(row: AppRow, systemLocales: List<String>, onEdit: () -> Unit, onReset: () -> Unit) {
+private fun LanguageCard(
+    row: AppRow,
+    systemLocales: List<String>,
+    onEdit: () -> Unit,
+    onReset: () -> Unit,
+    changeLanguageFocus: FocusRequester,
+    starFocus: FocusRequester,
+) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.detail_language), style = MaterialTheme.typography.titleMedium)
@@ -199,6 +234,10 @@ private fun LanguageCard(row: AppRow, systemLocales: List<String>, onEdit: () ->
             LanguageActions(
                 onFollowSystem = if (row.locales.isNotEmpty()) onReset else null,
                 onChangeLanguage = onEdit,
+                // D-pad Up reaches the star even when scrolled out of sight: focus search skips
+                // controls entirely outside a scrolling column.
+                modifier = Modifier.focusProperties { up = starFocus },
+                changeLanguageModifier = Modifier.focusRequester(changeLanguageFocus),
             )
         }
     }
@@ -265,8 +304,15 @@ private fun InfoCard(row: AppRow, extras: AppExtras?) {
     fun date(millis: Long) = if (millis <= 0) "—" else
         DateFormat.getMediumDateFormat(context).format(millis) + " " + DateFormat.getTimeFormat(context).format(millis)
 
+    // Focusable with a D-pad, only so the D-pad can scroll it into view: nothing below the buttons
+    // took focus, so the card stayed cut off at the bottom of the screen.
+    val focus = remember { MutableInteractionSource() }
     Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(vertical = 8.dp)) {
+        Column(
+            Modifier
+                .then(if (isDpadDevice()) Modifier.indication(focus, ripple()).focusable(interactionSource = focus) else Modifier)
+                .padding(vertical = 8.dp),
+        ) {
             InfoRow(stringResource(R.string.info_version), "${app.versionName ?: "—"} (${app.versionCode})")
             InfoRow(stringResource(R.string.info_sdk), stringResource(R.string.info_sdk_value, app.targetSdk, app.minSdk))
             InfoRow(stringResource(R.string.info_installed), date(app.firstInstallTime))

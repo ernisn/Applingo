@@ -21,6 +21,8 @@
     <string name="action_sort">Ταξινόμηση και φίλτρα</string>
     <string name="action_clear_search">Εκκαθάριση αναζήτησης</string>
     <string name="action_select_all">Επιλογή όλων</string>
+    <string name="action_select_apps">Επιλογή εφαρμογών</string>
+    <string name="action_rescan_apps">Νέα σάρωση εφαρμογών</string>
     <string name="action_check_now">Έλεγχος τώρα</string>
     <string name="action_forget">Διαγραφή εγγραφής</string>
     <string name="action_clear_activity">Εκκαθάριση</string>
@@ -106,6 +108,7 @@
     <string name="settings_start_filter">Προεπιλεγμένη καρτέλα</string>
     <string name="settings_refresh_on_launch">Νέα σάρωση κατά την εκκίνηση</string>
     <string name="settings_refresh_on_launch_summary">Επιβραδύνει την εκκίνηση. Όταν είναι ανενεργή, εμφανίζεται η αποθηκευμένη λίστα· σύρετε προς τα κάτω για ανανέωση.</string>
+    <string name="settings_refresh_on_launch_summary_dpad">Επιβραδύνει την εκκίνηση. Όταν είναι ανενεργή, εμφανίζεται η αποθηκευμένη λίστα· για ανανέωση κάντε νέα σάρωση από το μενού της λίστας.</string>
     <string name="settings_hours">%1$d ώρ.</string>
     <string name="settings_section_data">Δεδομένα</string>
     <string name="settings_export">Εξαγωγή</string>
@@ -169,6 +172,7 @@
     <string name="picker_selected_empty">Καμία επιλογή· η εφαρμογή ακολουθεί τη γλώσσα συστήματος.</string>
     <string name="picker_search_hint">Αναζήτηση γλωσσών</string>
     <string name="picker_order_hint">Χρησιμοποιείται η πρώτη υποστηριζόμενη γλώσσα· η γλώσσα συστήματος είναι η τελική εναλλακτική. Σύρετε το ≡ για αναδιάταξη.</string>
+    <string name="picker_order_hint_dpad">Χρησιμοποιείται η πρώτη υποστηριζόμενη γλώσσα· η γλώσσα συστήματος είναι η τελική εναλλακτική. Για αναδιάταξη πατήστε OK στο ≡ και μετά πάνω ή κάτω.</string>
     <string name="picker_section_declared">Δηλωμένες από την εφαρμογή</string>
     <string name="picker_section_system">Γλώσσες συστήματος</string>
     <string name="picker_section_all">Όλες οι γλώσσες</string>

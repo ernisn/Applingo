@@ -1,25 +1,27 @@
 # Applingo
 
-Android 13 added per-app languages, but the system settings only offer them for apps that declare support, and the system may clear the setting when an app updates. Applingo sets one or multiple languages for any app and keeps the settings using [Shizuku](https://shizuku.rikka.app/).
+Android 13 added per-app languages, but the system settings only offer them for apps that declare support, and the system may clear the setting when an app updates. Applingo sets one or multiple languages for any app and keeps the settings using [Shizuku](https://shizuku.rikka.app/). 
 
 ## Features
 
-- Set any language (supported by the system) for any app including languages the app doesn't list. 
-- Set a list of preferred languages at once, and the app uses the first one it supports until it falls back to default.
-- Save favourite apps and languages for easy access and management.
-- Language configuration persists. Applingo can check language settings regularly and re-apply if the system drops them.
+- Set **any language** (supported by the system) for any app including languages the app doesn't list. 
+- Set **a list of preferred languages** at once, and the app uses the first one it supports until it falls back to default.
+- Save favourite apps and languages for easy access and management. **Batch settings** are also supported.
+- Language **configurations persist**. Applingo can check language settings regularly and re-apply if the system drops them.
 - Export and import language settings.
-- Adaptive UI support for different displays including mobile / tablet / desktop / foldable / TV (testing)
+- **Adaptive UI** support for displays of different sizes and orientations including mobile / tablet / desktop / foldable.
+- **Android TV** and D-pad control support.
 
 ## Screenshots
 
-Vertical display example:
+- **Portrait** orientation UI example:
+  
+  ![Pic1.jpg](/Screenshots/Pic1.jpg)
 
-![Pic1.jpg](/Screenshots/Pic1.jpg)
-
-Foldable display example:
-
-![Pic2.jpg](/Screenshots/Pic2.jpg)
+- **Foldable & landscape** orientation UI example:
+  
+  ![Pic2.jpg](/Screenshots/Pic2.jpg)
+  **Note:** *The landscape orientation screenshots may slightly differ from Android TV in some screens, where extra menu items and multiple UI changes are applied for easier D-pad control.*
 
 ## Requirements
 
@@ -39,4 +41,5 @@ To undo it later, open the app in Applingo and tap **Follow system**.
 
 ## License & Disclaimer
 
-[MIT](LICENSE). The development of Applingo is AI-assisted.
+- [MIT](LICENSE)
+- *The development of Applingo is AI-assisted.*

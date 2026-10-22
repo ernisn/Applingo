@@ -21,6 +21,8 @@
     <string name="action_sort">Сортировка и фильтры</string>
     <string name="action_clear_search">Очистить поиск</string>
     <string name="action_select_all">Выбрать все</string>
+    <string name="action_select_apps">Выбрать приложения</string>
+    <string name="action_rescan_apps">Сканировать приложения</string>
     <string name="action_check_now">Проверить сейчас</string>
     <string name="action_forget">Удалить запись</string>
     <string name="action_clear_activity">Очистить</string>
@@ -112,6 +114,7 @@
     <string name="settings_start_filter">Вкладка по умолчанию</string>
     <string name="settings_refresh_on_launch">Сканировать при запуске</string>
     <string name="settings_refresh_on_launch_summary">Замедляет запуск. Если выключено, показывается кешированный список; потяните вниз, чтобы обновить.</string>
+    <string name="settings_refresh_on_launch_summary_dpad">Замедляет запуск. Если выключено, показывается кешированный список; повторное сканирование — в меню списка.</string>
     <string name="settings_hours">%1$d ч</string>
     <string name="settings_section_data">Данные</string>
     <string name="settings_export">Экспорт</string>
@@ -179,6 +182,7 @@
     <string name="picker_selected_empty">Ничего не выбрано; приложение использует язык системы.</string>
     <string name="picker_search_hint">Поиск языков</string>
     <string name="picker_order_hint">Используется первый поддерживаемый язык; язык системы — последний резерв. Перетащите ≡, чтобы изменить порядок.</string>
+    <string name="picker_order_hint_dpad">Используется первый поддерживаемый язык; язык системы — последний резерв. Чтобы изменить порядок, нажмите OK на ≡, затем вверх или вниз.</string>
     <string name="picker_section_declared">Заявлены приложением</string>
     <string name="picker_section_system">Языки системы</string>
     <string name="picker_section_all">Все языки</string>

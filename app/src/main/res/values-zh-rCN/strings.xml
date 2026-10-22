@@ -21,6 +21,8 @@
     <string name="action_sort">排序和筛选</string>
     <string name="action_clear_search">清除搜索</string>
     <string name="action_select_all">全选</string>
+    <string name="action_select_apps">选择应用</string>
+    <string name="action_rescan_apps">重新扫描应用</string>
     <string name="action_check_now">立即检查</string>
     <string name="action_forget">删除记录</string>
     <string name="action_clear_activity">清空</string>
@@ -103,6 +105,7 @@
     <string name="settings_start_filter">默认标签页</string>
     <string name="settings_refresh_on_launch">启动时重新扫描</string>
     <string name="settings_refresh_on_launch_summary">会延长启动时间。关闭时显示缓存的列表，可下拉刷新。</string>
+    <string name="settings_refresh_on_launch_summary_dpad">会延长启动时间。关闭时显示缓存的列表，可在列表菜单中重新扫描。</string>
     <string name="settings_hours">%1$d 小时</string>
     <string name="settings_section_data">数据</string>
     <string name="settings_export">导出</string>
@@ -164,6 +167,7 @@
     <string name="picker_selected_empty">未选择，应用跟随系统语言。</string>
     <string name="picker_search_hint">搜索语言</string>
     <string name="picker_order_hint">使用第一个受支持的语言，系统语言为最终回退。拖动 ≡ 调整顺序。</string>
+    <string name="picker_order_hint_dpad">使用第一个受支持的语言，系统语言为最终回退。在 ≡ 上按确定键，再按上下键调整顺序。</string>
     <string name="picker_section_declared">应用声明的语言</string>
     <string name="picker_section_system">系统语言</string>
     <string name="picker_section_all">全部语言</string>

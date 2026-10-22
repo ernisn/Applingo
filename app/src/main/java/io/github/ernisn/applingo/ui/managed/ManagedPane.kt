@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -37,11 +38,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -61,11 +65,15 @@ import io.github.ernisn.applingo.ui.theme.ControlShape
 import io.github.ernisn.applingo.ui.ManagedApp
 import io.github.ernisn.applingo.ui.ManagedState
 import io.github.ernisn.applingo.ui.applist.LocaleBadge
+import io.github.ernisn.applingo.ui.components.FocusOnReturnRequest
+import io.github.ernisn.applingo.ui.components.FocusRowOnReturn
+import io.github.ernisn.applingo.ui.components.FocusWhenPending
 import io.github.ernisn.applingo.ui.components.PackageLine
 import io.github.ernisn.applingo.ui.components.SegmentedTabRow
 import io.github.ernisn.applingo.ui.components.SelectionActionsBar
 import io.github.ernisn.applingo.ui.components.SelectionTopBar
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
+import io.github.ernisn.applingo.ui.components.isDpadDevice
 import io.github.ernisn.applingo.ui.picker.BatchLocalePickerDialog
 
 private const val MAX_ACTIVITY_SHOWN = 100
@@ -78,23 +86,53 @@ private enum class ManagedTab(val label: Int) {
 /**
  * Every app Applingo keeps a language for with the result of the last check, and recent activity, as
  * two tabs like the app list's: one list after the other meant scrolling past every app to reach the
- * activity. Long press selects apps for a batch change, as in the app list.
+ * activity. Long press (or Select apps) selects apps for a batch change, as in the app list.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ManagedPane(viewModel: MainViewModel, selectedPackage: String?, onOpenApp: (String) -> Unit) {
+fun ManagedPane(
+    viewModel: MainViewModel,
+    selectedPackage: String?,
+    focusOnReturn: FocusOnReturnRequest?,
+    onOpenApp: (String) -> Unit,
+) {
     val state by viewModel.managedState.collectAsStateWithLifecycle()
     val selection by viewModel.managedSelection.packages.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableStateOf(ManagedTab.Apps) }
     // One per tab, so each keeps its scroll position while the other is shown.
     val appsListState = rememberLazyListState()
     val activityListState = rememberLazyListState()
+    val returnTo = remember { focusOnReturn }
+    val returnFocus = remember { FocusRequester() }
+    // Select apps: its button went with the top bar, so focus goes to the first app row on screen
+    // (see FocusWhenPending). Rows come after the summary card.
+    var selectFocusAt by remember { mutableStateOf<Int?>(null) }
+    val selectFocus = remember { FocusRequester() }
+    FocusWhenPending(selectFocusAt != null, selectFocus) { selectFocusAt = null }
+    // Rows come after the summary card.
+    FocusRowOnReturn(
+        index = returnTo?.let { request -> state.apps.indexOfFirst { it.packageName == request.packageName } }
+            ?.takeIf { it >= 0 && tab == ManagedTab.Apps }?.let { it + 1 },
+        listState = appsListState,
+        requester = returnFocus,
+        onDone = { returnTo?.onDone() },
+    )
 
-    val selecting = selection.isNotEmpty()
+    val selectionStarted by viewModel.managedSelection.started.collectAsStateWithLifecycle()
+    val selecting = selectionStarted || selection.isNotEmpty()
     var showBatchPicker by rememberSaveable { mutableStateOf(false) }
     BackHandler(enabled = selecting) { viewModel.managedSelection.clear() }
+    val dpad = isDpadDevice()
+    val batchActions = @Composable { underTopBar: Boolean ->
+        SelectionActionsBar(
+            count = selection.size,
+            onFollowSystem = { viewModel.applyToSelection(viewModel.managedSelection, emptyList()) },
+            onChangeLanguage = { showBatchPicker = true },
+            underTopBar = underTopBar,
+        )
+    }
 
-    if (showBatchPicker && selecting) {
+    if (showBatchPicker && selection.isNotEmpty()) {
         BatchLocalePickerDialog(
             viewModel = viewModel,
             count = selection.size,
@@ -108,18 +146,33 @@ fun ManagedPane(viewModel: MainViewModel, selectedPackage: String?, onOpenApp: (
         contentWindowInsets = WindowInsets(0),
         topBar = {
             if (selecting) {
-                SelectionTopBar(
-                    count = selection.size,
-                    onClose = viewModel.managedSelection::clear,
-                    // Apps that aren't installed have no language to change.
-                    onSelectAll = {
-                        viewModel.managedSelection.selectAll(state.apps.filter { it.row != null }.map { it.packageName })
-                    },
-                )
+                Column {
+                    SelectionTopBar(
+                        count = selection.size,
+                        onClose = viewModel.managedSelection::clear,
+                        // Apps that aren't installed have no language to change.
+                        onSelectAll = {
+                            viewModel.managedSelection.selectAll(state.apps.filter { it.row != null }.map { it.packageName })
+                        },
+                    )
+                    if (dpad) batchActions(true)
+                }
             } else {
                 TopAppBar(
                     title = { Text(stringResource(R.string.managed_title)) },
                     actions = {
+                        // Select apps: the alternative to long press, as at the end of the app list's menu.
+                        if (tab == ManagedTab.Apps && state.apps.any { it.row != null }) {
+                            TextButton(
+                                onClick = {
+                                    selectFocusAt = appsListState.firstVisibleItemIndex.coerceAtLeast(1)
+                                    viewModel.managedSelection.start()
+                                },
+                                shape = ControlShape,
+                            ) {
+                                Text(stringResource(R.string.action_select_apps))
+                            }
+                        }
                         if (tab == ManagedTab.Activity && state.activity.isNotEmpty()) {
                             TextButton(onClick = viewModel::clearActivity, shape = ControlShape) {
                                 Text(stringResource(R.string.action_clear_activity))
@@ -131,12 +184,7 @@ fun ManagedPane(viewModel: MainViewModel, selectedPackage: String?, onOpenApp: (
             }
         },
         bottomBar = {
-            if (selecting) {
-                SelectionActionsBar(
-                    onFollowSystem = { viewModel.applyToSelection(viewModel.managedSelection, emptyList()) },
-                    onChangeLanguage = { showBatchPicker = true },
-                )
-            }
+            if (selecting && !dpad) batchActions(false)
         },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
@@ -164,10 +212,15 @@ fun ManagedPane(viewModel: MainViewModel, selectedPackage: String?, onOpenApp: (
                     if (state.apps.isEmpty()) {
                         item(key = "empty") { Hint(stringResource(R.string.managed_empty)) }
                     }
-                    items(state.apps, key = { it.packageName }) { managed ->
+                    itemsIndexed(state.apps, key = { _, managed -> managed.packageName }) { index, managed ->
                         val packageName = managed.packageName
                         ManagedAppItem(
                             managed = managed,
+                            modifier = when {
+                                packageName == returnTo?.packageName -> Modifier.focusRequester(returnFocus)
+                                index + 1 == selectFocusAt -> Modifier.focusRequester(selectFocus)
+                                else -> Modifier
+                            },
                             selected = packageName == selectedPackage,
                             checked = if (selecting && managed.row != null) packageName in selection else null,
                             onClick = {
@@ -251,11 +304,12 @@ private fun ManagedAppItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onForget: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val row = managed.row
     val highlighted = selected || checked == true
     ListItem(
-        modifier = if (row != null) Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick) else Modifier,
+        modifier = if (row != null) modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick) else modifier,
         colors = if (highlighted) {
             ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         } else {

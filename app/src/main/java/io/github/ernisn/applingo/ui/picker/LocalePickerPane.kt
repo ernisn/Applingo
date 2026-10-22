@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -70,6 +69,7 @@ import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.components.EditablePriorityList
 import io.github.ernisn.applingo.ui.components.FavoriteButton
 import io.github.ernisn.applingo.ui.components.SearchField
+import io.github.ernisn.applingo.ui.components.isDpadDevice
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.theme.ControlShape
 import kotlinx.coroutines.launch
@@ -199,6 +199,20 @@ private fun LocalePickerContent(
         if (searchFocused) listState.scrollToItem(SEARCH_ITEM_INDEX)
     }
 
+    // At the bottom for touch; next to the title on a D-pad device, where Up from the top of the list
+    // reaches them.
+    val dpad = isDpadDevice()
+    val chainActions: @Composable () -> Unit = {
+        TextButton(onClick = { chain.clear() }, enabled = chain.isNotEmpty(), shape = ControlShape) {
+            Text(stringResource(R.string.action_follow_system))
+        }
+        Button(
+            onClick = { onApply(chain.toList()) },
+            enabled = if (batch) chain.isNotEmpty() else chain.toList() != initial,
+            shape = ControlShape,
+        ) { Text(stringResource(R.string.action_apply)) }
+    }
+
     Scaffold(
         modifier = Modifier.safeArea(),
         contentWindowInsets = WindowInsets(0),
@@ -217,39 +231,48 @@ private fun LocalePickerContent(
                         }
                     }
                 },
+                actions = {
+                    if (dpad) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(end = 8.dp),
+                        ) { chainActions() }
+                    }
+                },
             )
         },
         bottomBar = {
-            Surface(tonalElevation = 3.dp) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                ) {
-                    TextButton(onClick = { chain.clear() }, enabled = chain.isNotEmpty(), shape = ControlShape) {
-                        Text(stringResource(R.string.action_follow_system))
-                    }
-                    Button(
-                        onClick = { onApply(chain.toList()) },
-                        enabled = if (batch) chain.isNotEmpty() else chain.toList() != initial,
-                        shape = ControlShape,
-                    ) { Text(stringResource(R.string.action_apply)) }
+            if (!dpad) {
+                Surface(tonalElevation = 3.dp) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                    ) { chainActions() }
                 }
             }
         },
     ) { padding ->
+        // The bars' heights go outside the list, not into its content padding: a list reaching behind
+        // the top bar starts above the back button, so D-pad focus search doesn't count it as below
+        // the button and Down skipped it (likewise Up from below).
         LazyColumn(
             state = listState,
-            contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding()),
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.padding(padding).fillMaxSize(),
         ) {
             // Header, chain and divider come before the search field: SEARCH_ITEM_INDEX counts them.
             sectionHeader(R.string.picker_selected)
             item(key = "chain") {
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     Text(
-                        text = stringResource(if (chain.isEmpty()) R.string.picker_selected_empty else R.string.picker_order_hint),
+                        text = stringResource(
+                            when {
+                                chain.isEmpty() -> R.string.picker_selected_empty
+                                !dpad -> R.string.picker_order_hint
+                                else -> R.string.picker_order_hint_dpad
+                            },
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 8.dp),

@@ -23,6 +23,8 @@
     <string name="action_sort">Sort and filter</string>
     <string name="action_clear_search">Clear search</string>
     <string name="action_select_all">Select all</string>
+    <string name="action_select_apps">Select apps</string>
+    <string name="action_rescan_apps">Rescan apps</string>
     <string name="action_check_now">Check now</string>
     <string name="action_forget">Remove record</string>
     <string name="action_clear_activity">Clear</string>
@@ -108,6 +110,7 @@
     <string name="settings_start_filter">Default tab</string>
     <string name="settings_refresh_on_launch">Rescan on launch</string>
     <string name="settings_refresh_on_launch_summary">Slows startup. When off, the cached list is shown; pull down to refresh.</string>
+    <string name="settings_refresh_on_launch_summary_dpad">Slows startup. When off, the cached list is shown; rescan from the list menu.</string>
     <string name="settings_hours" tools:ignore="PluralsCandidate">%1$d h</string>
     <string name="settings_section_data">Data</string>
     <string name="settings_export">Export</string>
@@ -172,6 +175,7 @@
     <string name="picker_selected_empty">None selected; the app follows the system language.</string>
     <string name="picker_search_hint">Search languages</string>
     <string name="picker_order_hint">The first supported language is used; the system language is the final fallback. Drag ≡ to reorder.</string>
+    <string name="picker_order_hint_dpad">The first supported language is used; the system language is the final fallback. Press OK on ≡, then Up or Down, to reorder.</string>
     <string name="picker_section_declared">Declared by app</string>
     <string name="picker_section_system">System languages</string>
     <string name="picker_section_all">All languages</string>

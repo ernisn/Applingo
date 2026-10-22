@@ -89,12 +89,23 @@ data class AppListState(
 )
 
 /**
- * Apps picked by long press in one list, for a batch change. Each list has its own: switching
- * destinations doesn't carry a selection over to a list where it can't be seen.
+ * Apps picked in one list for a batch change, by long press or after Select apps. Each list has its
+ * own: switching destinations doesn't carry a selection over to a list where it can't be seen.
  */
 class AppSelection {
     private val _packages = MutableStateFlow<Set<String>>(emptySet())
     val packages: StateFlow<Set<String>> = _packages.asStateFlow()
+
+    /**
+     * Selecting, even with nothing picked yet: started from a menu, the alternative to long press,
+     * and kept until closed rather than ending with the last app unpicked.
+     */
+    private val _started = MutableStateFlow(false)
+    val started: StateFlow<Boolean> = _started.asStateFlow()
+
+    fun start() {
+        _started.value = true
+    }
 
     fun toggle(packageName: String) {
         _packages.update { if (packageName in it) it - packageName else it + packageName }
@@ -106,6 +117,7 @@ class AppSelection {
 
     fun clear() {
         _packages.value = emptySet()
+        _started.value = false
     }
 }
 

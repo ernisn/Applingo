@@ -2,8 +2,11 @@ package io.github.ernisn.applingo.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
@@ -11,6 +14,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -50,8 +54,19 @@ fun ApplingoTheme(settings: AppSettings = AppSettings(), content: @Composable ()
     }
     val scheme = if (dark && settings.pureBlack) base.pureBlack() else base
     val typography = if (settings.systemFont) DefaultTypography else CondensedTypography
-    MaterialTheme(colorScheme = scheme, typography = typography, shapes = Shapes(medium = CardShape), content = content)
+    MaterialTheme(colorScheme = scheme, typography = typography, shapes = Shapes(medium = CardShape)) {
+        CompositionLocalProvider(LocalRippleConfiguration provides FocusVisibleRipple, content = content)
+    }
 }
+
+/**
+ * D-pad focus shows as the same state layer as a press. Material's 10 % is hard to find from across
+ * a room on a TV, so focus gets a stronger one; the other states keep Material's values. Touch input
+ * never focuses buttons or rows, so this only shows with a D-pad or keyboard.
+ */
+private val FocusVisibleRipple = RippleConfiguration(
+    rippleAlpha = RippleAlpha(draggedAlpha = 0.16f, focusedAlpha = 0.24f, hoveredAlpha = 0.08f, pressedAlpha = 0.1f),
+)
 
 /*
  * Type. Roboto Condensed by default, from the device rather than bundled: since Android 12 the system
