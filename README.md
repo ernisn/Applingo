@@ -7,9 +7,9 @@ Android 13 added per-app languages, but the system settings only offer them for 
 - Set any language (supported by the system) for any app including languages the app doesn't list. 
 - Set a list of preferred languages at once, and the app uses the first one it supports until it falls back to default.
 - Save favourite apps and languages for easy access and management.
-- Language configuration persist. Applingo can check language settings regularly and re-apply if the system drops them.
+- Language configuration persists. Applingo can check language settings regularly and re-apply if the system drops them.
 - Export and import language settings.
-- Adaptive UI support for different displays including mobile / tablet / destkop / foldable / TV (testing)
+- Adaptive UI support for different displays including mobile / tablet / desktop / foldable / TV (testing)
 
 ## Screenshots
 
