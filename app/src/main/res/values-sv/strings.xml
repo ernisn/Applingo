@@ -9,7 +9,7 @@
     <string name="action_restart_app">Starta om appen</string>
     <string name="action_force_stop">Tvångsstoppa</string>
     <string name="action_app_info">Appinfo</string>
-    <string name="action_system_language">Språk i systeminställningar</string>
+    <string name="action_system_language">Appspråk i Inställningar</string>
     <string name="action_change_language">Ändra språk</string>
     <string name="action_reset_to_system">Följ systemet</string>
     <string name="action_follow_system">Rensa</string>
@@ -18,13 +18,15 @@
     <string name="action_remove">Ta bort</string>
     <string name="action_expand">Visa regioner</string>
     <string name="action_collapse">Dölj regioner</string>
-    <string name="action_sort">Sortera</string>
+    <string name="action_sort">Sortera och filtrera</string>
     <string name="action_clear_search">Rensa sökning</string>
     <string name="action_select_all">Markera alla</string>
     <string name="action_check_now">Kontrollera nu</string>
-    <string name="action_forget">Glöm</string>
+    <string name="action_forget">Ta bort post</string>
     <string name="action_clear_activity">Rensa</string>
     <string name="action_reorder">Dra för att ändra ordning</string>
+    <string name="action_favorite">Lägg till i favoriter</string>
+    <string name="action_unfavorite">Ta bort från favoriter</string>
 
     <!-- Navigation -->
     <string name="nav_apps">Appar</string>
@@ -34,20 +36,23 @@
 
     <!-- App list -->
     <string name="search_hint">Sök appar eller språk</string>
-    <string name="list_empty">Inga appar att visa</string>
+    <string name="list_empty">Inga appar</string>
     <string name="list_no_results">Inga träffar</string>
-    <string name="filter_launchable">Startbara</string>
+    <string name="list_no_favorites">Inga favoriter än. Lägg till appar från deras informationssida.</string>
     <string name="filter_user">Användare</string>
     <string name="filter_system">System</string>
     <string name="filter_all">Alla</string>
+    <string name="filter_favorites">Favoriter</string>
+    <string name="filter_launchable_only">Endast startbara appar</string>
+    <string name="filter_enabled_only">Endast aktiverade appar</string>
     <string name="sort_name">Namn</string>
     <string name="sort_recently_set">Nyligen inställda</string>
     <string name="sort_recently_updated">Nyligen uppdaterade</string>
     <string name="sort_recently_installed">Nyligen installerade</string>
-    <string name="sort_with_locale_first">Appar med språk först</string>
     <string name="sort_reverse">Omvänd ordning</string>
     <string name="app_badge_system">System</string>
     <string name="app_badge_disabled">Inaktiverad</string>
+    <string name="app_badge_favorite">Favorit</string>
     <plurals name="selection_count">
         <item quantity="one">%1$d markerad</item>
         <item quantity="other">%1$d markerade</item>
@@ -55,73 +60,75 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Appar</string>
-    <string name="managed_empty">Ingen app har ett eget språk än.</string>
-    <string name="managed_section_activity">Senaste aktivitet</string>
-    <string name="managed_activity_empty">Inget än.</string>
+    <string name="managed_empty">Inga inställda appar</string>
+    <string name="managed_section_activity">Aktivitetslogg</string>
+    <string name="managed_activity_empty">Ingen aktivitet</string>
     <plurals name="managed_summary_count">
-        <item quantity="one">%1$d app med eget språk</item>
-        <item quantity="other">%1$d appar med eget språk</item>
+        <item quantity="one">%1$d app inställd</item>
+        <item quantity="other">%1$d appar inställda</item>
     </plurals>
     <plurals name="managed_summary_attention">
         <item quantity="one">%1$d behöver åtgärdas</item>
         <item quantity="other">%1$d behöver åtgärdas</item>
     </plurals>
     <string name="managed_last_check_never">Inte kontrollerat än</string>
-    <string name="managed_last_check">Senast kontrollerat %1$s · %2$d återställda · %3$d övertagna</string>
+    <string name="managed_last_check">Senaste kontroll %1$s · %2$d återställda · %3$d importerade</string>
     <string name="managed_not_installed">Inte installerad</string>
     <string name="activity_applied">Inställt på %1$s</string>
-    <string name="activity_reset">Tillbaka till systemspråket</string>
-    <string name="activity_repaired">Återställt efter att systemet ändrat det: %1$s → %2$s</string>
-    <string name="activity_mismatch">Ändrat av systemet till %1$s (ditt val: %2$s); automatisk återställning är av</string>
-    <string name="activity_adopted">Övertaget: %1$s</string>
-    <string name="activity_imported">Importerat: %1$s</string>
-    <string name="activity_failed">Kunde inte skriva: %1$s</string>
+    <string name="activity_reset">Inställd på Följ systemet</string>
+    <string name="activity_repaired">Återställd efter en systemändring: %1$s → %2$s</string>
+    <string name="activity_mismatch">Ändrad av systemet till %1$s (inställt: %2$s); automatisk återställning är av</string>
+    <string name="activity_adopted">Befintlig inställning importerad: %1$s</string>
+    <string name="activity_imported">Importerad från fil: %1$s</string>
+    <string name="activity_failed">Skrivningen misslyckades: %1$s</string>
 
     <!-- Settings -->
-    <string name="settings_shizuku_connected">Ansluten som %1$s</string>
+    <string name="settings_shizuku_connected">Ansluten (%1$s)</string>
     <string name="settings_section_appearance">Utseende</string>
     <string name="settings_theme">Tema</string>
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Ljust</string>
     <string name="settings_theme_dark">Mörkt</string>
-    <string name="settings_dynamic_color">Bakgrundsfärger</string>
-    <string name="settings_dynamic_color_summary">Använd färger från din bakgrundsbild</string>
+    <string name="settings_dynamic_color">Dynamiska färger</string>
+    <string name="settings_dynamic_color_summary">Skapa färgpaletten från bakgrundsbilden</string>
     <string name="settings_seed_color">Temafärg</string>
     <string name="settings_pure_black">Helsvart</string>
-    <string name="settings_pure_black_summary">Svart bakgrund i mörkt tema</string>
-    <string name="settings_section_keeping">Behålla språk</string>
-    <string name="settings_auto_repair">Återställ automatiskt</string>
-    <string name="settings_auto_repair_summary">När systemet tar bort eller kortar ett språk du valt skrivs det tillbaka. När det är av rapporteras det bara.</string>
-    <string name="settings_background_check">Kontrollera i bakgrunden</string>
-    <string name="settings_background_check_summary">Kontrollera regelbundet även när Applingo inte är öppen (Shizuku måste köras då)</string>
-    <string name="settings_background_interval">Kontrollera var</string>
+    <string name="settings_pure_black_summary">Endast i mörkt tema</string>
+    <string name="settings_system_font">Systemteckensnitt</string>
+    <string name="settings_system_font_summary">Använd systemets teckensnitt i stället för Roboto Condensed</string>
+    <string name="settings_section_keeping">Kontroll och återställning</string>
+    <string name="settings_auto_repair">Automatisk återställning</string>
+    <string name="settings_auto_repair_summary">Skriver om språk som systemet rensar eller kortar, t.ex. efter en appuppdatering. När den är av loggas ändringar bara.</string>
+    <string name="settings_background_check">Bakgrundskontroll</string>
+    <string name="settings_background_check_summary">Kontrollerar regelbundet medan Applingo är stängd. Kräver att Shizuku körs.</string>
+    <string name="settings_background_interval">Kontrollintervall</string>
     <string name="settings_section_app_list">Applista</string>
-    <string name="settings_start_filter">Standardfilter</string>
-    <string name="settings_refresh_on_launch">Uppdatera vid start</string>
-    <string name="settings_refresh_on_launch_summary">Sök igenom installerade appar varje gång Applingo öppnas. Gör att det tar längre tid att öppna; när det är av, dra ned listan för att uppdatera.</string>
+    <string name="settings_start_filter">Standardflik</string>
+    <string name="settings_refresh_on_launch">Skanna om vid start</string>
+    <string name="settings_refresh_on_launch_summary">Gör starten långsammare. När den är av visas den cachade listan; dra nedåt för att uppdatera.</string>
     <string name="settings_hours">%1$d h</string>
     <string name="settings_section_data">Data</string>
     <string name="settings_export">Exportera</string>
-    <string name="settings_export_summary">Spara dina appars språk i en fil</string>
+    <string name="settings_export_summary">Spara appspråksinställningar som en JSON-fil</string>
     <string name="settings_import">Importera</string>
-    <string name="settings_import_summary">Läs in appspråk från en exporterad fil och tillämpa dem</string>
+    <string name="settings_import_summary">Läs in och tillämpa inställningar från en JSON-export</string>
     <string name="settings_section_about">Om</string>
-    <string name="settings_own_language">Applingos språk</string>
+    <string name="settings_own_language">Gränssnittsspråk</string>
     <string name="settings_source">Källkod</string>
     <string name="settings_version">Version</string>
     <string name="settings_license">MIT-licens</string>
     <string name="time_just_now">nyss</string>
 
     <!-- Shizuku -->
-    <string name="shizuku_not_installed">Applingo behöver Shizuku (eller Sui) för att ändra språk i andra appar. Installera och starta det först.</string>
-    <string name="shizuku_not_running">Shizuku är installerat men körs inte. Starta det i Shizuku-appen. Dina val sparas och tillämpas när det körs.</string>
-    <string name="shizuku_unsupported">Den här Shizuku-versionen är för gammal. Uppdatera Shizuku.</string>
-    <string name="shizuku_permission_required">Tillåt att Applingo använder Shizuku.</string>
-    <string name="shizuku_permission_denied">Shizuku-behörigheten nekades. Tillåt Applingo i Shizuku-appen och försök igen.</string>
+    <string name="shizuku_not_installed">Shizuku (eller Sui) krävs för att ändra språk i andra appar.</string>
+    <string name="shizuku_not_running">Shizuku körs inte. Ändringar sparas och skrivs när det startar.</string>
+    <string name="shizuku_unsupported">Den här Shizuku-versionen stöds inte. Uppdatera Shizuku.</string>
+    <string name="shizuku_permission_required">Shizuku-behörighet krävs.</string>
+    <string name="shizuku_permission_denied">Shizuku-behörighet nekades. Bevilja den i Shizuku-appen och försök igen.</string>
     <string name="shizuku_connecting">Ansluter till Shizuku…</string>
-    <string name="shizuku_failed">Kunde inte starta Shizuku-tjänsten: %1$s</string>
+    <string name="shizuku_failed">Det gick inte att starta Shizuku-tjänsten: %1$s</string>
     <string name="shizuku_action_get">Hämta Shizuku</string>
-    <string name="shizuku_action_grant">Tillåt</string>
+    <string name="shizuku_action_grant">Bevilja</string>
     <string name="shizuku_action_open">Öppna Shizuku</string>
 
     <!-- Detail -->
@@ -129,10 +136,10 @@
     <string name="detail_not_installed">Appen är inte installerad</string>
     <string name="detail_language">Appens språk</string>
     <string name="locale_follow_system">Systemspråk</string>
-    <string name="locale_system_fallback">Standard, lägsta prioritet · %1$s</string>
-    <string name="detail_order_hint">Appen använder det första språket den stöder, uppifrån och ned.</string>
-    <string name="status_pending">Sparat – tillämpas när Shizuku ansluter</string>
-    <string name="status_mismatch">Systemet har nu %1$s, vilket skiljer sig från ditt val.</string>
+    <string name="locale_system_fallback">Sista reserv · %1$s</string>
+    <string name="detail_order_hint">Det första språket i listan som appen stöder används.</string>
+    <string name="status_pending">Sparat; skrivs när Shizuku ansluter</string>
+    <string name="status_mismatch">Systemvärdet skiljer sig: %1$s</string>
     <string name="info_version">Version</string>
     <string name="info_sdk">SDK</string>
     <string name="info_sdk_value">Mål %1$d · Min %2$d</string>
@@ -158,23 +165,25 @@
         <item quantity="one">Språk · %1$d app</item>
         <item quantity="other">Språk · %1$d appar</item>
     </plurals>
-    <string name="picker_selected">Prioritetsordning</string>
-    <string name="picker_selected_empty">Inget språk valt: appen använder systemspråket. Välj språk nedan.</string>
+    <string name="picker_selected">Prioritet</string>
+    <string name="picker_selected_empty">Inget valt; appen följer systemspråket.</string>
     <string name="picker_search_hint">Sök språk</string>
-    <string name="picker_order_hint">Appen använder det första språket den stöder, uppifrån och ned; systemspråket kommer sist. Dra ≡ för att ändra ordning.</string>
+    <string name="picker_order_hint">Det första språket som stöds används; systemspråket är sista reserv. Dra ≡ för att ändra ordning.</string>
     <string name="picker_section_declared">Angivna av appen</string>
-    <string name="picker_section_system">Dina systemspråk</string>
+    <string name="picker_section_system">Systemspråk</string>
     <string name="picker_section_all">Alla språk</string>
+    <string name="picker_section_favorites">Favoriter</string>
+    <string name="picker_favorites_empty">Stjärnmärkta språk visas här.</string>
 
     <!-- Messages -->
-    <string name="message_applied">Språket tillämpat. Det gäller när appen har startats om.</string>
-    <string name="message_reset">Systemspråket igen. Det gäller när appen har startats om.</string>
-    <string name="message_saved_pending">Sparat. Tillämpas när Shizuku ansluter.</string>
-    <string name="message_apply_failed">Kunde inte tillämpa: %1$s</string>
-    <string name="message_needs_shizuku">Det här kräver att Shizuku körs</string>
-    <string name="message_restart_failed">Kunde inte starta om appen: %1$s</string>
-    <string name="message_reconcile_failed">Kunde inte kontrollera appspråken: %1$s</string>
-    <string name="message_check_ok">Alla appspråk är som du ställt in dem</string>
+    <string name="message_applied">Tillämpat. Starta om appen för att ändringen ska gälla.</string>
+    <string name="message_reset">Inställd på Följ systemet. Starta om appen för att ändringen ska gälla.</string>
+    <string name="message_saved_pending">Sparat; skrivs när Shizuku ansluter.</string>
+    <string name="message_apply_failed">Det gick inte att tillämpa: %1$s</string>
+    <string name="message_needs_shizuku">Shizuku är inte tillgängligt</string>
+    <string name="message_restart_failed">Det gick inte att starta om: %1$s</string>
+    <string name="message_reconcile_failed">Kontrollen misslyckades: %1$s</string>
+    <string name="message_check_ok">Kontrollen klar, inga skillnader</string>
     <plurals name="message_batch_applied">
         <item quantity="one">Tillämpat på %1$d app</item>
         <item quantity="other">Tillämpat på %1$d appar</item>
@@ -187,28 +196,28 @@
         <item quantity="other">%1$d appar importerade</item>
     </plurals>
     <string name="message_import_failed">Importen misslyckades: %1$s</string>
-    <string name="message_force_stopped">Appen stoppad</string>
-    <string name="message_force_stop_failed">Kunde inte stoppa appen: %1$s</string>
+    <string name="message_force_stopped">Tvångsstoppad</string>
+    <string name="message_force_stop_failed">Det gick inte att tvångsstoppa: %1$s</string>
     <plurals name="message_repaired">
         <item quantity="one">Språket för %1$d app har återställts</item>
         <item quantity="other">Språken för %1$d appar har återställts</item>
     </plurals>
     <plurals name="message_adopted">
-        <item quantity="one">Befintligt språk för %1$d app övertaget</item>
-        <item quantity="other">Befintliga språk för %1$d appar övertagna</item>
+        <item quantity="one">Befintlig inställning för %1$d app importerad</item>
+        <item quantity="other">Befintliga inställningar för %1$d appar importerade</item>
     </plurals>
 
     <!-- Undo countdown before a change is written -->
     <string name="action_undo">Ångra</string>
-    <string name="pending_apply">Språket för %1$s ändras</string>
-    <string name="pending_reset">%1$s kommer att följa systemspråket igen</string>
-    <string name="pending_forget">%1$s glöms bort</string>
+    <string name="pending_apply">Ändrar språk för %1$s</string>
+    <string name="pending_reset">Ställer in %1$s på Följ systemet</string>
+    <string name="pending_forget">Tar bort posten för %1$s</string>
     <plurals name="pending_batch_apply">
-        <item quantity="one">Språket ändras för %1$d app</item>
-        <item quantity="other">Språket ändras för %1$d appar</item>
+        <item quantity="one">Ändrar språk för %1$d app</item>
+        <item quantity="other">Ändrar språk för %1$d appar</item>
     </plurals>
     <plurals name="pending_batch_reset">
-        <item quantity="one">%1$d app kommer att följa systemspråket igen</item>
-        <item quantity="other">%1$d appar kommer att följa systemspråket igen</item>
+        <item quantity="one">Ställer in %1$d app på Följ systemet</item>
+        <item quantity="other">Ställer in %1$d appar på Följ systemet</item>
     </plurals>
 </resources>

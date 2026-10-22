@@ -9,7 +9,7 @@
     <string name="action_restart_app">Перезапустить</string>
     <string name="action_force_stop">Остановить</string>
     <string name="action_app_info">О приложении</string>
-    <string name="action_system_language">Язык в настройках системы</string>
+    <string name="action_system_language">Язык приложения в Настройках</string>
     <string name="action_change_language">Изменить язык</string>
     <string name="action_reset_to_system">Как в системе</string>
     <string name="action_follow_system">Очистить</string>
@@ -18,13 +18,15 @@
     <string name="action_remove">Удалить</string>
     <string name="action_expand">Показать регионы</string>
     <string name="action_collapse">Скрыть регионы</string>
-    <string name="action_sort">Сортировка</string>
+    <string name="action_sort">Сортировка и фильтры</string>
     <string name="action_clear_search">Очистить поиск</string>
     <string name="action_select_all">Выбрать все</string>
     <string name="action_check_now">Проверить сейчас</string>
-    <string name="action_forget">Забыть</string>
+    <string name="action_forget">Удалить запись</string>
     <string name="action_clear_activity">Очистить</string>
     <string name="action_reorder">Перетащите, чтобы изменить порядок</string>
+    <string name="action_favorite">Добавить в избранное</string>
+    <string name="action_unfavorite">Удалить из избранного</string>
 
     <!-- Navigation -->
     <string name="nav_apps">Приложения</string>
@@ -36,18 +38,21 @@
     <string name="search_hint">Поиск приложений или языков</string>
     <string name="list_empty">Нет приложений</string>
     <string name="list_no_results">Ничего не найдено</string>
-    <string name="filter_launchable">Запускаемые</string>
+    <string name="list_no_favorites">Избранных пока нет. Добавьте приложения на странице сведений о них.</string>
     <string name="filter_user">Пользовательские</string>
     <string name="filter_system">Системные</string>
     <string name="filter_all">Все</string>
+    <string name="filter_favorites">Избранные</string>
+    <string name="filter_launchable_only">Только запускаемые приложения</string>
+    <string name="filter_enabled_only">Только включённые приложения</string>
     <string name="sort_name">По названию</string>
     <string name="sort_recently_set">Недавно настроенные</string>
     <string name="sort_recently_updated">Недавно обновлённые</string>
     <string name="sort_recently_installed">Недавно установленные</string>
-    <string name="sort_with_locale_first">Сначала приложения с языком</string>
     <string name="sort_reverse">Обратный порядок</string>
     <string name="app_badge_system">Системное</string>
     <string name="app_badge_disabled">Отключено</string>
+    <string name="app_badge_favorite">В избранном</string>
     <plurals name="selection_count">
         <item quantity="one">Выбрано: %1$d</item>
         <item quantity="few">Выбрано: %1$d</item>
@@ -57,14 +62,14 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Приложения</string>
-    <string name="managed_empty">Пока ни у одного приложения нет собственного языка.</string>
-    <string name="managed_section_activity">Последние действия</string>
-    <string name="managed_activity_empty">Пока ничего.</string>
+    <string name="managed_empty">Нет настроенных приложений</string>
+    <string name="managed_section_activity">Журнал</string>
+    <string name="managed_activity_empty">Записей нет</string>
     <plurals name="managed_summary_count">
-        <item quantity="one">%1$d приложение с собственным языком</item>
-        <item quantity="few">%1$d приложения с собственным языком</item>
-        <item quantity="many">%1$d приложений с собственным языком</item>
-        <item quantity="other">%1$d приложения с собственным языком</item>
+        <item quantity="one">%1$d приложение настроено</item>
+        <item quantity="few">%1$d приложения настроены</item>
+        <item quantity="many">%1$d приложений настроено</item>
+        <item quantity="other">%1$d приложения настроено</item>
     </plurals>
     <plurals name="managed_summary_attention">
         <item quantity="one">%1$d требует внимания</item>
@@ -73,61 +78,63 @@
         <item quantity="other">%1$d требуют внимания</item>
     </plurals>
     <string name="managed_last_check_never">Ещё не проверялось</string>
-    <string name="managed_last_check">Последняя проверка %1$s · восстановлено: %2$d · перенято: %3$d</string>
+    <string name="managed_last_check">Последняя проверка %1$s · восстановлено: %2$d · импортировано: %3$d</string>
     <string name="managed_not_installed">Не установлено</string>
     <string name="activity_applied">Установлено: %1$s</string>
-    <string name="activity_reset">Снова язык системы</string>
+    <string name="activity_reset">Установлено «Как в системе»</string>
     <string name="activity_repaired">Восстановлено после изменения системой: %1$s → %2$s</string>
-    <string name="activity_mismatch">Система изменила на %1$s (ваш выбор: %2$s); автовосстановление выключено</string>
-    <string name="activity_adopted">Перенято: %1$s</string>
-    <string name="activity_imported">Импортировано: %1$s</string>
-    <string name="activity_failed">Не удалось записать: %1$s</string>
+    <string name="activity_mismatch">Система изменила на %1$s (настроено: %2$s); автовосстановление выключено</string>
+    <string name="activity_adopted">Импортирована существующая настройка: %1$s</string>
+    <string name="activity_imported">Импортировано из файла: %1$s</string>
+    <string name="activity_failed">Ошибка записи: %1$s</string>
 
     <!-- Settings -->
-    <string name="settings_shizuku_connected">Подключено как %1$s</string>
+    <string name="settings_shizuku_connected">Подключено (%1$s)</string>
     <string name="settings_section_appearance">Оформление</string>
     <string name="settings_theme">Тема</string>
     <string name="settings_theme_system">Системная</string>
     <string name="settings_theme_light">Светлая</string>
     <string name="settings_theme_dark">Тёмная</string>
-    <string name="settings_dynamic_color">Цвета обоев</string>
-    <string name="settings_dynamic_color_summary">Использовать цвета ваших обоев</string>
+    <string name="settings_dynamic_color">Динамические цвета</string>
+    <string name="settings_dynamic_color_summary">Палитра на основе обоев</string>
     <string name="settings_seed_color">Цвет темы</string>
     <string name="settings_pure_black">Чисто чёрный</string>
-    <string name="settings_pure_black_summary">Чёрный фон в тёмной теме</string>
-    <string name="settings_section_keeping">Сохранение языков</string>
-    <string name="settings_auto_repair">Восстанавливать автоматически</string>
-    <string name="settings_auto_repair_summary">Если система удалит или урежет выбранный вами язык, он будет записан снова. Если выключено, это только отмечается в журнале.</string>
-    <string name="settings_background_check">Проверять в фоне</string>
-    <string name="settings_background_check_summary">Периодически проверять, даже когда Applingo закрыт (в этот момент должен работать Shizuku)</string>
-    <string name="settings_background_interval">Проверять каждые</string>
+    <string name="settings_pure_black_summary">Только в тёмной теме</string>
+    <string name="settings_system_font">Системный шрифт</string>
+    <string name="settings_system_font_summary">Системный шрифт вместо Roboto Condensed</string>
+    <string name="settings_section_keeping">Проверка и восстановление</string>
+    <string name="settings_auto_repair">Автовосстановление</string>
+    <string name="settings_auto_repair_summary">Повторно записывать языки, которые система удаляет или урезает, например после обновления приложения. Если выключено, изменения только записываются в журнал.</string>
+    <string name="settings_background_check">Фоновая проверка</string>
+    <string name="settings_background_check_summary">Периодическая проверка, пока Applingo закрыт. Требуется запущенный Shizuku.</string>
+    <string name="settings_background_interval">Интервал проверки</string>
     <string name="settings_section_app_list">Список приложений</string>
-    <string name="settings_start_filter">Фильтр по умолчанию</string>
-    <string name="settings_refresh_on_launch">Обновлять при запуске</string>
-    <string name="settings_refresh_on_launch_summary">Заново сканировать установленные приложения при каждом открытии Applingo. Замедляет открытие; если выключено, потяните список вниз, чтобы обновить.</string>
+    <string name="settings_start_filter">Вкладка по умолчанию</string>
+    <string name="settings_refresh_on_launch">Сканировать при запуске</string>
+    <string name="settings_refresh_on_launch_summary">Замедляет запуск. Если выключено, показывается кешированный список; потяните вниз, чтобы обновить.</string>
     <string name="settings_hours">%1$d ч</string>
     <string name="settings_section_data">Данные</string>
     <string name="settings_export">Экспорт</string>
-    <string name="settings_export_summary">Сохранить языки приложений в файл</string>
+    <string name="settings_export_summary">Сохранить языковые настройки приложений в файл JSON</string>
     <string name="settings_import">Импорт</string>
-    <string name="settings_import_summary">Загрузить языки приложений из экспортированного файла и применить</string>
+    <string name="settings_import_summary">Загрузить и применить настройки из экспорта JSON</string>
     <string name="settings_section_about">О программе</string>
-    <string name="settings_own_language">Язык Applingo</string>
+    <string name="settings_own_language">Язык интерфейса</string>
     <string name="settings_source">Исходный код</string>
     <string name="settings_version">Версия</string>
     <string name="settings_license">Лицензия MIT</string>
     <string name="time_just_now">только что</string>
 
     <!-- Shizuku -->
-    <string name="shizuku_not_installed">Applingo нужен Shizuku (или Sui), чтобы менять язык других приложений. Сначала установите и запустите его.</string>
-    <string name="shizuku_not_running">Shizuku установлен, но не запущен. Запустите его в приложении Shizuku. Ваш выбор сохранится и будет применён, как только он заработает.</string>
-    <string name="shizuku_unsupported">Эта версия Shizuku слишком старая. Обновите Shizuku.</string>
-    <string name="shizuku_permission_required">Разрешите Applingo использовать Shizuku.</string>
-    <string name="shizuku_permission_denied">В разрешении Shizuku отказано. Разрешите Applingo в приложении Shizuku и повторите попытку.</string>
+    <string name="shizuku_not_installed">Для изменения языка других приложений требуется Shizuku (или Sui).</string>
+    <string name="shizuku_not_running">Shizuku не запущен. Изменения сохраняются и будут записаны после его запуска.</string>
+    <string name="shizuku_unsupported">Эта версия Shizuku не поддерживается. Обновите Shizuku.</string>
+    <string name="shizuku_permission_required">Требуется разрешение Shizuku.</string>
+    <string name="shizuku_permission_denied">В разрешении Shizuku отказано. Предоставьте его в приложении Shizuku и повторите попытку.</string>
     <string name="shizuku_connecting">Подключение к Shizuku…</string>
     <string name="shizuku_failed">Не удалось запустить службу Shizuku: %1$s</string>
     <string name="shizuku_action_get">Скачать Shizuku</string>
-    <string name="shizuku_action_grant">Разрешить</string>
+    <string name="shizuku_action_grant">Предоставить</string>
     <string name="shizuku_action_open">Открыть Shizuku</string>
 
     <!-- Detail -->
@@ -135,10 +142,10 @@
     <string name="detail_not_installed">Приложение не установлено</string>
     <string name="detail_language">Язык приложения</string>
     <string name="locale_follow_system">Язык системы</string>
-    <string name="locale_system_fallback">По умолчанию, самый низкий приоритет · %1$s</string>
-    <string name="detail_order_hint">Приложение использует первый поддерживаемый язык сверху вниз.</string>
-    <string name="status_pending">Сохранено — будет применено после подключения Shizuku</string>
-    <string name="status_mismatch">Сейчас в системе %1$s — это отличается от вашего выбора.</string>
+    <string name="locale_system_fallback">Последний резерв · %1$s</string>
+    <string name="detail_order_hint">Используется первый язык из списка, который поддерживает приложение.</string>
+    <string name="status_pending">Сохранено; будет записано после подключения Shizuku</string>
+    <string name="status_mismatch">Значение в системе отличается: %1$s</string>
     <string name="info_version">Версия</string>
     <string name="info_sdk">SDK</string>
     <string name="info_sdk_value">Целевой %1$d · Мин. %2$d</string>
@@ -168,23 +175,25 @@
         <item quantity="many">Язык · %1$d приложений</item>
         <item quantity="other">Язык · %1$d приложения</item>
     </plurals>
-    <string name="picker_selected">Порядок выбора</string>
-    <string name="picker_selected_empty">Язык не выбран: приложение использует язык системы. Выберите языки ниже.</string>
+    <string name="picker_selected">Приоритет</string>
+    <string name="picker_selected_empty">Ничего не выбрано; приложение использует язык системы.</string>
     <string name="picker_search_hint">Поиск языков</string>
-    <string name="picker_order_hint">Приложение использует первый поддерживаемый язык сверху вниз; язык системы всегда последний. Перетащите ≡, чтобы изменить порядок.</string>
+    <string name="picker_order_hint">Используется первый поддерживаемый язык; язык системы — последний резерв. Перетащите ≡, чтобы изменить порядок.</string>
     <string name="picker_section_declared">Заявлены приложением</string>
-    <string name="picker_section_system">Ваши системные языки</string>
+    <string name="picker_section_system">Языки системы</string>
     <string name="picker_section_all">Все языки</string>
+    <string name="picker_section_favorites">Избранные</string>
+    <string name="picker_favorites_empty">Здесь появляются языки, отмеченные звёздочкой.</string>
 
     <!-- Messages -->
-    <string name="message_applied">Язык применён. Изменение вступит в силу после перезапуска приложения.</string>
-    <string name="message_reset">Снова язык системы. Изменение вступит в силу после перезапуска приложения.</string>
-    <string name="message_saved_pending">Сохранено. Будет применено после подключения Shizuku.</string>
+    <string name="message_applied">Применено. Перезапустите приложение, чтобы изменения вступили в силу.</string>
+    <string name="message_reset">Установлено «Как в системе». Перезапустите приложение, чтобы изменения вступили в силу.</string>
+    <string name="message_saved_pending">Сохранено; будет записано после подключения Shizuku.</string>
     <string name="message_apply_failed">Не удалось применить: %1$s</string>
-    <string name="message_needs_shizuku">Для этого должен работать Shizuku</string>
-    <string name="message_restart_failed">Не удалось перезапустить приложение: %1$s</string>
-    <string name="message_reconcile_failed">Не удалось проверить языки приложений: %1$s</string>
-    <string name="message_check_ok">Все языки приложений соответствуют вашим настройкам</string>
+    <string name="message_needs_shizuku">Shizuku недоступен</string>
+    <string name="message_restart_failed">Не удалось перезапустить: %1$s</string>
+    <string name="message_reconcile_failed">Ошибка проверки: %1$s</string>
+    <string name="message_check_ok">Проверка завершена, расхождений нет</string>
     <plurals name="message_batch_applied">
         <item quantity="one">Применено к %1$d приложению</item>
         <item quantity="few">Применено к %1$d приложениям</item>
@@ -202,7 +211,7 @@
     </plurals>
     <string name="message_import_failed">Ошибка импорта: %1$s</string>
     <string name="message_force_stopped">Приложение остановлено</string>
-    <string name="message_force_stop_failed">Не удалось остановить приложение: %1$s</string>
+    <string name="message_force_stop_failed">Не удалось остановить: %1$s</string>
     <plurals name="message_repaired">
         <item quantity="one">Восстановлен язык %1$d приложения</item>
         <item quantity="few">Восстановлены языки %1$d приложений</item>
@@ -210,27 +219,27 @@
         <item quantity="other">Восстановлены языки %1$d приложения</item>
     </plurals>
     <plurals name="message_adopted">
-        <item quantity="one">Перенят текущий язык %1$d приложения</item>
-        <item quantity="few">Переняты текущие языки %1$d приложений</item>
-        <item quantity="many">Переняты текущие языки %1$d приложений</item>
-        <item quantity="other">Переняты текущие языки %1$d приложения</item>
+        <item quantity="one">Импортирована существующая настройка %1$d приложения</item>
+        <item quantity="few">Импортированы существующие настройки %1$d приложений</item>
+        <item quantity="many">Импортированы существующие настройки %1$d приложений</item>
+        <item quantity="other">Импортированы существующие настройки %1$d приложения</item>
     </plurals>
 
     <!-- Undo countdown before a change is written -->
     <string name="action_undo">Отменить</string>
-    <string name="pending_apply">Смена языка приложения %1$s</string>
-    <string name="pending_reset">Приложение %1$s вернётся к языку системы</string>
-    <string name="pending_forget">Приложение %1$s будет забыто</string>
+    <string name="pending_apply">Изменение языка: %1$s</string>
+    <string name="pending_reset">Установка «Как в системе»: %1$s</string>
+    <string name="pending_forget">Удаление записи: %1$s</string>
     <plurals name="pending_batch_apply">
-        <item quantity="one">Смена языка в %1$d приложении</item>
-        <item quantity="few">Смена языка в %1$d приложениях</item>
-        <item quantity="many">Смена языка в %1$d приложениях</item>
-        <item quantity="other">Смена языка в %1$d приложения</item>
+        <item quantity="one">Изменение языка %1$d приложения</item>
+        <item quantity="few">Изменение языка %1$d приложений</item>
+        <item quantity="many">Изменение языка %1$d приложений</item>
+        <item quantity="other">Изменение языка %1$d приложения</item>
     </plurals>
     <plurals name="pending_batch_reset">
-        <item quantity="one">%1$d приложение вернётся к языку системы</item>
-        <item quantity="few">%1$d приложения вернутся к языку системы</item>
-        <item quantity="many">%1$d приложений вернутся к языку системы</item>
-        <item quantity="other">%1$d приложения вернутся к языку системы</item>
+        <item quantity="one">Установка «Как в системе» для %1$d приложения</item>
+        <item quantity="few">Установка «Как в системе» для %1$d приложений</item>
+        <item quantity="many">Установка «Как в системе» для %1$d приложений</item>
+        <item quantity="other">Установка «Как в системе» для %1$d приложения</item>
     </plurals>
 </resources>

@@ -52,6 +52,7 @@ import io.github.ernisn.applingo.ui.AppIcon
 import io.github.ernisn.applingo.ui.AppRow
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.components.FavoriteButton
 import io.github.ernisn.applingo.ui.components.LanguageActions
 import io.github.ernisn.applingo.ui.components.LocalePriorityList
 import io.github.ernisn.applingo.ui.components.PackageLine
@@ -114,7 +115,7 @@ fun AppDetailPane(
                 .verticalScroll(rememberScrollState())
                 .padding(start = 16.dp, end = 16.dp, top = padding.calculateTopPadding(), bottom = 16.dp),
         ) {
-            HeaderCard(row)
+            HeaderCard(row, onToggleFavorite = { viewModel.toggleFavoriteApp(packageName) })
             LanguageCard(
                 row = row,
                 systemLocales = viewModel.systemLocales,
@@ -138,20 +139,27 @@ fun EmptyDetailPane() {
     }
 }
 
+/** Icon, name, package and version, with the star that adds the app to the list's Favorites tab. */
 @Composable
-private fun HeaderCard(row: AppRow) {
+private fun HeaderCard(row: AppRow, onToggleFavorite: () -> Unit) {
     Card(Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp)) {
+        // The star's touch target reaches into the card's padding, so the star itself lines up with
+        // the card's content.
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 16.dp, end = 4.dp, top = 16.dp, bottom = 16.dp),
+        ) {
             AppIcon(row.app.packageName, row.app.lastUpdateTime, size = 56.dp, dimmed = !row.app.isEnabled)
             Spacer(Modifier.width(16.dp))
             // Name, package and version together are about as tall as the icon.
-            Column {
+            Column(Modifier.weight(1f)) {
                 Text(row.app.label, style = MaterialTheme.typography.titleMedium)
                 CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant) {
                     PackageLine(row.app)
                     row.app.versionName?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                 }
             }
+            FavoriteButton(favorite = row.favorite, onToggle = onToggleFavorite)
         }
     }
 }

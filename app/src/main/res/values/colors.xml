@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#FF3F51B5</color>
+    <!-- Muted ink green behind the white logo; themed icons use the system colors instead. -->
+    <color name="ic_launcher_background">#FF36584B</color>
 </resources>

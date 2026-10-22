@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- British spellings only; everything else falls back to the default English strings. -->
 <resources>
-    <string name="settings_dynamic_color">Wallpaper colours</string>
-    <string name="settings_dynamic_color_summary">Use colours from your wallpaper</string>
+    <string name="settings_dynamic_color">Dynamic colour</string>
     <string name="settings_seed_color">Theme colour</string>
     <string name="settings_license">MIT Licence</string>
+    <string name="filter_favorites">Favourites</string>
+    <string name="list_no_favorites">No favourites yet. Add apps from their detail page.</string>
+    <string name="app_badge_favorite">Favourite</string>
+    <string name="action_favorite">Add to favourites</string>
+    <string name="action_unfavorite">Remove from favourites</string>
+    <string name="picker_section_favorites">Favourites</string>
 </resources>

@@ -17,10 +17,7 @@ import io.github.ernisn.applingo.R
 import io.github.ernisn.applingo.data.AppTypeFilter
 import io.github.ernisn.applingo.ui.theme.ControlShape
 
-/**
- * Launchable / User / System / All as one row of equal-width segments. Labels shrink to fit instead
- * of wrapping: four of them share a landscape pane, and some translations are long.
- */
+/** All / User / System / Favorites, the app list's tabs (and the default one in settings). */
 @Composable
 fun AppTypeFilterRow(
     selected: AppTypeFilter,
@@ -29,19 +26,40 @@ fun AppTypeFilterRow(
     enabled: Boolean = true,
 ) {
     val filters = AppTypeFilter.entries
+    SegmentedTabRow(
+        labels = filters.map { stringResource(it.labelRes()) },
+        selected = filters.indexOf(selected),
+        onSelect = { onSelect(filters[it]) },
+        modifier = modifier,
+        enabled = enabled,
+    )
+}
+
+/**
+ * Tabs as one row of equal-width segments, the same on every page. Labels shrink to fit instead of
+ * wrapping: four of them share a landscape pane, and some translations are long.
+ */
+@Composable
+fun SegmentedTabRow(
+    labels: List<String>,
+    selected: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
     SingleChoiceSegmentedButtonRow(modifier.fillMaxWidth()) {
-        filters.forEachIndexed { index, filter ->
+        labels.forEachIndexed { index, label ->
             SegmentedButton(
-                selected = filter == selected,
-                onClick = { onSelect(filter) },
+                selected = index == selected,
+                onClick = { onSelect(index) },
                 enabled = enabled,
-                shape = SegmentedButtonDefaults.itemShape(index, filters.size, baseShape = ControlShape),
+                shape = SegmentedButtonDefaults.itemShape(index, labels.size, baseShape = ControlShape),
                 contentPadding = PaddingValues(horizontal = 4.dp),
                 // The selected segment's fill is enough; a check mark would take a third of its width.
                 icon = {},
             ) {
                 Text(
-                    text = stringResource(filter.labelRes()),
+                    text = label,
                     maxLines = 1,
                     autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = MaterialTheme.typography.labelLarge.fontSize),
                 )
@@ -51,8 +69,8 @@ fun AppTypeFilterRow(
 }
 
 fun AppTypeFilter.labelRes(): Int = when (this) {
-    AppTypeFilter.Launchable -> R.string.filter_launchable
+    AppTypeFilter.All -> R.string.filter_all
     AppTypeFilter.User -> R.string.filter_user
     AppTypeFilter.System -> R.string.filter_system
-    AppTypeFilter.All -> R.string.filter_all
+    AppTypeFilter.Favorites -> R.string.filter_favorites
 }

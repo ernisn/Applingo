@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.safeDrawing
@@ -80,6 +82,7 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.Constraints
 import kotlin.math.roundToInt
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
@@ -99,6 +102,15 @@ private enum class Destination(val label: Int) { Apps(R.string.nav_apps), Manage
 
 /** From this width on (landscape phones, unfolded foldables, tablets) navigation moves to a side rail. */
 private const val RAIL_MIN_WIDTH_DP = 600
+
+/** Space every pane keeps between its content and its left and right edges. */
+private val PaneMargin = 16.dp
+
+/**
+ * Space between content and a system bar or cutout beside it: what the rail leaves between the bar
+ * or cutout on its side and its items (an 80 dp rail with 56 dp indicators), so both sides match.
+ */
+private val BarGap = 12.dp
 
 /**
  * Top-level navigation: a bottom bar on narrow screens, a side rail on wider ones. Everything is drawn
@@ -203,14 +215,18 @@ fun MainScreen(viewModel: MainViewModel) {
                     Spacer(Modifier.weight(1f))
                 }
                 // Breathing room between the rail (whose labels can be as wide as it is) and the first
-                // pane, matched at the far edge. The bar or cutout there is kept out at this level, so
-                // side-by-side panes split only the usable width and come out equally wide.
+                // pane. The bar or cutout at the far edge is kept out at this level, so side-by-side
+                // panes split only the usable width and come out equally wide. The last pane's
+                // content then sits [BarGap] from it, as the rail's items do from the bar or cutout
+                // on their side: its own margin partly lies over the bar (see [safeArea]) instead of
+                // adding to it, which left a wide empty strip.
+                val farEdge = WindowInsets.safeDrawing.only(WindowInsetsSides.End).asPaddingValues()
+                    .calculateEndPadding(LocalLayoutDirection.current)
                 content(
                     Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.End))
-                        .padding(horizontal = 12.dp),
+                        .padding(start = 12.dp, end = (farEdge - (PaneMargin - BarGap)).coerceAtLeast(0.dp)),
                 )
             }
         } else {
@@ -247,6 +263,10 @@ fun MainScreen(viewModel: MainViewModel) {
  * Only the part of the element inside the window counts: a pane sliding in or out is partly off
  * screen, and counting that part as overlapping the bar on that side squeezed its content into a
  * narrow strip that widened as the pane slid in.
+ *
+ * At the sides, every pane keeps its content [PaneMargin] from its edges anyway. Content only needs
+ * to stay [BarGap] clear of a bar or cutout, so the rest of that margin may lie over it (only
+ * background shows there) and is not taken off again.
  */
 @Composable
 fun Modifier.safeArea(): Modifier {
@@ -270,9 +290,11 @@ fun Modifier.safeArea(): Modifier {
                 val origin = coords.positionInWindow()
                 val x = origin.x.roundToInt()
                 val y = origin.y.roundToInt()
-                left = overlap(x, x + width, 0, insets.getLeft(this@layout, direction))
+                val spare = (PaneMargin - BarGap).roundToPx()
+                left = (overlap(x, x + width, 0, insets.getLeft(this@layout, direction)) - spare).coerceAtLeast(0)
                 top = overlap(y, y + height, 0, insets.getTop(this@layout))
-                right = overlap(x, x + width, window.width - insets.getRight(this@layout, direction), window.width)
+                right = (overlap(x, x + width, window.width - insets.getRight(this@layout, direction), window.width) - spare)
+                    .coerceAtLeast(0)
                 bottom = overlap(y, y + height, window.height - insets.getBottom(this@layout), window.height)
             }
             val placeable = measurable.measure(

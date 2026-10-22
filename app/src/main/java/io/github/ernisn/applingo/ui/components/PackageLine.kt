@@ -17,16 +17,17 @@ import io.github.ernisn.applingo.R
 import io.github.ernisn.applingo.data.AppInfo
 
 /**
- * An app's package name, led by small marks for a system app and a disabled app. A plain user app
- * has none, and an app's own language already shows as its badge.
+ * An app's package name, led by small marks for a favorite, a system app and a disabled app. A plain
+ * user app has none, and an app's own language already shows as its badge.
  *
  * Monochrome glyphs in the text color rather than colored dots: they look the same with every theme
  * color and in dark mode, don't rely on telling colors apart, and red already means a language
  * problem here.
  */
 @Composable
-fun PackageLine(app: AppInfo, modifier: Modifier = Modifier) {
+fun PackageLine(app: AppInfo, modifier: Modifier = Modifier, favorite: Boolean = false) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
+        if (favorite) Mark(R.drawable.ic_star, R.string.app_badge_favorite)
         if (app.isSystem) Mark(R.drawable.ic_mark_system, R.string.app_badge_system)
         if (!app.isEnabled) Mark(R.drawable.ic_mark_disabled, R.string.app_badge_disabled)
         Text(

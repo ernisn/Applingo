@@ -62,11 +62,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ernisn.applingo.R
+import io.github.ernisn.applingo.core.LanguageGroup
 import io.github.ernisn.applingo.core.LocaleCatalog
 import io.github.ernisn.applingo.core.LocaleOption
 import io.github.ernisn.applingo.core.Search
 import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.components.EditablePriorityList
+import io.github.ernisn.applingo.ui.components.FavoriteButton
 import io.github.ernisn.applingo.ui.components.SearchField
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.theme.ControlShape
@@ -106,9 +108,14 @@ fun LocalePickerPane(
     )
 }
 
-/** Full-screen picker that applies one chain to every app selected in the list. */
+/** Full-screen picker that applies one chain to the [count] apps selected in a list. */
 @Composable
-fun BatchLocalePickerDialog(viewModel: MainViewModel, count: Int, onDismiss: () -> Unit) {
+fun BatchLocalePickerDialog(
+    viewModel: MainViewModel,
+    count: Int,
+    onApply: (List<String>) -> Unit,
+    onDismiss: () -> Unit,
+) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
@@ -123,7 +130,7 @@ fun BatchLocalePickerDialog(viewModel: MainViewModel, count: Int, onDismiss: () 
                 closeAsBack = false,
                 batch = true,
                 onApply = { chain ->
-                    viewModel.applyToSelection(chain)
+                    onApply(chain)
                     onDismiss()
                 },
                 onClose = onDismiss,
@@ -151,15 +158,33 @@ private fun LocalePickerContent(
     batch: Boolean = false,
 ) {
     val catalog by viewModel.catalog.collectAsStateWithLifecycle()
+    val favorites by viewModel.favoriteLocales.collectAsStateWithLifecycle()
     val chain = rememberSaveable(stateKey, saver = chainSaver) { initial.toMutableStateList() }
     var query by rememberSaveable(stateKey) { mutableStateOf("") }
     val expanded = remember(stateKey) { mutableStateListOf<String>() }
     val uiLocale = LocalConfiguration.current.locales[0]
     val systemOptions = remember(uiLocale) { viewModel.systemLocales.map { LocaleCatalog.option(it, uiLocale) } }
     val declaredOptions = remember(declared, uiLocale) { declared.orEmpty().map { LocaleCatalog.option(it, uiLocale) } }
+    val favoriteOptions = remember(favorites, uiLocale) { favorites.map { LocaleCatalog.option(it, uiLocale) } }
 
     fun toggle(tag: String) {
         if (!chain.remove(tag)) chain.add(tag)
+    }
+
+    // Every language row: ticking it adds it to the chain, its star keeps it under Favorites.
+    @Composable
+    fun Option(option: LocaleOption, indent: Boolean = false, group: LanguageGroup? = null) {
+        OptionRow(
+            option = option,
+            selected = option.tag in chain,
+            onClick = { toggle(option.tag) },
+            favorite = option.tag in favorites,
+            onFavoriteToggle = { viewModel.toggleFavoriteLocale(option.tag) },
+            expandable = group != null && group.variants.isNotEmpty(),
+            expanded = option.tag in expanded,
+            onExpandToggle = { if (!expanded.remove(option.tag)) expanded.add(option.tag) },
+            indent = indent,
+        )
     }
 
     // Searching brings the field to the top, so the keyboard covers results rather than the field
@@ -271,47 +296,37 @@ private fun LocalePickerContent(
                             )
                         }
                     }
-                    items(matches, key = { "search:${it.tag}" }) { option ->
-                        OptionRow(option, selected = option.tag in chain, onClick = { toggle(option.tag) })
-                    }
+                    items(matches, key = { "search:${it.tag}" }) { option -> Option(option) }
                     // Room to scroll the field to the top even when only a few languages match.
                     item(key = "search-room") { Spacer(Modifier.fillParentMaxHeight()) }
                 }
                 else -> {
-                    if (declaredOptions.isNotEmpty()) {
-                        sectionHeader(R.string.picker_section_declared)
-                        items(declaredOptions, key = { "declared:${it.tag}" }) { option ->
-                            OptionRow(option, selected = option.tag in chain, onClick = { toggle(option.tag) })
+                    // First, right below the field: the point is not having to search for them again.
+                    // Apps can declare dozens of languages, which would push them far down.
+                    sectionHeader(R.string.picker_section_favorites)
+                    if (favoriteOptions.isEmpty()) {
+                        item(key = "favorites-hint") {
+                            Text(
+                                text = stringResource(R.string.picker_favorites_empty),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            )
                         }
                     }
-                    sectionHeader(R.string.picker_section_system)
-                    items(systemOptions, key = { "system:${it.tag}" }) { option ->
-                        OptionRow(option, selected = option.tag in chain, onClick = { toggle(option.tag) })
+                    items(favoriteOptions, key = { "favorite:${it.tag}" }) { option -> Option(option) }
+                    if (declaredOptions.isNotEmpty()) {
+                        sectionHeader(R.string.picker_section_declared)
+                        items(declaredOptions, key = { "declared:${it.tag}" }) { option -> Option(option) }
                     }
+                    sectionHeader(R.string.picker_section_system)
+                    items(systemOptions, key = { "system:${it.tag}" }) { option -> Option(option) }
                     sectionHeader(R.string.picker_section_all)
                     groups.forEach { group ->
                         val language = group.language
-                        item(key = "all:${language.tag}") {
-                            OptionRow(
-                                option = language,
-                                selected = language.tag in chain,
-                                onClick = { toggle(language.tag) },
-                                expandable = group.variants.isNotEmpty(),
-                                expanded = language.tag in expanded,
-                                onExpandToggle = {
-                                    if (!expanded.remove(language.tag)) expanded.add(language.tag)
-                                },
-                            )
-                        }
+                        item(key = "all:${language.tag}") { Option(language, group = group) }
                         if (language.tag in expanded) {
-                            items(group.variants, key = { "all:${it.tag}" }) { option ->
-                                OptionRow(
-                                    option = option,
-                                    selected = option.tag in chain,
-                                    onClick = { toggle(option.tag) },
-                                    indent = true,
-                                )
-                            }
+                            items(group.variants, key = { "all:${it.tag}" }) { option -> Option(option, indent = true) }
                         }
                     }
                 }
@@ -336,10 +351,12 @@ private fun OptionRow(
     option: LocaleOption,
     selected: Boolean,
     onClick: () -> Unit,
-    expandable: Boolean = false,
-    expanded: Boolean = false,
-    onExpandToggle: () -> Unit = {},
-    indent: Boolean = false,
+    favorite: Boolean,
+    onFavoriteToggle: () -> Unit,
+    expandable: Boolean,
+    expanded: Boolean,
+    onExpandToggle: () -> Unit,
+    indent: Boolean,
 ) {
     ListItem(
         modifier = Modifier
@@ -350,17 +367,20 @@ private fun OptionRow(
         supportingContent = {
             Text("${option.localizedName} · ${option.tag}", maxLines = 1, overflow = TextOverflow.Ellipsis)
         },
-        trailingContent = if (expandable) {
-            {
-                IconButton(onClick = onExpandToggle) {
-                    Icon(
-                        if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                        contentDescription = stringResource(if (expanded) R.string.action_collapse else R.string.action_expand),
-                    )
+        // The star at the very end, so the stars line up in every section whether or not a row has
+        // regions to show.
+        trailingContent = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (expandable) {
+                    IconButton(onClick = onExpandToggle) {
+                        Icon(
+                            if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                            contentDescription = stringResource(if (expanded) R.string.action_collapse else R.string.action_expand),
+                        )
+                    }
                 }
+                FavoriteButton(favorite = favorite, onToggle = onFavoriteToggle)
             }
-        } else {
-            null
         },
     )
 }

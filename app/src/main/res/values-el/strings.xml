@@ -9,7 +9,7 @@
     <string name="action_restart_app">Επανεκκίνηση εφαρμογής</string>
     <string name="action_force_stop">Αναγκαστική διακοπή</string>
     <string name="action_app_info">Πληροφορίες εφαρμογής</string>
-    <string name="action_system_language">Γλώσσα στις ρυθμίσεις συστήματος</string>
+    <string name="action_system_language">Γλώσσα εφαρμογής στις Ρυθμίσεις</string>
     <string name="action_change_language">Αλλαγή γλώσσας</string>
     <string name="action_reset_to_system">Όπως το σύστημα</string>
     <string name="action_follow_system">Εκκαθάριση</string>
@@ -18,13 +18,15 @@
     <string name="action_remove">Αφαίρεση</string>
     <string name="action_expand">Εμφάνιση περιοχών</string>
     <string name="action_collapse">Απόκρυψη περιοχών</string>
-    <string name="action_sort">Ταξινόμηση</string>
+    <string name="action_sort">Ταξινόμηση και φίλτρα</string>
     <string name="action_clear_search">Εκκαθάριση αναζήτησης</string>
     <string name="action_select_all">Επιλογή όλων</string>
     <string name="action_check_now">Έλεγχος τώρα</string>
-    <string name="action_forget">Διαγραφή από τη λίστα</string>
+    <string name="action_forget">Διαγραφή εγγραφής</string>
     <string name="action_clear_activity">Εκκαθάριση</string>
     <string name="action_reorder">Σύρετε για αναδιάταξη</string>
+    <string name="action_favorite">Προσθήκη στις αγαπημένες</string>
+    <string name="action_unfavorite">Αφαίρεση από τις αγαπημένες</string>
 
     <!-- Navigation -->
     <string name="nav_apps">Εφαρμογές</string>
@@ -34,20 +36,23 @@
 
     <!-- App list -->
     <string name="search_hint">Αναζήτηση εφαρμογών ή γλωσσών</string>
-    <string name="list_empty">Δεν υπάρχουν εφαρμογές</string>
+    <string name="list_empty">Καμία εφαρμογή</string>
     <string name="list_no_results">Δεν βρέθηκαν αποτελέσματα</string>
-    <string name="filter_launchable">Εκκινήσιμες</string>
+    <string name="list_no_favorites">Δεν υπάρχουν αγαπημένες. Προσθέστε εφαρμογές από τη σελίδα λεπτομερειών τους.</string>
     <string name="filter_user">Χρήστη</string>
     <string name="filter_system">Συστήματος</string>
     <string name="filter_all">Όλες</string>
+    <string name="filter_favorites">Αγαπημένες</string>
+    <string name="filter_launchable_only">Μόνο εκκινήσιμες εφαρμογές</string>
+    <string name="filter_enabled_only">Μόνο ενεργοποιημένες εφαρμογές</string>
     <string name="sort_name">Όνομα</string>
     <string name="sort_recently_set">Πρόσφατα ορισμένες</string>
     <string name="sort_recently_updated">Πρόσφατα ενημερωμένες</string>
     <string name="sort_recently_installed">Πρόσφατα εγκατεστημένες</string>
-    <string name="sort_with_locale_first">Πρώτα οι εφαρμογές με γλώσσα</string>
     <string name="sort_reverse">Αντίστροφη σειρά</string>
     <string name="app_badge_system">Συστήματος</string>
     <string name="app_badge_disabled">Απενεργοποιημένη</string>
+    <string name="app_badge_favorite">Αγαπημένη</string>
     <plurals name="selection_count">
         <item quantity="one">%1$d επιλεγμένη</item>
         <item quantity="other">%1$d επιλεγμένες</item>
@@ -55,84 +60,86 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Εφαρμογές</string>
-    <string name="managed_empty">Καμία εφαρμογή δεν έχει ακόμη δική της γλώσσα.</string>
-    <string name="managed_section_activity">Πρόσφατη δραστηριότητα</string>
-    <string name="managed_activity_empty">Τίποτα ακόμη.</string>
+    <string name="managed_empty">Καμία ρυθμισμένη εφαρμογή</string>
+    <string name="managed_section_activity">Αρχείο δραστηριότητας</string>
+    <string name="managed_activity_empty">Καμία δραστηριότητα</string>
     <plurals name="managed_summary_count">
-        <item quantity="one">%1$d εφαρμογή με δική της γλώσσα</item>
-        <item quantity="other">%1$d εφαρμογές με δική τους γλώσσα</item>
+        <item quantity="one">%1$d ρυθμισμένη εφαρμογή</item>
+        <item quantity="other">%1$d ρυθμισμένες εφαρμογές</item>
     </plurals>
     <plurals name="managed_summary_attention">
         <item quantity="one">%1$d χρειάζεται προσοχή</item>
         <item quantity="other">%1$d χρειάζονται προσοχή</item>
     </plurals>
     <string name="managed_last_check_never">Δεν έχει ελεγχθεί ακόμη</string>
-    <string name="managed_last_check">Τελευταίος έλεγχος %1$s · %2$d επαναφορές · %3$d υιοθετήσεις</string>
+    <string name="managed_last_check">Τελευταίος έλεγχος %1$s · επαναφορές: %2$d · εισαγωγές: %3$d</string>
     <string name="managed_not_installed">Δεν είναι εγκατεστημένη</string>
     <string name="activity_applied">Ορίστηκε σε %1$s</string>
-    <string name="activity_reset">Επιστροφή στη γλώσσα του συστήματος</string>
-    <string name="activity_repaired">Επαναφέρθηκε μετά από αλλαγή του συστήματος: %1$s → %2$s</string>
-    <string name="activity_mismatch">Το σύστημα το άλλαξε σε %1$s (δική σας επιλογή: %2$s)· η αυτόματη επαναφορά είναι ανενεργή</string>
-    <string name="activity_adopted">Υιοθετήθηκε: %1$s</string>
-    <string name="activity_imported">Εισήχθη: %1$s</string>
+    <string name="activity_reset">Ορίστηκε όπως το σύστημα</string>
+    <string name="activity_repaired">Επαναφορά μετά από αλλαγή του συστήματος: %1$s → %2$s</string>
+    <string name="activity_mismatch">Το σύστημα το άλλαξε σε %1$s (ρύθμιση: %2$s)· η αυτόματη επαναφορά είναι ανενεργή</string>
+    <string name="activity_adopted">Εισαγωγή υπάρχουσας ρύθμισης: %1$s</string>
+    <string name="activity_imported">Εισαγωγή από αρχείο: %1$s</string>
     <string name="activity_failed">Αποτυχία εγγραφής: %1$s</string>
 
     <!-- Settings -->
-    <string name="settings_shizuku_connected">Συνδέθηκε ως %1$s</string>
+    <string name="settings_shizuku_connected">Συνδέθηκε (%1$s)</string>
     <string name="settings_section_appearance">Εμφάνιση</string>
     <string name="settings_theme">Θέμα</string>
     <string name="settings_theme_system">Συστήματος</string>
     <string name="settings_theme_light">Φωτεινό</string>
     <string name="settings_theme_dark">Σκοτεινό</string>
-    <string name="settings_dynamic_color">Χρώματα ταπετσαρίας</string>
-    <string name="settings_dynamic_color_summary">Χρήση χρωμάτων από την ταπετσαρία σας</string>
+    <string name="settings_dynamic_color">Δυναμικά χρώματα</string>
+    <string name="settings_dynamic_color_summary">Δημιουργία παλέτας από την ταπετσαρία</string>
     <string name="settings_seed_color">Χρώμα θέματος</string>
     <string name="settings_pure_black">Καθαρό μαύρο</string>
-    <string name="settings_pure_black_summary">Μαύρο φόντο στο σκοτεινό θέμα</string>
-    <string name="settings_section_keeping">Διατήρηση γλωσσών</string>
+    <string name="settings_pure_black_summary">Μόνο στο σκοτεινό θέμα</string>
+    <string name="settings_system_font">Γραμματοσειρά συστήματος</string>
+    <string name="settings_system_font_summary">Γραμματοσειρά συστήματος αντί για Roboto Condensed</string>
+    <string name="settings_section_keeping">Έλεγχος και επαναφορά</string>
     <string name="settings_auto_repair">Αυτόματη επαναφορά</string>
-    <string name="settings_auto_repair_summary">Όταν το σύστημα αφαιρεί ή περικόπτει μια γλώσσα που επιλέξατε, γράφεται ξανά. Όταν είναι ανενεργό, απλώς καταγράφεται.</string>
+    <string name="settings_auto_repair_summary">Εκ νέου εγγραφή γλωσσών που το σύστημα διαγράφει ή περικόπτει, π.χ. μετά από ενημέρωση εφαρμογής. Όταν είναι ανενεργή, οι αλλαγές μόνο καταγράφονται.</string>
     <string name="settings_background_check">Έλεγχος στο παρασκήνιο</string>
-    <string name="settings_background_check_summary">Περιοδικός έλεγχος ακόμη και όταν το Applingo δεν είναι ανοιχτό (το Shizuku πρέπει να εκτελείται εκείνη τη στιγμή)</string>
-    <string name="settings_background_interval">Έλεγχος κάθε</string>
+    <string name="settings_background_check_summary">Περιοδικός έλεγχος όσο το Applingo είναι κλειστό. Απαιτεί να εκτελείται το Shizuku.</string>
+    <string name="settings_background_interval">Διάστημα ελέγχου</string>
     <string name="settings_section_app_list">Λίστα εφαρμογών</string>
-    <string name="settings_start_filter">Προεπιλεγμένο φίλτρο</string>
-    <string name="settings_refresh_on_launch">Ανανέωση κατά την εκκίνηση</string>
-    <string name="settings_refresh_on_launch_summary">Νέα σάρωση των εγκατεστημένων εφαρμογών σε κάθε άνοιγμα του Applingo. Επιβραδύνει το άνοιγμα· όταν είναι ανενεργό, σύρετε τη λίστα προς τα κάτω για ανανέωση.</string>
+    <string name="settings_start_filter">Προεπιλεγμένη καρτέλα</string>
+    <string name="settings_refresh_on_launch">Νέα σάρωση κατά την εκκίνηση</string>
+    <string name="settings_refresh_on_launch_summary">Επιβραδύνει την εκκίνηση. Όταν είναι ανενεργή, εμφανίζεται η αποθηκευμένη λίστα· σύρετε προς τα κάτω για ανανέωση.</string>
     <string name="settings_hours">%1$d ώρ.</string>
     <string name="settings_section_data">Δεδομένα</string>
     <string name="settings_export">Εξαγωγή</string>
-    <string name="settings_export_summary">Αποθήκευση των γλωσσών των εφαρμογών σας σε αρχείο</string>
+    <string name="settings_export_summary">Αποθήκευση των ρυθμίσεων γλώσσας εφαρμογών σε αρχείο JSON</string>
     <string name="settings_import">Εισαγωγή</string>
-    <string name="settings_import_summary">Φόρτωση γλωσσών εφαρμογών από αρχείο εξαγωγής και εφαρμογή τους</string>
+    <string name="settings_import_summary">Φόρτωση και εφαρμογή ρυθμίσεων από εξαγωγή JSON</string>
     <string name="settings_section_about">Σχετικά</string>
-    <string name="settings_own_language">Γλώσσα του Applingo</string>
+    <string name="settings_own_language">Γλώσσα διεπαφής</string>
     <string name="settings_source">Πηγαίος κώδικας</string>
     <string name="settings_version">Έκδοση</string>
     <string name="settings_license">Άδεια MIT</string>
     <string name="time_just_now">μόλις τώρα</string>
 
     <!-- Shizuku -->
-    <string name="shizuku_not_installed">Το Applingo χρειάζεται το Shizuku (ή το Sui) για να αλλάζει τη γλώσσα άλλων εφαρμογών. Εγκαταστήστε το και ξεκινήστε το πρώτα.</string>
-    <string name="shizuku_not_running">Το Shizuku είναι εγκατεστημένο αλλά δεν εκτελείται. Ξεκινήστε το από την εφαρμογή Shizuku. Οι επιλογές σας αποθηκεύονται και εφαρμόζονται μόλις εκτελεστεί.</string>
-    <string name="shizuku_unsupported">Αυτή η έκδοση του Shizuku είναι πολύ παλιά. Ενημερώστε το Shizuku.</string>
-    <string name="shizuku_permission_required">Επιτρέψτε στο Applingo να χρησιμοποιεί το Shizuku.</string>
-    <string name="shizuku_permission_denied">Η άδεια του Shizuku απορρίφθηκε. Επιτρέψτε το Applingo στην εφαρμογή Shizuku και δοκιμάστε ξανά.</string>
+    <string name="shizuku_not_installed">Για την αλλαγή γλώσσας άλλων εφαρμογών απαιτείται το Shizuku (ή το Sui).</string>
+    <string name="shizuku_not_running">Το Shizuku δεν εκτελείται. Οι αλλαγές αποθηκεύονται και εγγράφονται μόλις ξεκινήσει.</string>
+    <string name="shizuku_unsupported">Αυτή η έκδοση του Shizuku δεν υποστηρίζεται. Ενημερώστε το Shizuku.</string>
+    <string name="shizuku_permission_required">Απαιτείται άδεια Shizuku.</string>
+    <string name="shizuku_permission_denied">Η άδεια Shizuku απορρίφθηκε. Παραχωρήστε την στην εφαρμογή Shizuku και δοκιμάστε ξανά.</string>
     <string name="shizuku_connecting">Σύνδεση με το Shizuku…</string>
-    <string name="shizuku_failed">Δεν ήταν δυνατή η εκκίνηση της υπηρεσίας Shizuku: %1$s</string>
+    <string name="shizuku_failed">Αποτυχία εκκίνησης της υπηρεσίας Shizuku: %1$s</string>
     <string name="shizuku_action_get">Λήψη Shizuku</string>
-    <string name="shizuku_action_grant">Να επιτρέπεται</string>
+    <string name="shizuku_action_grant">Παραχώρηση</string>
     <string name="shizuku_action_open">Άνοιγμα Shizuku</string>
 
     <!-- Detail -->
     <string name="detail_empty">Επιλέξτε μια εφαρμογή</string>
-    <string name="detail_not_installed">Αυτή η εφαρμογή δεν είναι εγκατεστημένη</string>
+    <string name="detail_not_installed">Η εφαρμογή δεν είναι εγκατεστημένη</string>
     <string name="detail_language">Γλώσσα εφαρμογής</string>
     <string name="locale_follow_system">Γλώσσα συστήματος</string>
-    <string name="locale_system_fallback">Προεπιλογή, χαμηλότερη προτεραιότητα · %1$s</string>
-    <string name="detail_order_hint">Η εφαρμογή χρησιμοποιεί την πρώτη γλώσσα που υποστηρίζει, από πάνω προς τα κάτω.</string>
-    <string name="status_pending">Αποθηκεύτηκε — θα εφαρμοστεί όταν συνδεθεί το Shizuku</string>
-    <string name="status_mismatch">Το σύστημα έχει τώρα %1$s, που διαφέρει από την επιλογή σας.</string>
+    <string name="locale_system_fallback">Τελική εναλλακτική · %1$s</string>
+    <string name="detail_order_hint">Χρησιμοποιείται η πρώτη γλώσσα της λίστας που υποστηρίζει η εφαρμογή.</string>
+    <string name="status_pending">Αποθηκεύτηκε· θα εγγραφεί όταν συνδεθεί το Shizuku</string>
+    <string name="status_mismatch">Η τιμή συστήματος διαφέρει: %1$s</string>
     <string name="info_version">Έκδοση</string>
     <string name="info_sdk">SDK</string>
     <string name="info_sdk_value">Στόχος %1$d · Ελάχ. %2$d</string>
@@ -158,23 +165,25 @@
         <item quantity="one">Γλώσσα · %1$d εφαρμογή</item>
         <item quantity="other">Γλώσσα · %1$d εφαρμογές</item>
     </plurals>
-    <string name="picker_selected">Σειρά προτίμησης</string>
-    <string name="picker_selected_empty">Δεν επιλέχθηκε γλώσσα: η εφαρμογή χρησιμοποιεί τη γλώσσα του συστήματος. Επιλέξτε γλώσσες παρακάτω.</string>
+    <string name="picker_selected">Προτεραιότητα</string>
+    <string name="picker_selected_empty">Καμία επιλογή· η εφαρμογή ακολουθεί τη γλώσσα συστήματος.</string>
     <string name="picker_search_hint">Αναζήτηση γλωσσών</string>
-    <string name="picker_order_hint">Η εφαρμογή χρησιμοποιεί την πρώτη γλώσσα που υποστηρίζει, από πάνω προς τα κάτω· η γλώσσα του συστήματος είναι πάντα τελευταία. Σύρετε το ≡ για αναδιάταξη.</string>
+    <string name="picker_order_hint">Χρησιμοποιείται η πρώτη υποστηριζόμενη γλώσσα· η γλώσσα συστήματος είναι η τελική εναλλακτική. Σύρετε το ≡ για αναδιάταξη.</string>
     <string name="picker_section_declared">Δηλωμένες από την εφαρμογή</string>
-    <string name="picker_section_system">Οι γλώσσες του συστήματός σας</string>
+    <string name="picker_section_system">Γλώσσες συστήματος</string>
     <string name="picker_section_all">Όλες οι γλώσσες</string>
+    <string name="picker_section_favorites">Αγαπημένες</string>
+    <string name="picker_favorites_empty">Οι γλώσσες με αστέρι εμφανίζονται εδώ.</string>
 
     <!-- Messages -->
-    <string name="message_applied">Η γλώσσα εφαρμόστηκε. Ισχύει μετά την επανεκκίνηση της εφαρμογής.</string>
-    <string name="message_reset">Ξανά η γλώσσα του συστήματος. Ισχύει μετά την επανεκκίνηση της εφαρμογής.</string>
-    <string name="message_saved_pending">Αποθηκεύτηκε. Θα εφαρμοστεί όταν συνδεθεί το Shizuku.</string>
-    <string name="message_apply_failed">Δεν ήταν δυνατή η εφαρμογή: %1$s</string>
-    <string name="message_needs_shizuku">Για αυτό πρέπει να εκτελείται το Shizuku</string>
-    <string name="message_restart_failed">Δεν ήταν δυνατή η επανεκκίνηση της εφαρμογής: %1$s</string>
-    <string name="message_reconcile_failed">Δεν ήταν δυνατός ο έλεγχος των γλωσσών: %1$s</string>
-    <string name="message_check_ok">Όλες οι γλώσσες εφαρμογών είναι όπως τις ορίσατε</string>
+    <string name="message_applied">Εφαρμόστηκε. Επανεκκινήστε την εφαρμογή για να ισχύσει.</string>
+    <string name="message_reset">Ορίστηκε όπως το σύστημα. Επανεκκινήστε την εφαρμογή για να ισχύσει.</string>
+    <string name="message_saved_pending">Αποθηκεύτηκε· θα εγγραφεί όταν συνδεθεί το Shizuku.</string>
+    <string name="message_apply_failed">Αποτυχία εφαρμογής: %1$s</string>
+    <string name="message_needs_shizuku">Το Shizuku δεν είναι διαθέσιμο</string>
+    <string name="message_restart_failed">Αποτυχία επανεκκίνησης: %1$s</string>
+    <string name="message_reconcile_failed">Αποτυχία ελέγχου: %1$s</string>
+    <string name="message_check_ok">Ο έλεγχος ολοκληρώθηκε χωρίς διαφορές</string>
     <plurals name="message_batch_applied">
         <item quantity="one">Εφαρμόστηκε σε %1$d εφαρμογή</item>
         <item quantity="other">Εφαρμόστηκε σε %1$d εφαρμογές</item>
@@ -187,28 +196,28 @@
         <item quantity="other">Εισήχθησαν %1$d εφαρμογές</item>
     </plurals>
     <string name="message_import_failed">Η εισαγωγή απέτυχε: %1$s</string>
-    <string name="message_force_stopped">Η εφαρμογή διακόπηκε</string>
-    <string name="message_force_stop_failed">Δεν ήταν δυνατή η διακοπή της εφαρμογής: %1$s</string>
+    <string name="message_force_stopped">Έγινε αναγκαστική διακοπή</string>
+    <string name="message_force_stop_failed">Αποτυχία αναγκαστικής διακοπής: %1$s</string>
     <plurals name="message_repaired">
         <item quantity="one">Επαναφέρθηκε η γλώσσα %1$d εφαρμογής</item>
         <item quantity="other">Επαναφέρθηκαν οι γλώσσες %1$d εφαρμογών</item>
     </plurals>
     <plurals name="message_adopted">
-        <item quantity="one">Υιοθετήθηκε η υπάρχουσα γλώσσα %1$d εφαρμογής</item>
-        <item quantity="other">Υιοθετήθηκαν οι υπάρχουσες γλώσσες %1$d εφαρμογών</item>
+        <item quantity="one">Εισαγωγή υπάρχουσας ρύθμισης %1$d εφαρμογής</item>
+        <item quantity="other">Εισαγωγή υπαρχουσών ρυθμίσεων %1$d εφαρμογών</item>
     </plurals>
 
     <!-- Undo countdown before a change is written -->
     <string name="action_undo">Αναίρεση</string>
-    <string name="pending_apply">Αλλαγή γλώσσας: %1$s</string>
-    <string name="pending_reset">Επαναφορά στη γλώσσα του συστήματος: %1$s</string>
-    <string name="pending_forget">Διαγραφή από τη λίστα: %1$s</string>
+    <string name="pending_apply">Αλλαγή γλώσσας για %1$s</string>
+    <string name="pending_reset">Ορισμός του %1$s όπως το σύστημα</string>
+    <string name="pending_forget">Διαγραφή εγγραφής για %1$s</string>
     <plurals name="pending_batch_apply">
-        <item quantity="one">Αλλαγή γλώσσας σε %1$d εφαρμογή</item>
-        <item quantity="other">Αλλαγή γλώσσας σε %1$d εφαρμογές</item>
+        <item quantity="one">Αλλαγή γλώσσας για %1$d εφαρμογή</item>
+        <item quantity="other">Αλλαγή γλώσσας για %1$d εφαρμογές</item>
     </plurals>
     <plurals name="pending_batch_reset">
-        <item quantity="one">Επαναφορά %1$d εφαρμογής στη γλώσσα του συστήματος</item>
-        <item quantity="other">Επαναφορά %1$d εφαρμογών στη γλώσσα του συστήματος</item>
+        <item quantity="one">Ορισμός %1$d εφαρμογής όπως το σύστημα</item>
+        <item quantity="other">Ορισμός %1$d εφαρμογών όπως το σύστημα</item>
     </plurals>
 </resources>

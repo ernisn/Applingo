@@ -1,17 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Placeholder launcher glyph: Material "translate" icon (Apache 2.0), centered in the 66dp safe zone. -->
+<!--
+  Applingo logo, traced from the 512 px artwork into straight and 45 degree edges. The group maps that
+  canvas onto the 66 dp safe zone (scale 66/512, offset 21 dp), so no mask clips the corner letters.
+  Also the monochrome layer of the themed icon, which only uses its shape.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <group
-        android:scaleX="2.25"
-        android:scaleY="2.25"
-        android:translateX="27"
-        android:translateY="27">
+        android:scaleX="0.12890625"
+        android:scaleY="0.12890625"
+        android:translateX="21"
+        android:translateY="21">
+        <!-- á -->
         <path
             android:fillColor="#FFFFFFFF"
-            android:pathData="M12.87,15.07l-2.54,-2.51 0.03,-0.03c1.74,-1.94 2.98,-4.17 3.71,-6.53L17,6L17,4h-7L10,2L8,2v2L1,4v1.99h11.17C11.5,7.92 10.44,9.75 9,11.35 8.07,10.32 7.3,9.19 6.69,8h-2c0.73,1.63 1.73,3.17 2.98,4.56l-5.09,5.02L4,19l5,-5 3.11,3.11 0.76,-2.04zM18.5,10h-2L12,22h2l1.12,-3h4.75L21,22h2l-4.5,-12zM15.88,17l1.62,-4.33L19.12,17h-3.24z" />
+            android:fillType="evenOdd"
+            android:pathData="M116.5,95H128.5L143,80.5L130.75,68.25L116.5,82.5Z
+                M88.5,103V124H137L140,127V131H99L84,146V163L99,178H161V118L146,103Z
+                M140,159H108.5L105,155.5V153.5L108.5,150H140Z" />
+        <!-- ą -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M356.5,103V124H405L408,127V131H367L352,146V163L367,178H409.5L400,187.5V202.5L405.5,208H429V191H416L429,178V118L414,103Z
+                M408,159H376.5L373,155.5V153.5L376.5,150H408Z" />
+        <!-- A -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M241.5,159L185.5,215V352H224V302H288.5V352H327V214.5L271.5,159Z
+                M255.5,199.5H257L288.5,231V264H224V231Z" />
+        <!-- å -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M116,320L105,331V344L116,355H129L140,344V331L129,320Z
+                M122.25,332.25L127.25,337.25L122.25,342.25L117.25,337.25Z
+                M88.5,360V381H137L140,384V388H99L84,403V420L99,435H161V375L146,360Z
+                M140,416H108.5L105,412.5V410.5L108.5,407H140Z" />
+        <!-- ä -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M367,334V352H386.5V334Z
+                M394,334V352H413.5V334Z
+                M356.5,360V381H405L408,384V388H367L352,403V420L367,435H429V375L414,360Z
+                M408,416H376.5L373,412.5V410.5L376.5,407H408Z" />
     </group>
 </vector>

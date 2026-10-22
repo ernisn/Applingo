@@ -9,7 +9,7 @@
     <string name="action_restart_app">Riavvia app</string>
     <string name="action_force_stop">Forza interruzione</string>
     <string name="action_app_info">Info app</string>
-    <string name="action_system_language">Lingua nelle impostazioni di sistema</string>
+    <string name="action_system_language">Lingua dell’app in Impostazioni</string>
     <string name="action_change_language">Cambia lingua</string>
     <string name="action_reset_to_system">Segui il sistema</string>
     <string name="action_follow_system">Cancella</string>
@@ -18,13 +18,15 @@
     <string name="action_remove">Rimuovi</string>
     <string name="action_expand">Mostra regioni</string>
     <string name="action_collapse">Nascondi regioni</string>
-    <string name="action_sort">Ordina</string>
+    <string name="action_sort">Ordina e filtra</string>
     <string name="action_clear_search">Cancella ricerca</string>
     <string name="action_select_all">Seleziona tutto</string>
     <string name="action_check_now">Controlla ora</string>
-    <string name="action_forget">Dimentica</string>
+    <string name="action_forget">Rimuovi voce</string>
     <string name="action_clear_activity">Cancella</string>
     <string name="action_reorder">Trascina per riordinare</string>
+    <string name="action_favorite">Aggiungi alle preferite</string>
+    <string name="action_unfavorite">Rimuovi dalle preferite</string>
 
     <!-- Navigation -->
     <string name="nav_apps">App</string>
@@ -34,20 +36,23 @@
 
     <!-- App list -->
     <string name="search_hint">Cerca app o lingue</string>
-    <string name="list_empty">Nessuna app da mostrare</string>
+    <string name="list_empty">Nessuna app</string>
     <string name="list_no_results">Nessun risultato</string>
-    <string name="filter_launchable">Avviabili</string>
+    <string name="list_no_favorites">Ancora nessuna preferita. Aggiungi le app dalla loro pagina dei dettagli.</string>
     <string name="filter_user">Utente</string>
     <string name="filter_system">Sistema</string>
     <string name="filter_all">Tutte</string>
+    <string name="filter_favorites">Preferite</string>
+    <string name="filter_launchable_only">Solo app avviabili</string>
+    <string name="filter_enabled_only">Solo app attive</string>
     <string name="sort_name">Nome</string>
     <string name="sort_recently_set">Impostate di recente</string>
     <string name="sort_recently_updated">Aggiornate di recente</string>
     <string name="sort_recently_installed">Installate di recente</string>
-    <string name="sort_with_locale_first">Prima le app con una lingua</string>
     <string name="sort_reverse">Ordine inverso</string>
     <string name="app_badge_system">Sistema</string>
     <string name="app_badge_disabled">Disattivata</string>
+    <string name="app_badge_favorite">Preferita</string>
     <plurals name="selection_count">
         <item quantity="one">%1$d selezionata</item>
         <item quantity="many">%1$d selezionate</item>
@@ -56,13 +61,13 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">App</string>
-    <string name="managed_empty">Nessuna app ha ancora una lingua propria.</string>
-    <string name="managed_section_activity">Attività recente</string>
-    <string name="managed_activity_empty">Ancora niente.</string>
+    <string name="managed_empty">Nessuna app configurata</string>
+    <string name="managed_section_activity">Registro attività</string>
+    <string name="managed_activity_empty">Nessuna attività</string>
     <plurals name="managed_summary_count">
-        <item quantity="one">%1$d app con una lingua propria</item>
-        <item quantity="many">%1$d app con una lingua propria</item>
-        <item quantity="other">%1$d app con una lingua propria</item>
+        <item quantity="one">%1$d app configurata</item>
+        <item quantity="many">%1$d app configurate</item>
+        <item quantity="other">%1$d app configurate</item>
     </plurals>
     <plurals name="managed_summary_attention">
         <item quantity="one">%1$d richiede attenzione</item>
@@ -70,72 +75,74 @@
         <item quantity="other">%1$d richiedono attenzione</item>
     </plurals>
     <string name="managed_last_check_never">Non ancora controllato</string>
-    <string name="managed_last_check">Ultimo controllo %1$s · %2$d ripristinate · %3$d acquisite</string>
+    <string name="managed_last_check">Ultimo controllo %1$s · %2$d ripristinate · %3$d importate</string>
     <string name="managed_not_installed">Non installata</string>
     <string name="activity_applied">Impostata su %1$s</string>
-    <string name="activity_reset">Tornata alla lingua di sistema</string>
+    <string name="activity_reset">Impostata su Segui il sistema</string>
     <string name="activity_repaired">Ripristinata dopo una modifica del sistema: %1$s → %2$s</string>
-    <string name="activity_mismatch">Modificata dal sistema in %1$s (la tua: %2$s); il ripristino automatico è disattivato</string>
-    <string name="activity_adopted">Acquisita: %1$s</string>
-    <string name="activity_imported">Importata: %1$s</string>
-    <string name="activity_failed">Impossibile scrivere: %1$s</string>
+    <string name="activity_mismatch">Modificata dal sistema in %1$s (configurata: %2$s); il ripristino automatico è disattivato</string>
+    <string name="activity_adopted">Impostazione esistente importata: %1$s</string>
+    <string name="activity_imported">Importata da file: %1$s</string>
+    <string name="activity_failed">Scrittura non riuscita: %1$s</string>
 
     <!-- Settings -->
-    <string name="settings_shizuku_connected">Connesso come %1$s</string>
+    <string name="settings_shizuku_connected">Connesso (%1$s)</string>
     <string name="settings_section_appearance">Aspetto</string>
     <string name="settings_theme">Tema</string>
     <string name="settings_theme_system">Sistema</string>
     <string name="settings_theme_light">Chiaro</string>
     <string name="settings_theme_dark">Scuro</string>
-    <string name="settings_dynamic_color">Colori dello sfondo</string>
-    <string name="settings_dynamic_color_summary">Usa i colori del tuo sfondo</string>
+    <string name="settings_dynamic_color">Colori dinamici</string>
+    <string name="settings_dynamic_color_summary">Genera la tavolozza dallo sfondo</string>
     <string name="settings_seed_color">Colore del tema</string>
     <string name="settings_pure_black">Nero puro</string>
-    <string name="settings_pure_black_summary">Sfondo nero nel tema scuro</string>
-    <string name="settings_section_keeping">Mantenimento delle lingue</string>
-    <string name="settings_auto_repair">Ripristina automaticamente</string>
-    <string name="settings_auto_repair_summary">Se il sistema rimuove o riduce una lingua che hai scelto, viene riscritta. Se disattivato, viene solo segnalato.</string>
-    <string name="settings_background_check">Controlla in background</string>
-    <string name="settings_background_check_summary">Controlla periodicamente anche quando Applingo non è aperto (Shizuku deve essere in esecuzione in quel momento)</string>
-    <string name="settings_background_interval">Controlla ogni</string>
+    <string name="settings_pure_black_summary">Solo con il tema scuro</string>
+    <string name="settings_system_font">Carattere di sistema</string>
+    <string name="settings_system_font_summary">Usa il carattere di sistema invece di Roboto Condensed</string>
+    <string name="settings_section_keeping">Controllo e ripristino</string>
+    <string name="settings_auto_repair">Ripristino automatico</string>
+    <string name="settings_auto_repair_summary">Riscrive le lingue che il sistema cancella o riduce, ad es. dopo un aggiornamento dell’app. Se disattivato, le modifiche vengono solo registrate.</string>
+    <string name="settings_background_check">Controllo in background</string>
+    <string name="settings_background_check_summary">Controlla periodicamente mentre Applingo è chiusa. Richiede Shizuku in esecuzione.</string>
+    <string name="settings_background_interval">Intervallo di controllo</string>
     <string name="settings_section_app_list">Elenco app</string>
-    <string name="settings_start_filter">Filtro predefinito</string>
-    <string name="settings_refresh_on_launch">Aggiorna all’avvio</string>
-    <string name="settings_refresh_on_launch_summary">Analizza di nuovo le app installate a ogni apertura di Applingo. Rallenta l’apertura; se disattivato, trascina l’elenco verso il basso per aggiornare.</string>
+    <string name="settings_start_filter">Scheda predefinita</string>
+    <string name="settings_refresh_on_launch">Nuova scansione all’avvio</string>
+    <string name="settings_refresh_on_launch_summary">Rallenta l’avvio. Se disattivata, viene mostrato l’elenco in cache; trascina verso il basso per aggiornare.</string>
     <string name="settings_hours">%1$d h</string>
     <string name="settings_section_data">Dati</string>
     <string name="settings_export">Esporta</string>
-    <string name="settings_export_summary">Salva le lingue delle tue app in un file</string>
+    <string name="settings_export_summary">Salva le impostazioni della lingua delle app in un file JSON</string>
     <string name="settings_import">Importa</string>
-    <string name="settings_import_summary">Carica le lingue delle app da un file esportato e applicale</string>
+    <string name="settings_import_summary">Carica e applica le impostazioni da un’esportazione JSON</string>
     <string name="settings_section_about">Informazioni</string>
-    <string name="settings_own_language">Lingua di Applingo</string>
+    <string name="settings_own_language">Lingua dell’interfaccia</string>
     <string name="settings_source">Codice sorgente</string>
     <string name="settings_version">Versione</string>
     <string name="settings_license">Licenza MIT</string>
     <string name="time_just_now">proprio ora</string>
 
     <!-- Shizuku -->
-    <string name="shizuku_not_installed">Applingo ha bisogno di Shizuku (o Sui) per cambiare la lingua delle altre app. Installalo e avvialo prima.</string>
-    <string name="shizuku_not_running">Shizuku è installato ma non è in esecuzione. Avvialo nell’app Shizuku. Le tue scelte vengono salvate e applicate non appena è attivo.</string>
-    <string name="shizuku_unsupported">Questa versione di Shizuku è troppo vecchia. Aggiorna Shizuku.</string>
-    <string name="shizuku_permission_required">Consenti ad Applingo di usare Shizuku.</string>
-    <string name="shizuku_permission_denied">L’autorizzazione Shizuku è stata negata. Consenti Applingo nell’app Shizuku, poi riprova.</string>
+    <string name="shizuku_not_installed">Per cambiare la lingua di altre app serve Shizuku (o Sui).</string>
+    <string name="shizuku_not_running">Shizuku non è in esecuzione. Le modifiche vengono salvate e scritte al suo avvio.</string>
+    <string name="shizuku_unsupported">Questa versione di Shizuku non è supportata. Aggiorna Shizuku.</string>
+    <string name="shizuku_permission_required">Autorizzazione Shizuku richiesta.</string>
+    <string name="shizuku_permission_denied">Autorizzazione Shizuku negata. Concedila nell’app Shizuku, poi riprova.</string>
     <string name="shizuku_connecting">Connessione a Shizuku…</string>
-    <string name="shizuku_failed">Impossibile avviare il servizio Shizuku: %1$s</string>
+    <string name="shizuku_failed">Avvio del servizio Shizuku non riuscito: %1$s</string>
     <string name="shizuku_action_get">Ottieni Shizuku</string>
-    <string name="shizuku_action_grant">Consenti</string>
+    <string name="shizuku_action_grant">Concedi</string>
     <string name="shizuku_action_open">Apri Shizuku</string>
 
     <!-- Detail -->
     <string name="detail_empty">Seleziona un’app</string>
-    <string name="detail_not_installed">Questa app non è installata</string>
+    <string name="detail_not_installed">App non installata</string>
     <string name="detail_language">Lingua dell’app</string>
     <string name="locale_follow_system">Lingua di sistema</string>
-    <string name="locale_system_fallback">Predefinita, priorità più bassa · %1$s</string>
-    <string name="detail_order_hint">L’app usa la prima lingua che supporta, dall’alto verso il basso.</string>
-    <string name="status_pending">Salvata: verrà applicata quando Shizuku si connette</string>
-    <string name="status_mismatch">Il sistema usa ora %1$s, diversa dalla tua scelta.</string>
+    <string name="locale_system_fallback">Ultima alternativa · %1$s</string>
+    <string name="detail_order_hint">Viene usata la prima lingua dell’elenco supportata dall’app.</string>
+    <string name="status_pending">Salvata; verrà scritta quando Shizuku si connette</string>
+    <string name="status_mismatch">Il valore di sistema è diverso: %1$s</string>
     <string name="info_version">Versione</string>
     <string name="info_sdk">SDK</string>
     <string name="info_sdk_value">Target %1$d · Min %2$d</string>
@@ -163,23 +170,25 @@
         <item quantity="many">Lingua · %1$d app</item>
         <item quantity="other">Lingua · %1$d app</item>
     </plurals>
-    <string name="picker_selected">Ordine di preferenza</string>
-    <string name="picker_selected_empty">Nessuna lingua scelta: l’app usa la lingua di sistema. Scegli le lingue qui sotto.</string>
+    <string name="picker_selected">Priorità</string>
+    <string name="picker_selected_empty">Nessuna selezione; l’app segue la lingua di sistema.</string>
     <string name="picker_search_hint">Cerca lingue</string>
-    <string name="picker_order_hint">L’app usa la prima lingua che supporta, dall’alto verso il basso; la lingua di sistema viene per ultima. Trascina ≡ per riordinare.</string>
+    <string name="picker_order_hint">Viene usata la prima lingua supportata; la lingua di sistema è l’ultima alternativa. Trascina ≡ per riordinare.</string>
     <string name="picker_section_declared">Dichiarate dall’app</string>
-    <string name="picker_section_system">Le tue lingue di sistema</string>
+    <string name="picker_section_system">Lingue di sistema</string>
     <string name="picker_section_all">Tutte le lingue</string>
+    <string name="picker_section_favorites">Preferite</string>
+    <string name="picker_favorites_empty">Le lingue con la stella compaiono qui.</string>
 
     <!-- Messages -->
-    <string name="message_applied">Lingua applicata. Avrà effetto al riavvio dell’app.</string>
-    <string name="message_reset">Di nuovo la lingua di sistema. Avrà effetto al riavvio dell’app.</string>
-    <string name="message_saved_pending">Salvato. Verrà applicato quando Shizuku si connette.</string>
-    <string name="message_apply_failed">Impossibile applicare: %1$s</string>
-    <string name="message_needs_shizuku">Per questo Shizuku deve essere in esecuzione</string>
-    <string name="message_restart_failed">Impossibile riavviare l’app: %1$s</string>
-    <string name="message_reconcile_failed">Impossibile controllare le lingue delle app: %1$s</string>
-    <string name="message_check_ok">Tutte le lingue delle app sono come le hai impostate</string>
+    <string name="message_applied">Applicata. Riavvia l’app perché abbia effetto.</string>
+    <string name="message_reset">Impostata su Segui il sistema. Riavvia l’app perché abbia effetto.</string>
+    <string name="message_saved_pending">Salvata; verrà scritta quando Shizuku si connette.</string>
+    <string name="message_apply_failed">Applicazione non riuscita: %1$s</string>
+    <string name="message_needs_shizuku">Shizuku non è disponibile</string>
+    <string name="message_restart_failed">Riavvio non riuscito: %1$s</string>
+    <string name="message_reconcile_failed">Controllo non riuscito: %1$s</string>
+    <string name="message_check_ok">Controllo completato, nessuna differenza</string>
     <plurals name="message_batch_applied">
         <item quantity="one">Applicata a %1$d app</item>
         <item quantity="many">Applicata a %1$d app</item>
@@ -194,32 +203,32 @@
         <item quantity="other">%1$d app importate</item>
     </plurals>
     <string name="message_import_failed">Importazione non riuscita: %1$s</string>
-    <string name="message_force_stopped">App interrotta</string>
-    <string name="message_force_stop_failed">Impossibile interrompere l’app: %1$s</string>
+    <string name="message_force_stopped">Interruzione forzata</string>
+    <string name="message_force_stop_failed">Interruzione forzata non riuscita: %1$s</string>
     <plurals name="message_repaired">
         <item quantity="one">Lingua di %1$d app ripristinata</item>
         <item quantity="many">Lingue di %1$d app ripristinate</item>
         <item quantity="other">Lingue di %1$d app ripristinate</item>
     </plurals>
     <plurals name="message_adopted">
-        <item quantity="one">Lingua esistente di %1$d app acquisita</item>
-        <item quantity="many">Lingue esistenti di %1$d app acquisite</item>
-        <item quantity="other">Lingue esistenti di %1$d app acquisite</item>
+        <item quantity="one">Importata l’impostazione esistente di %1$d app</item>
+        <item quantity="many">Importate le impostazioni esistenti di %1$d app</item>
+        <item quantity="other">Importate le impostazioni esistenti di %1$d app</item>
     </plurals>
 
     <!-- Undo countdown before a change is written -->
     <string name="action_undo">Annulla</string>
-    <string name="pending_apply">Cambio della lingua di %1$s</string>
-    <string name="pending_reset">%1$s tornerà a seguire la lingua di sistema</string>
-    <string name="pending_forget">%1$s verrà dimenticata</string>
+    <string name="pending_apply">Modifica della lingua di %1$s</string>
+    <string name="pending_reset">%1$s seguirà il sistema</string>
+    <string name="pending_forget">Rimozione della voce di %1$s</string>
     <plurals name="pending_batch_apply">
-        <item quantity="one">Cambio della lingua di %1$d app</item>
-        <item quantity="many">Cambio della lingua di %1$d app</item>
-        <item quantity="other">Cambio della lingua di %1$d app</item>
+        <item quantity="one">Modifica della lingua di %1$d app</item>
+        <item quantity="many">Modifica della lingua di %1$d app</item>
+        <item quantity="other">Modifica della lingua di %1$d app</item>
     </plurals>
     <plurals name="pending_batch_reset">
-        <item quantity="one">%1$d app tornerà a seguire la lingua di sistema</item>
-        <item quantity="many">%1$d app torneranno a seguire la lingua di sistema</item>
-        <item quantity="other">%1$d app torneranno a seguire la lingua di sistema</item>
+        <item quantity="one">%1$d app seguirà il sistema</item>
+        <item quantity="many">%1$d app seguiranno il sistema</item>
+        <item quantity="other">%1$d app seguiranno il sistema</item>
     </plurals>
 </resources>

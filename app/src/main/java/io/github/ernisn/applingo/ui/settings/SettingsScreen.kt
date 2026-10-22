@@ -131,7 +131,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
                             Text(
                                 stringResource(
                                     R.string.settings_shizuku_connected,
-                                    if (connected.uid == 0) "root" else "shell (adb)",
+                                    if (connected.uid == 0) "root" else "adb",
                                 ),
                             )
                         },
@@ -203,6 +203,14 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     summary = stringResource(R.string.settings_pure_black_summary),
                     checked = settings.pureBlack,
                     onCheckedChange = { value -> viewModel.updateSettings { it.copy(pureBlack = value) } },
+                )
+            }
+            item {
+                SwitchRow(
+                    title = stringResource(R.string.settings_system_font),
+                    summary = stringResource(R.string.settings_system_font_summary),
+                    checked = settings.systemFont,
+                    onCheckedChange = { value -> viewModel.updateSettings { it.copy(systemFont = value) } },
                 )
             }
 

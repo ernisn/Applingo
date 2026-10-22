@@ -5,6 +5,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -13,7 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.DeviceFontFamilyName
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.materialkolor.dynamiccolor.MaterialDynamicColors
 import com.materialkolor.hct.Hct
 import com.materialkolor.scheme.SchemeTonalSpot
@@ -41,7 +49,54 @@ fun ApplingoTheme(settings: AppSettings = AppSettings(), content: @Composable ()
         remember(settings.seedColor, dark) { seedColorScheme(settings.seedColor, dark) }
     }
     val scheme = if (dark && settings.pureBlack) base.pureBlack() else base
-    MaterialTheme(colorScheme = scheme, shapes = Shapes(medium = CardShape), content = content)
+    val typography = if (settings.systemFont) DefaultTypography else CondensedTypography
+    MaterialTheme(colorScheme = scheme, typography = typography, shapes = Shapes(medium = CardShape), content = content)
+}
+
+/*
+ * Type. Roboto Condensed by default, from the device rather than bundled: since Android 12 the system
+ * Roboto is a variable font and "sans-serif-condensed" is that font at 75 % width, so it costs nothing.
+ * The width goes into each font's variation settings too: applying only the weight would reset the
+ * other axes, back to full width. Scripts it doesn't cover (Chinese, for one) fall back to the system
+ * fonts as usual, and a device without the family gets its default font throughout.
+ */
+
+private val DefaultTypography = Typography()
+
+private fun condensed(weight: FontWeight) = Font(
+    familyName = DeviceFontFamilyName("sans-serif-condensed"),
+    weight = weight,
+    variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight), FontVariation.width(75f)),
+)
+
+private val CondensedFamily = FontFamily(
+    condensed(FontWeight.Normal),
+    condensed(FontWeight.Medium),
+    condensed(FontWeight.SemiBold),
+    condensed(FontWeight.Bold),
+)
+
+/** Material's letter spacing is tuned for full-width Roboto and looks loose on narrow letters. */
+private fun TextStyle.condensed() = copy(fontFamily = CondensedFamily, letterSpacing = 0.sp)
+
+private val CondensedTypography = with(DefaultTypography) {
+    copy(
+        displayLarge = displayLarge.condensed(),
+        displayMedium = displayMedium.condensed(),
+        displaySmall = displaySmall.condensed(),
+        headlineLarge = headlineLarge.condensed(),
+        headlineMedium = headlineMedium.condensed(),
+        headlineSmall = headlineSmall.condensed(),
+        titleLarge = titleLarge.condensed(),
+        titleMedium = titleMedium.condensed(),
+        titleSmall = titleSmall.condensed(),
+        bodyLarge = bodyLarge.condensed(),
+        bodyMedium = bodyMedium.condensed(),
+        bodySmall = bodySmall.condensed(),
+        labelLarge = labelLarge.condensed(),
+        labelMedium = labelMedium.condensed(),
+        labelSmall = labelSmall.condensed(),
+    )
 }
 
 /*

@@ -1,26 +1,28 @@
 package io.github.ernisn.applingo.ui.managed
 
 import android.text.format.DateUtils
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Button
@@ -35,6 +37,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,70 +62,133 @@ import io.github.ernisn.applingo.ui.ManagedApp
 import io.github.ernisn.applingo.ui.ManagedState
 import io.github.ernisn.applingo.ui.applist.LocaleBadge
 import io.github.ernisn.applingo.ui.components.PackageLine
+import io.github.ernisn.applingo.ui.components.SegmentedTabRow
+import io.github.ernisn.applingo.ui.components.SelectionActionsBar
+import io.github.ernisn.applingo.ui.components.SelectionTopBar
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
+import io.github.ernisn.applingo.ui.picker.BatchLocalePickerDialog
 
 private const val MAX_ACTIVITY_SHOWN = 100
 
-/** Every app Applingo keeps a language for, the result of the last check, and recent activity. */
+private enum class ManagedTab(val label: Int) {
+    Apps(R.string.managed_section_apps),
+    Activity(R.string.managed_section_activity),
+}
+
+/**
+ * Every app Applingo keeps a language for with the result of the last check, and recent activity, as
+ * two tabs like the app list's: one list after the other meant scrolling past every app to reach the
+ * activity. Long press selects apps for a batch change, as in the app list.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagedPane(viewModel: MainViewModel, selectedPackage: String?, onOpenApp: (String) -> Unit) {
     val state by viewModel.managedState.collectAsStateWithLifecycle()
+    val selection by viewModel.managedSelection.packages.collectAsStateWithLifecycle()
+    var tab by rememberSaveable { mutableStateOf(ManagedTab.Apps) }
+    // One per tab, so each keeps its scroll position while the other is shown.
+    val appsListState = rememberLazyListState()
+    val activityListState = rememberLazyListState()
+
+    val selecting = selection.isNotEmpty()
+    var showBatchPicker by rememberSaveable { mutableStateOf(false) }
+    BackHandler(enabled = selecting) { viewModel.managedSelection.clear() }
+
+    if (showBatchPicker && selecting) {
+        BatchLocalePickerDialog(
+            viewModel = viewModel,
+            count = selection.size,
+            onApply = { chain -> viewModel.applyToSelection(viewModel.managedSelection, chain) },
+            onDismiss = { showBatchPicker = false },
+        )
+    }
 
     Scaffold(
         modifier = Modifier.safeArea(),
         contentWindowInsets = WindowInsets(0),
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.managed_title)) }, windowInsets = WindowInsets(0)) },
-    ) { padding ->
-        LazyColumn(
-            contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = 16.dp),
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            item {
-                ShizukuStatusCard(
-                    state = state.shizuku,
-                    onRequestPermission = viewModel::requestShizukuPermission,
-                    onRetry = viewModel::retryShizuku,
-                    shizukuLaunchIntent = viewModel::shizukuLaunchIntent,
+        topBar = {
+            if (selecting) {
+                SelectionTopBar(
+                    count = selection.size,
+                    onClose = viewModel.managedSelection::clear,
+                    // Apps that aren't installed have no language to change.
+                    onSelectAll = {
+                        viewModel.managedSelection.selectAll(state.apps.filter { it.row != null }.map { it.packageName })
+                    },
                 )
-            }
-            item { SummaryCard(state, onCheckNow = viewModel::checkNow) }
-
-            sectionHeader(R.string.managed_section_apps)
-            if (state.apps.isEmpty()) {
-                item { Hint(stringResource(R.string.managed_empty)) }
-            }
-            items(state.apps, key = { "app:${it.packageName}" }) { managed ->
-                ManagedAppItem(
-                    managed = managed,
-                    selected = managed.packageName == selectedPackage,
-                    onOpen = { onOpenApp(managed.packageName) },
-                    onForget = { viewModel.forget(managed.packageName) },
-                )
-            }
-
-            item(key = "activity-header") {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 16.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.managed_section_activity),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f),
-                    )
-                    if (state.activity.isNotEmpty()) {
-                        TextButton(onClick = viewModel::clearActivity, shape = ControlShape) {
-                            Text(stringResource(R.string.action_clear_activity))
+            } else {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.managed_title)) },
+                    actions = {
+                        if (tab == ManagedTab.Activity && state.activity.isNotEmpty()) {
+                            TextButton(onClick = viewModel::clearActivity, shape = ControlShape) {
+                                Text(stringResource(R.string.action_clear_activity))
+                            }
                         }
+                    },
+                    windowInsets = WindowInsets(0),
+                )
+            }
+        },
+        bottomBar = {
+            if (selecting) {
+                SelectionActionsBar(
+                    onFollowSystem = { viewModel.applyToSelection(viewModel.managedSelection, emptyList()) },
+                    onChangeLanguage = { showBatchPicker = true },
+                )
+            }
+        },
+    ) { padding ->
+        Column(Modifier.padding(padding).fillMaxSize()) {
+            ShizukuStatusCard(
+                state = state.shizuku,
+                onRequestPermission = viewModel::requestShizukuPermission,
+                onRetry = viewModel::retryShizuku,
+                shizukuLaunchIntent = viewModel::shizukuLaunchIntent,
+            )
+            SegmentedTabRow(
+                labels = ManagedTab.entries.map { stringResource(it.label) },
+                selected = tab.ordinal,
+                onSelect = { tab = ManagedTab.entries[it] },
+                // The selection lives in the apps tab; it is finished or dropped there first.
+                enabled = !selecting,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+            )
+            when (tab) {
+                ManagedTab.Apps -> LazyColumn(
+                    state = appsListState,
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    item(key = "summary") { SummaryCard(state, onCheckNow = viewModel::checkNow) }
+                    if (state.apps.isEmpty()) {
+                        item(key = "empty") { Hint(stringResource(R.string.managed_empty)) }
+                    }
+                    items(state.apps, key = { it.packageName }) { managed ->
+                        val packageName = managed.packageName
+                        ManagedAppItem(
+                            managed = managed,
+                            selected = packageName == selectedPackage,
+                            checked = if (selecting && managed.row != null) packageName in selection else null,
+                            onClick = {
+                                if (selecting) viewModel.managedSelection.toggle(packageName) else onOpenApp(packageName)
+                            },
+                            onLongClick = { viewModel.managedSelection.toggle(packageName) },
+                            onForget = { viewModel.forget(packageName) },
+                        )
                     }
                 }
+                ManagedTab.Activity -> LazyColumn(
+                    state = activityListState,
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    if (state.activity.isEmpty()) {
+                        item(key = "empty") { Hint(stringResource(R.string.managed_activity_empty)) }
+                    }
+                    items(state.activity.take(MAX_ACTIVITY_SHOWN)) { ActivityItem(it) }
+                }
             }
-            if (state.activity.isEmpty()) {
-                item { Hint(stringResource(R.string.managed_activity_empty)) }
-            }
-            items(state.activity.take(MAX_ACTIVITY_SHOWN)) { ActivityItem(it) }
         }
     }
 }
@@ -173,29 +241,39 @@ private fun SummaryCard(state: ManagedState, onCheckNow: () -> Unit) {
     }
 }
 
+/** Like an app list row; an app that isn't installed can't be opened or selected, only forgotten. */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ManagedAppItem(managed: ManagedApp, selected: Boolean, onOpen: () -> Unit, onForget: () -> Unit) {
-    val installed = managed.row != null
+private fun ManagedAppItem(
+    managed: ManagedApp,
+    selected: Boolean,
+    checked: Boolean?,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    onForget: () -> Unit,
+) {
+    val row = managed.row
+    val highlighted = selected || checked == true
     ListItem(
-        modifier = if (installed) Modifier.clickable(onClick = onOpen) else Modifier,
-        colors = if (selected) {
+        modifier = if (row != null) Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick) else Modifier,
+        colors = if (highlighted) {
             ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         } else {
             ListItemDefaults.colors()
         },
         leadingContent = {
-            val row = managed.row
-            if (row != null) {
-                AppIcon(row.app.packageName, row.app.lastUpdateTime, dimmed = !row.app.isEnabled)
-            } else {
-                Box(Modifier.size(40.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape))
+            when {
+                checked != null -> Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                    Checkbox(checked = checked, onCheckedChange = null)
+                }
+                row != null -> AppIcon(row.app.packageName, row.app.lastUpdateTime, dimmed = !row.app.isEnabled)
+                else -> Box(Modifier.size(40.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape))
             }
         },
         headlineContent = { Text(managed.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         supportingContent = {
-            val row = managed.row
             if (row != null) {
-                PackageLine(row.app)
+                PackageLine(row.app, favorite = row.favorite)
             } else {
                 Text(
                     text = stringResource(R.string.managed_not_installed) + " · " + managed.packageName,
@@ -206,8 +284,8 @@ private fun ManagedAppItem(managed: ManagedApp, selected: Boolean, onOpen: () ->
             }
         },
         trailingContent = {
-            if (installed) {
-                if (managed.locales.isNotEmpty()) LocaleBadge(managed.locales, managed.status, onHighlight = selected)
+            if (row != null) {
+                if (managed.locales.isNotEmpty()) LocaleBadge(managed.locales, managed.status, onHighlight = highlighted)
             } else {
                 IconButton(onClick = onForget) {
                     Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.action_forget))
@@ -261,17 +339,6 @@ private fun relativeTime(time: Long): String {
         stringResource(R.string.time_just_now)
     } else {
         DateUtils.getRelativeTimeSpanString(time, now, DateUtils.MINUTE_IN_MILLIS).toString()
-    }
-}
-
-private fun LazyListScope.sectionHeader(title: Int) {
-    item(key = "header:$title") {
-        Text(
-            text = stringResource(title),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
-        )
     }
 }
 

@@ -74,6 +74,7 @@ data class AppRow(
     val systemLocales: List<String>?,
     val status: LocaleStatus,
     val setAt: Long,
+    val favorite: Boolean,
     internal val searchTarget: Search.Target,
 )
 
@@ -82,11 +83,31 @@ data class AppListState(
     val refreshing: Boolean = false,
     val rows: List<AppRow> = emptyList(),
     val query: String = "",
-    val typeFilter: AppTypeFilter = AppTypeFilter.Launchable,
+    val typeFilter: AppTypeFilter = AppTypeFilter.All,
     val preferences: ListPreferences = ListPreferences(),
     val shizuku: ShizukuState = ShizukuState.Checking,
-    val selection: Set<String> = emptySet(),
 )
+
+/**
+ * Apps picked by long press in one list, for a batch change. Each list has its own: switching
+ * destinations doesn't carry a selection over to a list where it can't be seen.
+ */
+class AppSelection {
+    private val _packages = MutableStateFlow<Set<String>>(emptySet())
+    val packages: StateFlow<Set<String>> = _packages.asStateFlow()
+
+    fun toggle(packageName: String) {
+        _packages.update { if (packageName in it) it - packageName else it + packageName }
+    }
+
+    fun selectAll(packageNames: Collection<String>) {
+        _packages.update { it + packageNames }
+    }
+
+    fun clear() {
+        _packages.value = emptySet()
+    }
+}
 
 /** One app Applingo keeps a record for; [row] is null when the app isn't installed. */
 data class ManagedApp(
@@ -114,9 +135,8 @@ class MainViewModel(private val app: Application, private val container: AppCont
     private val shizuku = container.shizuku
 
     private val query = MutableStateFlow("")
-    /** The filter picked in the list this session; until then the one from settings. */
+    /** The tab picked in the list this session; until then the one from settings. */
     private val chosenFilter = MutableStateFlow<AppTypeFilter?>(null)
-    private val _selection = MutableStateFlow<Set<String>>(emptySet())
     private val localMessages = Channel<UserMessage>(Channel.BUFFERED)
     private val pinyinCache = ConcurrentHashMap<String, List<String>>()
 
@@ -134,12 +154,28 @@ class MainViewModel(private val app: Application, private val container: AppCont
     val settings: StateFlow<AppSettings> =
         container.preferences.settings.stateIn(viewModelScope, SharingStarted.Eagerly, AppSettings())
 
-    /** Every app with its locale state, rebuilt only when apps or locales change (not per keystroke). */
-    val rows: StateFlow<Map<String, AppRow>> =
-        combine(container.apps.apps, locales.desired, locales.actual) { apps, desired, actual ->
-            apps?.associate { it.packageName to buildRow(it, desired[it.packageName], actual[it.packageName]) }
-                ?: emptyMap()
-        }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+    /** Long-press selections of the app list and of the Configured list. */
+    val appSelection = AppSelection()
+    val managedSelection = AppSelection()
+
+    /** Languages starred in the picker, in the order they were starred. */
+    val favoriteLocales: StateFlow<List<String>> =
+        container.preferences.favoriteLocales.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /**
+     * Every app with its locale state, rebuilt only when apps, locales or favorites change (not per
+     * keystroke).
+     */
+    val rows: StateFlow<Map<String, AppRow>> = combine(
+        container.apps.apps,
+        locales.desired,
+        locales.actual,
+        container.preferences.favoriteApps,
+    ) { apps, desired, actual, favorites ->
+        apps?.associate {
+            it.packageName to buildRow(it, desired[it.packageName], actual[it.packageName], it.packageName in favorites)
+        } ?: emptyMap()
+    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
     // The stored settings rather than [settings]: its placeholder would show the default filter for a
     // moment before switching to the one chosen in settings.
@@ -148,11 +184,11 @@ class MainViewModel(private val app: Application, private val container: AppCont
 
     val listState: StateFlow<AppListState> = combine(
         combine(container.apps.apps, rows) { apps, rows -> (apps != null) to rows },
-        combine(query, typeFilter, _selection) { query, filter, selection -> Triple(query, filter, selection) },
+        combine(query, typeFilter) { query, filter -> query to filter },
         container.preferences.list,
         shizuku.state,
         container.apps.refreshing,
-    ) { (loaded, rows), (query, filter, selection), preferences, shizukuState, refreshing ->
+    ) { (loaded, rows), (query, filter), preferences, shizukuState, refreshing ->
         AppListState(
             loading = !loaded,
             refreshing = refreshing,
@@ -161,7 +197,6 @@ class MainViewModel(private val app: Application, private val container: AppCont
             typeFilter = filter,
             preferences = preferences,
             shizuku = shizukuState,
-            selection = selection,
         )
     }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppListState())
 
@@ -246,16 +281,12 @@ class MainViewModel(private val app: Application, private val container: AppCont
         }
     }
 
-    fun toggleSelection(packageName: String) {
-        _selection.update { if (packageName in it) it - packageName else it + packageName }
+    fun toggleFavoriteApp(packageName: String) {
+        viewModelScope.launch { container.preferences.toggleFavoriteApp(packageName) }
     }
 
-    fun selectAll(packageNames: Collection<String>) {
-        _selection.update { it + packageNames }
-    }
-
-    fun clearSelection() {
-        _selection.value = emptySet()
+    fun toggleFavoriteLocale(tag: String) {
+        viewModelScope.launch { container.preferences.toggleFavoriteLocale(tag) }
     }
 
     // --- Shizuku ---------------------------------------------------------------------------------
@@ -288,16 +319,16 @@ class MainViewModel(private val app: Application, private val container: AppCont
         }
     }
 
-    /** Applies [chain] to every selected app once the undo period is over; undo selects them again. */
-    fun applyToSelection(chain: List<String>) {
-        val packages = _selection.value
-        clearSelection()
+    /** Applies [chain] to every app in [selection] once the undo period is over; undo selects them again. */
+    fun applyToSelection(selection: AppSelection, chain: List<String>) {
+        val packages = selection.packages.value
+        selection.clear()
         val countdown = app.resources.getQuantityString(
             if (chain.isEmpty()) R.plurals.pending_batch_reset else R.plurals.pending_batch_apply,
             packages.size,
             packages.size,
         )
-        afterUndoPeriod(countdown, onUndo = { _selection.update { it + packages } }) {
+        afterUndoPeriod(countdown, onUndo = { selection.selectAll(packages) }) {
             val failed = locales.applyMany(packages, chain)
             val text = if (failed == 0) {
                 app.resources.getQuantityString(R.plurals.message_batch_applied, packages.size, packages.size)
@@ -455,7 +486,7 @@ class MainViewModel(private val app: Application, private val container: AppCont
 
     // --- Internals -------------------------------------------------------------------------------
 
-    private fun buildRow(app: AppInfo, desired: DesiredLocale?, actual: List<String>?): AppRow {
+    private fun buildRow(app: AppInfo, desired: DesiredLocale?, actual: List<String>?, favorite: Boolean): AppRow {
         val wanted = desired?.locales.orEmpty()
         val pendingReset = desired != null && wanted.isEmpty()
         val shown = if (pendingReset) emptyList() else wanted.ifEmpty { actual.orEmpty() }
@@ -475,6 +506,7 @@ class MainViewModel(private val app: Application, private val container: AppCont
             systemLocales = actual,
             status = status,
             setAt = desired?.updatedAt ?: 0,
+            favorite = favorite,
             searchTarget = Search.Target(app.label, app.packageName, localeTerms, pinyin),
         )
     }
@@ -502,18 +534,20 @@ class MainViewModel(private val app: Application, private val container: AppCont
             AppSort.RecentlyUpdated -> compareByDescending<AppRow> { it.app.lastUpdateTime }.then(byName)
             AppSort.RecentlyInstalled -> compareByDescending<AppRow> { it.app.firstInstallTime }.then(byName)
         }
-        val directed = if (preferences.reverseOrder) sortOrder.reversed() else sortOrder
-        val ordering = if (preferences.withLocaleFirst) {
-            compareBy<AppRow> { it.locales.isEmpty() }.then(directed)
-        } else {
-            directed
-        }
+        val ordering = if (preferences.reverseOrder) sortOrder.reversed() else sortOrder
         return rows.filter { row ->
             when (typeFilter) {
-                AppTypeFilter.Launchable -> row.app.isLaunchable
-                AppTypeFilter.User -> !row.app.isSystem
-                AppTypeFilter.System -> row.app.isSystem
-                AppTypeFilter.All -> true
+                // Picked one by one, so all of them show whatever the other filters say.
+                AppTypeFilter.Favorites -> row.favorite
+                else -> {
+                    val type = when (typeFilter) {
+                        AppTypeFilter.User -> !row.app.isSystem
+                        AppTypeFilter.System -> row.app.isSystem
+                        else -> true
+                    }
+                    type && (row.app.isLaunchable || !preferences.launchableOnly) &&
+                        (row.app.isEnabled || !preferences.enabledOnly)
+                }
             }
         }.sortedWith(ordering)
     }
