@@ -14,13 +14,12 @@ Android 13 added per-app languages, but the system settings only offer them for 
 
 ## Screenshots
 
-- **Portrait** orientation UI example:
-  
-  ![Pic1.jpg](/Screenshots/Pic1.jpg)
+- **Portrait**:
+  ![Portrait](/Screenshots/Pic1.jpg)
 
-- **Foldable & landscape** orientation UI example:
-  
-  ![Pic2.jpg](/Screenshots/Pic2.jpg)
+- **Foldable / Landscape**:
+  ![Foldable1](/Screenshots/Pic2.jpg)
+  ![Foldable2](/Screenshots/Pic3.jpg)
   **Note:** *The landscape orientation screenshots may slightly differ from Android TV in some screens, where extra menu items and multiple UI changes are applied for easier D-pad control.*
 
 ## Requirements
