@@ -21,22 +21,15 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-
-/** How much of the header's own colour lies over what scrolls behind it: its text stays readable. */
-private const val HEADER_TINT_ALPHA = 0.7f
+import io.github.ernisn.applingo.ui.theme.TRANSLUCENT_PANEL_ALPHA
 
 /**
  * A pane's header (its top bar, and what stays put under it: the Shizuku card, the tabs) laid over
@@ -87,36 +80,51 @@ fun FrostedBarsLayout(
         return
     }
     val backdrop = rememberBackdrop()
-    val density = LocalDensity.current
-    var headerHeight by remember { mutableIntStateOf(0) }
-    var footerHeight by remember { mutableIntStateOf(0) }
     val base = MaterialTheme.colorScheme.background
     // The window background first, so only the frosted copy shows through and not the sharp
     // content where it has no background of its own (see NavIsland).
     @Composable
-    fun Modifier.frosted(tint: Color, onHeight: (Int) -> Unit) = this
+    fun Modifier.frosted(tint: Color) = this
         .fillMaxWidth()
-        .onSizeChanged { onHeight(it.height) }
         .clipToBounds()
         .drawBehind { drawRect(base) }
         .backdropBlur(backdrop, FrostBlur)
-        .drawBehind { drawRect(tint.copy(alpha = HEADER_TINT_ALPHA)) }
-    Box(modifier) {
-        Box(Modifier.fillMaxSize().backdropSource(backdrop)) {
-            content(
-                with(density) { headerHeight.toDp() },
-                with(density) { (if (footer != null) footerHeight else 0).toDp() },
-            )
+        .drawBehind { drawRect(tint.copy(alpha = TRANSLUCENT_PANEL_ALPHA)) }
+    // The bars are measured first and the content composed with their heights in the same frame.
+    // Heights measured after the fact (onSizeChanged into state) reached the content a frame late:
+    // every page's first frame showed its list from the very top, behind the header, before it
+    // jumped into place, a flash each time a page opened.
+    SubcomposeLayout(modifier) { constraints ->
+        val width = constraints.maxWidth
+        val height = constraints.maxHeight
+        val barConstraints = constraints.copy(minHeight = 0)
+        val headerPlaceables = subcompose(FrostedSlot.Header) {
+            Column(Modifier.frosted(tint).then(topInsets), content = header)
+        }.map { it.measure(barConstraints) }
+        val footerPlaceables = if (footer == null) {
+            emptyList()
+        } else {
+            subcompose(FrostedSlot.Footer) {
+                Column(Modifier.frosted(footerTint).then(bottomInsets), content = footer)
+            }.map { it.measure(barConstraints) }
         }
-        Column(Modifier.frosted(tint) { headerHeight = it }.then(topInsets), content = header)
-        if (footer != null) {
-            Column(
-                Modifier.align(Alignment.BottomCenter).frosted(footerTint) { footerHeight = it }.then(bottomInsets),
-                content = footer,
-            )
+        val headerHeight = headerPlaceables.maxOfOrNull { it.height } ?: 0
+        val footerHeight = footerPlaceables.maxOfOrNull { it.height } ?: 0
+        val contentPlaceables = subcompose(FrostedSlot.Content) {
+            Box(Modifier.fillMaxSize().backdropSource(backdrop)) {
+                content(headerHeight.toDp(), footerHeight.toDp())
+            }
+        }.map { it.measure(constraints) }
+        // In drawing order: the content first, recording what the bars then draw blurred.
+        layout(width, height) {
+            contentPlaceables.forEach { it.place(0, 0) }
+            headerPlaceables.forEach { it.place(0, 0) }
+            footerPlaceables.forEach { it.place(0, height - footerHeight) }
         }
     }
 }
+
+private enum class FrostedSlot { Header, Footer, Content }
 
 /**
  * Pull to refresh for a list under a [FrostedHeaderLayout]: the indicator comes down from under the

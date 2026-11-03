@@ -132,6 +132,21 @@ val ControlShape = RoundedCornerShape(12.dp)
 /** Search fields, 56 dp tall, and the menu that drops down from the app search. */
 val FieldShape = RoundedCornerShape(16.dp)
 
+/** App rows, about 72 dp tall: their highlight, and its ripple. */
+val RowShape = RoundedCornerShape(CardRadius)
+
+/*
+ * Translucency. Fills on the frosted bars and the island let what scrolls behind them show through,
+ * as the bars themselves do: surfaces (the island, search fields) a little more than highlights (the
+ * island's indicator, the selected tab), and panels full of text (headers, menus, dialogs) less, so
+ * it stays readable. A filled button keeps most of its colour, so its label stays readable (4.5:1)
+ * over whatever passes behind it.
+ */
+const val TRANSLUCENT_PANEL_ALPHA = 0.7f
+const val TRANSLUCENT_SURFACE_ALPHA = 0.55f
+const val TRANSLUCENT_FILL_ALPHA = 0.6f
+const val TRANSLUCENT_BUTTON_ALPHA = 0.85f
+
 private fun seedColorScheme(seed: Int, dark: Boolean): ColorScheme {
     val scheme = SchemeTonalSpot(Hct.fromInt(seed), dark, 0.0)
     val roles = MaterialDynamicColors()

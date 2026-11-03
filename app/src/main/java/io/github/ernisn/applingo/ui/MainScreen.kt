@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.safeDrawing
@@ -40,7 +41,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -59,6 +59,7 @@ import androidx.compose.material3.adaptive.layout.rememberPaneExpansionState
 import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -103,6 +104,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ernisn.applingo.R
 import io.github.ernisn.applingo.ui.applist.AppListPane
 import io.github.ernisn.applingo.ui.components.FocusOnReturnRequest
+import io.github.ernisn.applingo.ui.components.FrostedSnackbar
+import io.github.ernisn.applingo.ui.components.LocalWindowBackdrop
 import io.github.ernisn.applingo.ui.components.backdropSource
 import io.github.ernisn.applingo.ui.components.isDpadDevice
 import io.github.ernisn.applingo.ui.components.rememberBackdrop
@@ -122,11 +125,18 @@ private const val RAIL_MIN_WIDTH_DP = 600
 /** Space every pane keeps between its content and its left and right edges. */
 private val PaneMargin = 16.dp
 
-/**
- * Space between content and a system bar or cutout beside it, and between the upright island and the
- * first pane next to it.
- */
+/** Space between content and a system bar or cutout beside it. */
 private val BarGap = 12.dp
+
+/**
+ * The upright island's place between the bar or cutout on its side and the first pane: [RailBarGap]
+ * from the bar, [RailPaneGap] from the pane, whose own [PaneMargin] then follows before its content.
+ * A 3-button bar's glyphs sit about 12 dp in from its inner edge, so that leaves about as much empty
+ * space on either side of the island, 18 dp. (4 dp from the bar and 4 from the pane looked off
+ * centre, 16 dp to the glyphs against 20 dp to the content.)
+ */
+private val RailBarGap = 6.dp
+private val RailPaneGap = 2.dp
 
 /** The island's way out with a secondary page or selection, and back: about as long as the pane's. */
 private const val ISLAND_ENTER_MS = 300
@@ -198,18 +208,25 @@ fun MainScreen(viewModel: MainViewModel) {
         )
     }
 
+    // What the pages show, recorded for the frosted surfaces over them (see LocalWindowBackdrop): the
+    // island at the bottom, the messages below, and menus and dialogs, which open in windows of
+    // their own. Those in this window stay out of the recording, since they draw it.
+    val windowBackdrop = rememberBackdrop()
+
     val content: @Composable (Modifier) -> Unit = { modifier ->
         Box(modifier.then(downToUndo)) {
-            stateHolder.SaveableStateProvider(destination.name) {
-                when (destination) {
-                    Destination.Apps -> AppsListDetail(viewModel, keepVertical = useRail) { selected, focusOnReturn, onOpen ->
-                        AppListPane(viewModel, selected, focusOnReturn, onOpen)
-                    }
-                    Destination.Managed -> AppsListDetail(viewModel, keepVertical = useRail) { selected, focusOnReturn, onOpen ->
-                        ManagedPane(viewModel, selected, focusOnReturn, onOpen)
-                    }
-                    Destination.Settings -> Box(Modifier.fillMaxSize().keepVerticalFocus(useRail)) {
-                        SettingsScreen(viewModel)
+            Box(Modifier.fillMaxSize().backdropSource(windowBackdrop)) {
+                stateHolder.SaveableStateProvider(destination.name) {
+                    when (destination) {
+                        Destination.Apps -> AppsListDetail(viewModel, keepVertical = useRail) { selected, focusOnReturn, onOpen ->
+                            AppListPane(viewModel, selected, focusOnReturn, onOpen)
+                        }
+                        Destination.Managed -> AppsListDetail(viewModel, keepVertical = useRail) { selected, focusOnReturn, onOpen ->
+                            ManagedPane(viewModel, selected, focusOnReturn, onOpen)
+                        }
+                        Destination.Settings -> Box(Modifier.fillMaxSize().keepVerticalFocus(useRail)) {
+                            SettingsScreen(viewModel)
+                        }
                     }
                 }
             }
@@ -244,17 +261,7 @@ fun MainScreen(viewModel: MainViewModel) {
                 }
                 // Messages that arrive during a countdown wait until it is over.
                 if (undoableChange == null) {
-                    SnackbarHost(hostState = snackbarHostState) { data ->
-                        // The default inverse colors put a light snackbar on a dark theme.
-                        Snackbar(
-                            snackbarData = data,
-                            shape = ControlShape,
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                            actionColor = MaterialTheme.colorScheme.primary,
-                            dismissActionContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    SnackbarHost(hostState = snackbarHostState) { data -> FrostedSnackbar(data) }
                 }
             }
         }
@@ -264,20 +271,25 @@ fun MainScreen(viewModel: MainViewModel) {
     // the content (a search with the keyboard open showed only a few results).
     val barInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
 
-    ProvideNavIsland(island) {
+    CompositionLocalProvider(LocalNavIsland provides island, LocalWindowBackdrop provides windowBackdrop) {
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             if (useRail) {
                 Row(Modifier.fillMaxSize()) {
-                    // Beside the content, not over it: [IslandGap] from the bar or cutout on its side
-                    // ([BarGap] on a TV, clear of a bezel that may crop the picture), [BarGap] from
-                    // the first pane.
-                    val edgeGap = if (isDpadDevice()) BarGap else IslandGap
+                    // Beside the content, not over it, midway between the bar or cutout on its side
+                    // and the content (see [RailBarGap]). With nothing beside it (gesture navigation,
+                    // a TV) it keeps as far from the screen edge as from the content, rather than
+                    // hugging the edge. Above and below, [IslandGap] from the bars ([BarGap] on a
+                    // TV, clear of a bezel that may crop the picture).
+                    val startInset = barInsets.only(WindowInsetsSides.Start).asPaddingValues()
+                        .calculateStartPadding(LocalLayoutDirection.current)
+                    val edgeGap = if (startInset > 0.dp) RailBarGap else RailPaneGap + PaneMargin
+                    val endsGap = if (isDpadDevice()) BarGap else IslandGap
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .fillMaxHeight()
                             .windowInsetsPadding(barInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Vertical))
-                            .padding(start = edgeGap, top = edgeGap, bottom = edgeGap),
+                            .padding(start = edgeGap, top = endsGap, bottom = endsGap),
                     ) {
                         NavIsland(islandItems, vertical = true, modifier = Modifier.keepVerticalFocus(enabled = true))
                     }
@@ -292,15 +304,14 @@ fun MainScreen(viewModel: MainViewModel) {
                         Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .padding(start = BarGap, end = (farEdge - (PaneMargin - BarGap)).coerceAtLeast(0.dp)),
+                            .padding(start = RailPaneGap, end = (farEdge - (PaneMargin - BarGap)).coerceAtLeast(0.dp)),
                     )
                 }
             } else {
                 // Always there on top-level pages (lists end clear of it, see bottomChrome); it only
                 // leaves for secondary pages and selections, easing down out of sight and back up.
-                val backdrop = rememberBackdrop()
                 Box(Modifier.fillMaxSize()) {
-                    content(Modifier.fillMaxSize().backdropSource(backdrop))
+                    content(Modifier.fillMaxSize())
                     AnimatedVisibility(
                         visible = island.shown,
                         enter = slideInVertically(tween(ISLAND_ENTER_MS, easing = LinearOutSlowInEasing)) { it } +
@@ -315,7 +326,7 @@ fun MainScreen(viewModel: MainViewModel) {
                         NavIsland(
                             islandItems,
                             vertical = false,
-                            backdrop = backdrop,
+                            backdrop = windowBackdrop,
                             modifier = Modifier.onSizeChanged { island.heightPx = it.height },
                         )
                     }
@@ -435,16 +446,12 @@ private fun UndoCountdownSnackbar(change: UndoableChange, onUndo: () -> Unit, un
         while (true) withFrameMillis { now = SystemClock.uptimeMillis() }
     }
     val remaining = (change.startedAt + change.durationMillis - now).coerceIn(0, change.durationMillis)
-    Snackbar(
-        modifier = Modifier.padding(12.dp),
+    FrostedSnackbar(
         action = {
             TextButton(onClick = onUndo, shape = ControlShape, modifier = undoModifier) {
                 Text(stringResource(R.string.action_undo))
             }
         },
-        shape = ControlShape,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-        contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             // Announcing every tick would drown out the message itself.

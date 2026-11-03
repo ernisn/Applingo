@@ -29,6 +29,10 @@ keystore.properties
 # Design notes and release checklist, kept locally
 docs/
 
+# Logo sources, kept locally
+/Logo.png
+/Logo.psd
+
 # OS
 .DS_Store
 Thumbs.db

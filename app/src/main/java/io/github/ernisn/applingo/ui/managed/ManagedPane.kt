@@ -29,7 +29,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -75,14 +74,18 @@ import io.github.ernisn.applingo.ui.components.FocusOnReturnRequest
 import io.github.ernisn.applingo.ui.components.FocusRowOnReturn
 import io.github.ernisn.applingo.ui.components.FocusWhenPending
 import io.github.ernisn.applingo.ui.components.FrostedBarsLayout
+import io.github.ernisn.applingo.ui.components.FrostedDropdownMenu
 import io.github.ernisn.applingo.ui.components.FrostedPullToRefresh
 import io.github.ernisn.applingo.ui.components.PackageLine
 import io.github.ernisn.applingo.ui.components.SearchField
 import io.github.ernisn.applingo.ui.components.SegmentedTabRow
 import io.github.ernisn.applingo.ui.components.SelectionActionsBar
 import io.github.ernisn.applingo.ui.components.SelectionTopBar
+import io.github.ernisn.applingo.ui.components.appRow
+import io.github.ernisn.applingo.ui.components.groupedRowColors
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
 import io.github.ernisn.applingo.ui.components.isDpadDevice
+import io.github.ernisn.applingo.ui.components.translucentButtonColors
 import io.github.ernisn.applingo.ui.components.rememberRevealer
 import io.github.ernisn.applingo.ui.components.revealable
 import io.github.ernisn.applingo.ui.picker.BatchLocalePickerDialog
@@ -90,7 +93,6 @@ import io.github.ernisn.applingo.ui.HideNavIsland
 import io.github.ernisn.applingo.ui.bottomChrome
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.theme.ControlShape
-import io.github.ernisn.applingo.ui.theme.FieldShape
 import kotlinx.coroutines.delay
 
 private const val MAX_ACTIVITY_SHOWN = 100
@@ -331,7 +333,8 @@ private fun ConfiguredPane(
                                 )
                             }
                         }
-                        if (state.apps.isEmpty()) {
+                        // Not before the app list has loaded: until then there are no apps to show.
+                        if (state.loaded && state.apps.isEmpty()) {
                             item(key = "empty") {
                                 Hint(stringResource(if (searching) R.string.list_no_results else R.string.managed_empty))
                             }
@@ -391,7 +394,7 @@ private fun AppsMenu(state: ManagedState, onPreferencesChange: (ListPreferences)
         IconButton(onClick = { menuOpen = true }) {
             Icon(painterResource(R.drawable.ic_sort), contentDescription = stringResource(R.string.action_sort))
         }
-        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, shape = FieldShape) {
+        FrostedDropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
             SortMenuItems(preferences = state.preferences, onChange = onPreferencesChange, onPicked = { menuOpen = false })
             if (state.configuredCount > 0) {
                 HorizontalDivider()
@@ -454,6 +457,7 @@ private fun SummaryCard(
                     onClick = onCheckNow,
                     enabled = !state.checking && state.shizuku is ShizukuState.Connected,
                     shape = ControlShape,
+                    colors = translucentButtonColors(),
                 ) { Text(stringResource(R.string.action_check_now)) }
             }
         }
@@ -497,6 +501,7 @@ private fun ManagedAppItem(
     val revealer = rememberRevealer()
     ListItem(
         modifier = modifier
+            .appRow(highlighted)
             .revealable(revealer)
             .combinedClickable(
                 onClick = {
@@ -508,11 +513,7 @@ private fun ManagedAppItem(
                     onLongClick()
                 },
             ),
-        colors = if (highlighted) {
-            ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-        } else {
-            ListItemDefaults.colors()
-        },
+        colors = groupedRowColors(),
         leadingContent = {
             if (checked != null) {
                 Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
@@ -549,7 +550,9 @@ private fun ActivityItem(entry: ActivityEntry) {
         ActivityKind.Reset -> stringResource(textRes)
         else -> stringResource(textRes, chain(entry.to))
     }
+    // In from the pane's edges as far as the app rows in the other tab (see appRow).
     ListItem(
+        modifier = Modifier.padding(horizontal = 16.dp),
         leadingContent = { Box(Modifier.size(10.dp).background(color, CircleShape)) },
         headlineContent = { Text(entry.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         supportingContent = { Text(detail, style = MaterialTheme.typography.bodySmall) },
@@ -585,6 +588,6 @@ internal fun Hint(text: String) {
         text = text,
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp),
     )
 }

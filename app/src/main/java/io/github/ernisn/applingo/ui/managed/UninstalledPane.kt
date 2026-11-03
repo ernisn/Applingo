@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -28,7 +29,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -61,6 +61,9 @@ import io.github.ernisn.applingo.ui.components.FocusWhenPending
 import io.github.ernisn.applingo.ui.components.FrostedBarsLayout
 import io.github.ernisn.applingo.ui.components.frostedTopAppBarColors
 import io.github.ernisn.applingo.ui.components.SelectionTopBar
+import io.github.ernisn.applingo.ui.components.appRow
+import io.github.ernisn.applingo.ui.components.groupedRowColors
+import io.github.ernisn.applingo.ui.components.translucentButtonColors
 import io.github.ernisn.applingo.ui.components.isDpadDevice
 import io.github.ernisn.applingo.ui.components.rememberRevealer
 import io.github.ernisn.applingo.ui.components.revealable
@@ -123,6 +126,7 @@ internal fun UninstalledPane(viewModel: MainViewModel, records: List<Uninstalled
             onClick = ::removeSelected,
             enabled = selection.isNotEmpty(),
             shape = ControlShape,
+            colors = translucentButtonColors(),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = if (underTopBar) 0.dp else 12.dp, bottom = 12.dp),
@@ -223,7 +227,11 @@ internal fun UninstalledPane(viewModel: MainViewModel, records: List<Uninstalled
     }
 }
 
-/** The app's last known name, its package and the languages kept for it; a blank where its icon was. */
+/**
+ * The app's last known name, its package and the languages kept for it. Where its icon was, a cross
+ * on the blank the lists show while an icon loads, so it doesn't read as one still loading. Not a
+ * bin, which is the row's button for removing the record.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun UninstalledItem(
@@ -237,6 +245,7 @@ private fun UninstalledItem(
     val revealer = rememberRevealer()
     ListItem(
         modifier = modifier
+            .appRow(highlighted = checked == true)
             .revealable(revealer)
             .combinedClickable(
                 onClick = {
@@ -248,17 +257,23 @@ private fun UninstalledItem(
                     onLongClick()
                 },
             ),
-        colors = if (checked == true) {
-            ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-        } else {
-            ListItemDefaults.colors()
-        },
+        colors = groupedRowColors(),
         leadingContent = {
             Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
                 if (checked != null) {
                     Checkbox(checked = checked, onCheckedChange = null)
                 } else {
-                    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant, CircleShape))
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                    ) {
+                        Icon(
+                            Icons.Filled.Close,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
                 }
             }
         },

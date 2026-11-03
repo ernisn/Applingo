@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,13 +23,14 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -40,7 +42,6 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,6 +51,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -67,6 +69,7 @@ import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.bottomChrome
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.components.AppTypeFilterRow
+import io.github.ernisn.applingo.ui.components.FrostedDialog
 import io.github.ernisn.applingo.ui.components.FrostedHeaderLayout
 import io.github.ernisn.applingo.ui.components.GroupHeader
 import io.github.ernisn.applingo.ui.components.frostedTopAppBarColors
@@ -75,6 +78,7 @@ import io.github.ernisn.applingo.ui.components.groupedRow
 import io.github.ernisn.applingo.ui.components.groupedRowColors
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
 import io.github.ernisn.applingo.ui.components.isDpadDevice
+import io.github.ernisn.applingo.ui.components.segmentedColors
 import io.github.ernisn.applingo.ui.theme.ControlShape
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -179,6 +183,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
                                                 selected = settings.themeMode == mode,
                                                 onClick = { viewModel.updateSettings { it.copy(themeMode = mode) } },
                                                 shape = SegmentedButtonDefaults.itemShape(index, modes.size, baseShape = ControlShape),
+                                                colors = segmentedColors(),
                                                 icon = {},
                                             ) {
                                                 Text(
@@ -297,6 +302,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
                                                     selected = settings.backgroundCheckHours == hours,
                                                     onClick = { viewModel.updateSettings { it.copy(backgroundCheckHours = hours) } },
                                                     shape = SegmentedButtonDefaults.itemShape(index, BACKGROUND_CHECK_HOURS.size, baseShape = ControlShape),
+                                                    colors = segmentedColors(),
                                                     icon = {},
                                                 ) { Text(stringResource(R.string.settings_hours, hours)) }
                                             }
@@ -406,32 +412,40 @@ private fun OwnLanguageDialog(
     onSelect: (String?) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.settings_own_language)) },
-        text = {
-            // Scrolls when the dialog is shorter than the list (landscape), instead of squeezing the rows.
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                (listOf<String?>(null) + options).forEach { tag ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp)
-                            .clickable(role = Role.RadioButton) { onSelect(tag) },
-                    ) {
-                        RadioButton(selected = tag == current, onClick = null)
-                        Spacer(Modifier.size(12.dp))
-                        Text(tag?.let(LocaleTags::nativeName) ?: stringResource(R.string.locale_follow_system))
-                    }
+    // A frosted card like every other dialog; picking a language closes it, so its only button is
+    // an outlined Close.
+    FrostedDialog(onDismissRequest = onDismiss) {
+        Text(stringResource(R.string.settings_own_language), style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(8.dp))
+        // Scrolls when the dialog is shorter than the list (landscape), instead of squeezing the rows.
+        Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
+            (listOf<String?>(null) + options).forEach { tag ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                        .clip(ControlShape)
+                        .clickable(role = Role.RadioButton) { onSelect(tag) },
+                ) {
+                    RadioButton(selected = tag == current, onClick = null)
+                    Spacer(Modifier.size(12.dp))
+                    Text(tag?.let(LocaleTags::nativeName) ?: stringResource(R.string.locale_follow_system))
                 }
             }
-        },
-        confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss, shape = ControlShape) { Text(stringResource(R.string.action_close)) } },
-    )
+        }
+        Spacer(Modifier.height(16.dp))
+        OutlinedButton(onClick = onDismiss, shape = ControlShape, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.action_close))
+        }
+    }
 }
 
+/**
+ * A setting with a switch, laid out like the list items around it. Not a ListItem itself: that puts
+ * its trailing content at the top once the summary wraps, and the switch belongs centred beside the
+ * whole text.
+ */
 @Composable
 private fun SwitchRow(
     title: String,
@@ -440,13 +454,20 @@ private fun SwitchRow(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ListItem(
-        modifier = modifier.clickable(role = Role.Switch) { onCheckedChange(!checked) },
-        colors = groupedRowColors(),
-        headlineContent = { Text(title) },
-        supportingContent = { Text(summary) },
-        trailingContent = { Switch(checked = checked, onCheckedChange = null) },
-    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
+            .heightIn(min = 72.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+            Text(summary, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Spacer(Modifier.width(16.dp))
+        Switch(checked = checked, onCheckedChange = null)
+    }
 }
 
 @Composable

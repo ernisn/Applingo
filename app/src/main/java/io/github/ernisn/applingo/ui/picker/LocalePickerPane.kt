@@ -68,6 +68,7 @@ import io.github.ernisn.applingo.core.LocaleCatalog
 import io.github.ernisn.applingo.core.LocaleOption
 import io.github.ernisn.applingo.core.Search
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.components.ActionPair
 import io.github.ernisn.applingo.ui.components.EditablePriorityList
 import io.github.ernisn.applingo.ui.components.FavoriteButton
 import io.github.ernisn.applingo.ui.components.FrostedBarsLayout
@@ -78,6 +79,7 @@ import io.github.ernisn.applingo.ui.components.groupedRow
 import io.github.ernisn.applingo.ui.components.groupedRowColors
 import io.github.ernisn.applingo.ui.components.SearchField
 import io.github.ernisn.applingo.ui.components.isDpadDevice
+import io.github.ernisn.applingo.ui.components.translucentButtonColors
 import io.github.ernisn.applingo.ui.bottomChrome
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.theme.ControlShape
@@ -209,17 +211,19 @@ private fun LocalePickerContent(
         if (searchFocused) listState.scrollToItem(SEARCH_ITEM_INDEX)
     }
 
-    // At the bottom for touch; next to the title on a D-pad device, where Up from the top of the list
-    // reaches them.
+    // At the bottom for touch, as the actions on selected apps are; next to the title on a D-pad
+    // device, where Up from the top of the list reaches them.
     val dpad = isDpadDevice()
+    val applyEnabled = if (batch) chain.isNotEmpty() else chain.toList() != initial
     val chainActions: @Composable () -> Unit = {
         TextButton(onClick = { chain.clear() }, enabled = chain.isNotEmpty(), shape = ControlShape) {
             Text(stringResource(R.string.action_follow_system))
         }
         Button(
             onClick = { onApply(chain.toList()) },
-            enabled = if (batch) chain.isNotEmpty() else chain.toList() != initial,
+            enabled = applyEnabled,
             shape = ControlShape,
+            colors = translucentButtonColors(),
         ) { Text(stringResource(R.string.action_apply)) }
     }
 
@@ -237,10 +241,15 @@ private fun LocalePickerContent(
                 null
             } else {
                 {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                    ) { chainActions() }
+                    ActionPair(
+                        secondaryLabel = stringResource(R.string.action_follow_system),
+                        onSecondary = { chain.clear() },
+                        primaryLabel = stringResource(R.string.action_apply),
+                        onPrimary = { onApply(chain.toList()) },
+                        secondaryEnabled = chain.isNotEmpty(),
+                        primaryEnabled = applyEnabled,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    )
                 }
             },
             header = {
@@ -273,7 +282,8 @@ private fun LocalePickerContent(
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(top = headerHeight, bottom = if (dpad) bottomChrome() else footerHeight),
+                // The last card ends clear of the bar, as the other lists' last rows do.
+                contentPadding = PaddingValues(top = headerHeight, bottom = 16.dp + if (dpad) bottomChrome() else footerHeight),
             ) {
                 // The chain comes before the search field: SEARCH_ITEM_INDEX counts it. A card like the
                 // detail page's language card, and every section below one card each.

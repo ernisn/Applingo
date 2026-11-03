@@ -24,11 +24,15 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import io.github.ernisn.applingo.R
 import io.github.ernisn.applingo.ui.theme.ControlShape
+import io.github.ernisn.applingo.ui.theme.TRANSLUCENT_PANEL_ALPHA
 import io.github.ernisn.applingo.shizuku.ShizukuState
 
 private const val SHIZUKU_DOWNLOAD_URL = "https://shizuku.rikka.app/download/"
 
-/** Explains what is missing for Shizuku and offers the one action that fixes it. Hidden when connected. */
+/**
+ * Explains what is missing for Shizuku and offers the one action that fixes it. Hidden when connected.
+ * Translucent: in the lists it sits in the frosted header, with the list scrolling on behind it.
+ */
 @Composable
 fun ShizukuStatusCard(
     state: ShizukuState,
@@ -42,12 +46,12 @@ fun ShizukuStatusCard(
         Card(
             colors = if (isError) {
                 CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = TRANSLUCENT_PANEL_ALPHA),
                     contentColor = MaterialTheme.colorScheme.onErrorContainer,
                 )
             } else {
                 CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = TRANSLUCENT_PANEL_ALPHA),
                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                 )
             },
@@ -66,13 +70,13 @@ fun ShizukuStatusCard(
                     val openShizuku = shizukuLaunchIntent()
                     when (state) {
                         ShizukuState.Connecting -> CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-                        ShizukuState.NotInstalled -> Button(shape = ControlShape, onClick = {
+                        ShizukuState.NotInstalled -> Button(shape = ControlShape, colors = translucentButtonColors(), onClick = {
                             context.startActivity(
                                 Intent(Intent.ACTION_VIEW, SHIZUKU_DOWNLOAD_URL.toUri())
                                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
                             )
                         }) { Text(stringResource(R.string.shizuku_action_get)) }
-                        ShizukuState.PermissionRequired -> Button(onClick = onRequestPermission, shape = ControlShape) {
+                        ShizukuState.PermissionRequired -> Button(onClick = onRequestPermission, shape = ControlShape, colors = translucentButtonColors()) {
                             Text(stringResource(R.string.shizuku_action_grant))
                         }
                         else -> {
@@ -81,7 +85,7 @@ fun ShizukuStatusCard(
                                     Text(stringResource(R.string.shizuku_action_open))
                                 }
                             }
-                            Button(onClick = onRetry, shape = ControlShape) { Text(stringResource(R.string.action_retry)) }
+                            Button(onClick = onRetry, shape = ControlShape, colors = translucentButtonColors()) { Text(stringResource(R.string.action_retry)) }
                         }
                     }
                 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonColors
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import io.github.ernisn.applingo.R
 import io.github.ernisn.applingo.data.AppTypeFilter
 import io.github.ernisn.applingo.ui.theme.ControlShape
+import io.github.ernisn.applingo.ui.theme.TRANSLUCENT_FILL_ALPHA
 
 /** All / User / System / Favorites, the app list's tabs (and the default one in settings). */
 @Composable
@@ -54,6 +56,7 @@ fun SegmentedTabRow(
                 onClick = { onSelect(index) },
                 enabled = enabled,
                 shape = SegmentedButtonDefaults.itemShape(index, labels.size, baseShape = ControlShape),
+                colors = segmentedColors(),
                 contentPadding = PaddingValues(horizontal = 4.dp),
                 // The selected segment's fill is enough; a check mark would take a third of its width.
                 icon = {},
@@ -66,6 +69,16 @@ fun SegmentedTabRow(
             }
         }
     }
+}
+
+/**
+ * Every segmented row's colours: the selected segment translucent, like the island's indicator, so
+ * what scrolls on behind a frosted header shows through it as it does through the others.
+ */
+@Composable
+fun segmentedColors(): SegmentedButtonColors {
+    val fill = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = TRANSLUCENT_FILL_ALPHA)
+    return SegmentedButtonDefaults.colors(activeContainerColor = fill, disabledActiveContainerColor = fill)
 }
 
 fun AppTypeFilter.labelRes(): Int = when (this) {

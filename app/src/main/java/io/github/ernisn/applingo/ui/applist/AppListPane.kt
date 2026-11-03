@@ -22,13 +22,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -67,19 +65,21 @@ import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.components.AppTypeFilterRow
 import io.github.ernisn.applingo.ui.components.FocusOnReturnRequest
 import io.github.ernisn.applingo.ui.components.FrostedBarsLayout
+import io.github.ernisn.applingo.ui.components.FrostedDropdownMenu
 import io.github.ernisn.applingo.ui.components.FrostedPullToRefresh
 import io.github.ernisn.applingo.ui.components.FocusRowOnReturn
 import io.github.ernisn.applingo.ui.components.FocusWhenPending
 import io.github.ernisn.applingo.ui.components.PackageLine
 import io.github.ernisn.applingo.ui.components.rememberRevealer
 import io.github.ernisn.applingo.ui.components.revealable
+import io.github.ernisn.applingo.ui.components.appRow
+import io.github.ernisn.applingo.ui.components.groupedRowColors
 import io.github.ernisn.applingo.ui.components.SelectionActionsBar
 import io.github.ernisn.applingo.ui.components.SelectionTopBar
 import io.github.ernisn.applingo.ui.components.SearchField
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
 import io.github.ernisn.applingo.ui.components.isDpadDevice
 import io.github.ernisn.applingo.ui.picker.BatchLocalePickerDialog
-import io.github.ernisn.applingo.ui.theme.FieldShape
 
 @Composable
 fun AppListPane(
@@ -293,7 +293,7 @@ private fun SearchHeader(
             IconButton(onClick = { menuOpen = true }) {
                 Icon(painterResource(R.drawable.ic_sort), contentDescription = stringResource(R.string.action_sort))
             }
-            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, shape = FieldShape) {
+            FrostedDropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                 SortMenuItems(
                     preferences = preferences,
                     onChange = onPreferencesChange,
@@ -373,6 +373,7 @@ private fun AppListItem(
     val revealer = rememberRevealer()
     ListItem(
         modifier = modifier
+            .appRow(highlighted = selected || checked == true)
             .revealable(revealer)
             .combinedClickable(
                 onClick = {
@@ -384,11 +385,7 @@ private fun AppListItem(
                     onLongClick()
                 },
             ),
-        colors = if (selected || checked == true) {
-            ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-        } else {
-            ListItemDefaults.colors()
-        },
+        colors = groupedRowColors(),
         leadingContent = {
             if (checked != null) {
                 Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {

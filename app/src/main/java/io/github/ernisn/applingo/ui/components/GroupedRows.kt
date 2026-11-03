@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import io.github.ernisn.applingo.ui.theme.CardRadius
+import io.github.ernisn.applingo.ui.theme.RowShape
 
 /*
  * Rows of a lazy list drawn as one card per group, the same filled cards as the detail page: each row
@@ -50,6 +51,19 @@ fun Modifier.groupedRow(position: GroupPosition): Modifier {
 /** List items on a group's card, which already paints the background. */
 @Composable
 fun groupedRowColors(): ListItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
+
+/**
+ * An app row in a list: in from the pane's edges as far as the cards and the search field, and when
+ * [highlighted] (the app open beside the list, or picked) filled as a rounded card of its own rather
+ * than a band across the pane. A little apart from the next row, so picked rows in a run stay
+ * separate cards. Goes before the row's clickable, so its ripple and D-pad focus take the same
+ * shape. The row's list item paints no background ([groupedRowColors]).
+ */
+@Composable
+fun Modifier.appRow(highlighted: Boolean): Modifier {
+    val fill = if (highlighted) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
+    return padding(horizontal = 16.dp, vertical = 2.dp).clip(RowShape).background(fill)
+}
 
 /** A group's title, above its card and lined up with the text in it. */
 @Composable

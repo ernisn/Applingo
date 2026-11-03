@@ -232,6 +232,10 @@ class MainViewModel(private val app: Application, private val container: AppCont
         )
     }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppListState())
 
+    /**
+     * Kept up to date while other pages show, so the Configured page has its list from its first
+     * frame: started only on subscription, it showed its empty placeholder state for a moment.
+     */
     val managedState: StateFlow<ManagedState> = combine(
         combine(container.apps.apps, rows, locales.desired) { apps, rows, desired -> Triple(apps != null, rows, desired) },
         combine(managedQuery, container.preferences.managedList) { query, preferences -> query to preferences },
@@ -263,7 +267,7 @@ class MainViewModel(private val app: Application, private val container: AppCont
             checking = checking,
             shizuku = shizukuState,
         )
-    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ManagedState())
+    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.Eagerly, ManagedState())
 
     /** All languages for the picker, built once on first use. */
     val catalog: StateFlow<List<LanguageGroup>?> = MutableStateFlow<List<LanguageGroup>?>(null).also { flow ->

@@ -49,10 +49,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.ernisn.applingo.R
 import io.github.ernisn.applingo.ui.theme.FieldShape
+import io.github.ernisn.applingo.ui.theme.TRANSLUCENT_SURFACE_ALPHA
 
 /**
  * The one search field style, for apps and for languages: a filled rounded rectangle with a search
- * icon, a clear button while there is text, and [trailing] actions (the app list's sort menu).
+ * icon, a clear button while there is text, and [trailing] actions (the app list's sort menu). Its
+ * fill is translucent, as the island's is, so what scrolls on behind the header shows through it.
  *
  * Single line: pasted line breaks become spaces instead of breaking the match. [onFocused] runs when
  * the field is tapped (OK on a D-pad device), before the keyboard has finished opening.
@@ -118,7 +120,7 @@ fun SearchField(
 
     Surface(
         shape = FieldShape,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = TRANSLUCENT_SURFACE_ALPHA),
         border = if (areaFocused) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
         modifier = modifier
             .fillMaxWidth()
