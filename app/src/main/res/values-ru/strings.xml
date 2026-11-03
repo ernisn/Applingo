@@ -33,7 +33,6 @@
     <!-- Navigation -->
     <string name="nav_apps">Приложения</string>
     <string name="nav_managed">Настроенные</string>
-    <string name="managed_title">Настроенные приложения</string>
     <string name="nav_settings">Настройки</string>
 
     <!-- App list -->
@@ -67,21 +66,29 @@
     <string name="managed_empty">Нет настроенных приложений</string>
     <string name="managed_section_activity">Журнал</string>
     <string name="managed_activity_empty">Записей нет</string>
+    <string name="activity_search_hint">Поиск в журнале</string>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d отличается от системы</item>
+        <item quantity="few">%1$d отличаются от системы</item>
+        <item quantity="many">%1$d отличаются от системы</item>
+        <item quantity="other">%1$d отличаются от системы</item>
+    </plurals>
+    <plurals name="managed_uninstalled">
+        <item quantity="one">%1$d удалённое приложение</item>
+        <item quantity="few">%1$d удалённых приложения</item>
+        <item quantity="many">%1$d удалённых приложений</item>
+        <item quantity="other">%1$d удалённого приложения</item>
+    </plurals>
+    <string name="managed_uninstalled_title">Удалённые приложения</string>
+    <string name="managed_uninstalled_hint">Язык восстановится при повторной установке приложения.</string>
     <plurals name="managed_summary_count">
         <item quantity="one">%1$d приложение настроено</item>
         <item quantity="few">%1$d приложения настроены</item>
         <item quantity="many">%1$d приложений настроено</item>
         <item quantity="other">%1$d приложения настроено</item>
     </plurals>
-    <plurals name="managed_summary_attention">
-        <item quantity="one">%1$d требует внимания</item>
-        <item quantity="few">%1$d требуют внимания</item>
-        <item quantity="many">%1$d требуют внимания</item>
-        <item quantity="other">%1$d требуют внимания</item>
-    </plurals>
     <string name="managed_last_check_never">Ещё не проверялось</string>
     <string name="managed_last_check">Последняя проверка %1$s · восстановлено: %2$d · импортировано: %3$d</string>
-    <string name="managed_not_installed">Не установлено</string>
     <string name="activity_applied">Установлено: %1$s</string>
     <string name="activity_reset">Установлено «Как в системе»</string>
     <string name="activity_repaired">Восстановлено после изменения системой: %1$s → %2$s</string>
@@ -229,21 +236,30 @@
         <item quantity="other">Импортированы существующие настройки %1$d приложения</item>
     </plurals>
 
-    <!-- Undo countdown before a change is written -->
+    <!-- Undo and confirmations -->
     <string name="action_undo">Отменить</string>
-    <string name="pending_apply">Изменение языка: %1$s</string>
-    <string name="pending_reset">Установка «Как в системе»: %1$s</string>
-    <string name="pending_forget">Удаление записи: %1$s</string>
-    <plurals name="pending_batch_apply">
-        <item quantity="one">Изменение языка %1$d приложения</item>
-        <item quantity="few">Изменение языка %1$d приложений</item>
-        <item quantity="many">Изменение языка %1$d приложений</item>
-        <item quantity="other">Изменение языка %1$d приложения</item>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_remove_records">Удалить</string>
+    <string name="action_forget_all">Удалить все</string>
+    <string name="action_clear_log">Очистить журнал</string>
+    <string name="confirm_reset">Установить «Как в системе» для %1$s?</string>
+    <plurals name="confirm_reset_batch">
+        <item quantity="one">Установить «Как в системе» для %1$d приложения?</item>
+        <item quantity="few">Установить «Как в системе» для %1$d приложений?</item>
+        <item quantity="many">Установить «Как в системе» для %1$d приложений?</item>
+        <item quantity="other">Установить «Как в системе» для %1$d приложения?</item>
     </plurals>
-    <plurals name="pending_batch_reset">
-        <item quantity="one">Установка «Как в системе» для %1$d приложения</item>
-        <item quantity="few">Установка «Как в системе» для %1$d приложений</item>
-        <item quantity="many">Установка «Как в системе» для %1$d приложений</item>
-        <item quantity="other">Установка «Как в системе» для %1$d приложения</item>
+    <plurals name="confirm_remove_records">
+        <item quantity="one">Удалить %1$d запись?</item>
+        <item quantity="few">Удалить %1$d записи?</item>
+        <item quantity="many">Удалить %1$d записей?</item>
+        <item quantity="other">Удалить %1$d записи?</item>
+    </plurals>
+    <string name="confirm_clear_activity">Очистить журнал?</string>
+    <plurals name="message_records_removed">
+        <item quantity="one">Удалена %1$d запись</item>
+        <item quantity="few">Удалены %1$d записи</item>
+        <item quantity="many">Удалено %1$d записей</item>
+        <item quantity="other">Удалено %1$d записи</item>
     </plurals>
 </resources>

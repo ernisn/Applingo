@@ -37,6 +37,24 @@ data class UserMessage(val text: String)
 /** Outcome of writing a choice: applied right away, or saved until Shizuku connects. */
 enum class ApplyResult { Applied, Saved }
 
+/** One app's state before a change: its record, its system value then, and whether the change wrote it. */
+internal class Previous(val packageName: String, val record: DesiredLocale?, val system: List<String>?, val wrote: Boolean)
+
+/**
+ * A change already made to some apps, with what it replaced so it can be undone. [failed] apps were
+ * left as they were; [error] is the first failure's reason.
+ */
+class LocaleChange internal constructor(
+    val result: ApplyResult,
+    val failed: Int,
+    val error: String?,
+    internal val previous: List<Previous>,
+    internal val logged: List<ActivityEntry>,
+) {
+    /** Apps the change went through for. */
+    val changed: Int get() = previous.size
+}
+
 /** Result of one check of all apps against Applingo's record. */
 data class CheckSummary(
     val time: Long,
@@ -108,42 +126,85 @@ class LocaleController(
         reconcileRequests.tryEmit(Unit)
     }
 
-    suspend fun apply(packageName: String, locales: List<String>): ApplyResult {
+    /**
+     * Sets [locales] for each app (empty: back to the system language) right away. An app whose
+     * system value can't be written keeps its old record and counts as failed.
+     */
+    suspend fun change(packageNames: Collection<String>, locales: List<String>): LocaleChange {
         val chain = LocaleTags.normalize(locales)
         val service = shizuku.service.value
-        val before = _actual.value[packageName].orEmpty()
-        // Without the service a reset must stay recorded, or the next check would re-import the old value.
-        store.set(userId, packageName, chain, pendingReset = service == null)
-        if (service == null) return ApplyResult.Saved
-        try {
-            withContext(Dispatchers.IO) {
-                service.setApplicationLocales(packageName, userId, LocaleTags.join(chain))
-                readActual(service, listOf(packageName))
-            }
-        } catch (e: Exception) {
-            log.add(entry(ActivityKind.Failed, packageName, before, chain, e.message ?: e.toString()))
-            throw e
-        }
-        log.add(entry(if (chain.isEmpty()) ActivityKind.Reset else ActivityKind.Applied, packageName, before, chain))
-        return ApplyResult.Applied
-    }
-
-    /** Applies one chain to several apps; returns how many failed. */
-    suspend fun applyMany(packageNames: Collection<String>, locales: List<String>): Int {
-        var failed = 0
+        val records = store.current(userId)
+        val previous = mutableListOf<Previous>()
+        val logged = mutableListOf<ActivityEntry>()
+        var error: String? = null
         for (packageName in packageNames) {
+            val record = records[packageName]
+            val before = _actual.value[packageName]
+            // Without the service a reset must stay recorded, or the next check would re-import the old value.
+            store.set(userId, packageName, chain, pendingReset = service == null)
+            if (service == null) {
+                previous += Previous(packageName, record, before, wrote = false)
+                continue
+            }
             try {
-                apply(packageName, locales)
+                withContext(Dispatchers.IO) {
+                    service.setApplicationLocales(packageName, userId, LocaleTags.join(chain))
+                    readActual(service, listOf(packageName))
+                }
+                previous += Previous(packageName, record, before, wrote = true)
+                logged += entry(if (chain.isEmpty()) ActivityKind.Reset else ActivityKind.Applied, packageName, before.orEmpty(), chain)
             } catch (e: Exception) {
-                failed++
+                store.restore(userId, packageName, record)
+                val reason = e.message ?: e.toString()
+                error = error ?: reason
+                log.add(entry(ActivityKind.Failed, packageName, before.orEmpty(), chain, reason))
             }
         }
-        return failed
+        log.add(logged)
+        return LocaleChange(
+            result = if (service == null) ApplyResult.Saved else ApplyResult.Applied,
+            failed = packageNames.size - previous.size,
+            error = error,
+            previous = previous,
+            logged = logged,
+        )
     }
 
-    /** Drops the record of an app (e.g. one that was uninstalled) without touching the system. */
-    suspend fun forget(packageName: String) {
-        store.set(userId, packageName, emptyList())
+    /** Drops the records of apps (ones that were uninstalled) without touching the system. */
+    suspend fun forget(packageNames: Collection<String>): LocaleChange {
+        val records = store.current(userId)
+        val previous = packageNames.map { Previous(it, records[it], _actual.value[it], wrote = false) }
+        packageNames.forEach { store.set(userId, it, emptyList()) }
+        return LocaleChange(ApplyResult.Applied, failed = 0, error = null, previous = previous, logged = emptyList())
+    }
+
+    /**
+     * Takes [change] back: the records as they were, the system values it wrote, and its log entries.
+     * Returns false when a system value couldn't be written back (Shizuku gone meanwhile).
+     */
+    suspend fun undo(change: LocaleChange): Boolean {
+        val service = shizuku.service.value
+        var complete = true
+        for (previous in change.previous) {
+            store.restore(userId, previous.packageName, previous.record)
+            if (!previous.wrote) continue
+            if (service == null) {
+                complete = false
+                continue
+            }
+            try {
+                withContext(Dispatchers.IO) {
+                    val locales = previous.system ?: previous.record?.locales.orEmpty()
+                    service.setApplicationLocales(previous.packageName, userId, LocaleTags.join(locales))
+                    readActual(service, listOf(previous.packageName))
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Undo failed for ${previous.packageName}", e)
+                complete = false
+            }
+        }
+        log.remove(change.logged)
+        return complete
     }
 
     suspend fun forceStop(packageName: String) = withContext(Dispatchers.IO) {

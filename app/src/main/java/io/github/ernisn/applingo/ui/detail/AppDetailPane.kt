@@ -63,12 +63,16 @@ import io.github.ernisn.applingo.ui.AppIcon
 import io.github.ernisn.applingo.ui.AppRow
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.components.ConfirmDialog
 import io.github.ernisn.applingo.ui.components.FavoriteButton
 import io.github.ernisn.applingo.ui.components.FocusOnReturn
+import io.github.ernisn.applingo.ui.components.FrostedHeaderLayout
+import io.github.ernisn.applingo.ui.components.frostedTopAppBarColors
 import io.github.ernisn.applingo.ui.components.LanguageActions
 import io.github.ernisn.applingo.ui.components.LocalePriorityList
 import io.github.ernisn.applingo.ui.components.PackageLine
 import io.github.ernisn.applingo.ui.components.isDpadDevice
+import io.github.ernisn.applingo.ui.bottomChrome
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.theme.ControlShape
 
@@ -96,12 +100,22 @@ fun AppDetailPane(
     if (pickerOpen) pickerWasOpen = true
     FocusOnReturn(returned = pickerWasOpen && !pickerOpen, changeLanguageFocus) { pickerWasOpen = false }
 
-    Scaffold(
-        modifier = Modifier.safeArea(),
-        contentWindowInsets = WindowInsets(0),
-        topBar = {
+    var confirmReset by rememberSaveable { mutableStateOf(false) }
+    if (confirmReset && row != null) {
+        ConfirmDialog(
+            question = stringResource(R.string.confirm_reset, row.app.label),
+            confirmLabel = stringResource(R.string.action_reset_to_system),
+            onConfirm = { viewModel.applyLocales(packageName, emptyList()) },
+            onDismiss = { confirmReset = false },
+        )
+    }
+
+    FrostedHeaderLayout(
+        modifier = Modifier.safeArea(top = false, bottom = false).fillMaxSize(),
+        header = {
             TopAppBar(
                 windowInsets = WindowInsets(0),
+                colors = frostedTopAppBarColors(),
                 // Small: the header card right below names the app again, next to its icon.
                 title = {
                     Text(
@@ -120,33 +134,30 @@ fun AppDetailPane(
                 },
             )
         },
-    ) { padding ->
+    ) { headerHeight ->
         if (row == null) {
-            Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(Modifier.padding(top = headerHeight).fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(stringResource(R.string.detail_not_installed), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            return@Scaffold
+            return@FrostedHeaderLayout
         }
         // A plain scrolling column rather than a LazyColumn: there are only four cards, and a lazy list
         // pre-measures the off-screen ones while the pane is still animating its width, leaving them
         // stuck at that narrower size. Each app starts at the top: the caller keys this pane by app.
-        // The top bar's height goes outside the scrolling column, not inside: a column reaching up
-        // behind the bar starts above the back button, so D-pad focus search doesn't count it as
-        // below the button, and Down skipped the whole page.
+        // It scrolls on behind the top bar, frosted, except with a D-pad (see FrostedHeaderLayout).
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
-                .padding(top = padding.calculateTopPadding())
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                .padding(start = 16.dp, end = 16.dp, top = headerHeight, bottom = 16.dp + bottomChrome()),
         ) {
             HeaderCard(row, onToggleFavorite = { viewModel.toggleFavoriteApp(packageName) }, starFocus = starFocus)
             LanguageCard(
                 row = row,
                 systemLocales = viewModel.systemLocales,
                 onEdit = onEditLanguages,
-                onReset = { viewModel.applyLocales(packageName, emptyList()) },
+                onReset = { confirmReset = true },
                 changeLanguageFocus = changeLanguageFocus,
                 starFocus = starFocus,
             )

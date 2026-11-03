@@ -30,6 +30,7 @@ import io.github.ernisn.applingo.data.ApplyResult
 import io.github.ernisn.applingo.data.CheckSummary
 import io.github.ernisn.applingo.data.DesiredLocale
 import io.github.ernisn.applingo.data.ListPreferences
+import io.github.ernisn.applingo.data.LocaleChange
 import io.github.ernisn.applingo.data.Pinyin
 import io.github.ernisn.applingo.data.UserMessage
 import io.github.ernisn.applingo.data.loadAppExtras
@@ -51,6 +52,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.text.Collator
 import java.util.Locale
@@ -121,22 +124,34 @@ class AppSelection {
     }
 }
 
-/** One app Applingo keeps a record for; [row] is null when the app isn't installed. */
-data class ManagedApp(
-    val packageName: String,
-    val label: String,
-    val locales: List<String>,
-    val status: LocaleStatus,
-    val row: AppRow?,
-)
+/**
+ * A record kept for an app that isn't installed, so its languages come back if it is reinstalled.
+ * [label] is the name the activity log last saw, or the package name.
+ */
+data class UninstalledRecord(val packageName: String, val label: String, val locales: List<String>)
 
-/** A change counting down to being written; [startedAt] is in [SystemClock.uptimeMillis] time. */
-data class PendingChange(val id: Long, val text: String, val startedAt: Long, val durationMillis: Long)
+/**
+ * A change already written that Undo can still take back while its countdown runs; [startedAt] is in
+ * [SystemClock.uptimeMillis] time.
+ */
+data class UndoableChange(val id: Long, val text: String, val startedAt: Long, val durationMillis: Long)
 
 data class ManagedState(
-    val apps: List<ManagedApp> = emptyList(),
+    /** The app list has loaded; until then nothing can tell installed apps from uninstalled ones. */
+    val loaded: Boolean = false,
+    /** Installed apps with a language, after [query] and in the chosen order. */
+    val apps: List<AppRow> = emptyList(),
+    /** All installed apps with a language, and how many of them differ from the system. */
+    val configuredCount: Int = 0,
+    val mismatchCount: Int = 0,
+    val uninstalled: List<UninstalledRecord> = emptyList(),
+    /** Activity entries matching [query], newest first. */
     val activity: List<ActivityEntry> = emptyList(),
+    val hasActivity: Boolean = false,
+    val query: String = "",
+    val preferences: ListPreferences = ListPreferences(),
     val lastCheck: CheckSummary? = null,
+    /** Checking now, or rescanning apps first. */
     val checking: Boolean = false,
     val shizuku: ShizukuState = ShizukuState.Checking,
 )
@@ -152,23 +167,28 @@ class MainViewModel(private val app: Application, private val container: AppCont
     private val localMessages = Channel<UserMessage>(Channel.BUFFERED)
     private val pinyinCache = ConcurrentHashMap<String, List<String>>()
 
-    private val _pendingChange = MutableStateFlow<PendingChange?>(null)
-    private var pendingWrite: (suspend () -> Unit)? = null
-    private var pendingUndo: (() -> Unit)? = null
-    private var pendingTimer: Job? = null
-    private var lastPendingId = 0L
+    private val managedQuery = MutableStateFlow("")
+
+    private val _undoableChange = MutableStateFlow<UndoableChange?>(null)
+    private var undoTarget: UndoTarget? = null
+    private var undoTimer: Job? = null
+    private var lastUndoId = 0L
+    private var lastChangeRequest = 0L
+    /** Changes and their undos run one at a time, in the order they were asked for. */
+    private val changeMutex = Mutex()
 
     val messages: Flow<UserMessage> = merge(locales.messages, localMessages.receiveAsFlow())
 
-    /** The language change waiting out its undo period, if any. */
-    val pendingChange: StateFlow<PendingChange?> = _pendingChange.asStateFlow()
+    /** The change that can still be undone, if any. */
+    val undoableChange: StateFlow<UndoableChange?> = _undoableChange.asStateFlow()
 
     val settings: StateFlow<AppSettings> =
         container.preferences.settings.stateIn(viewModelScope, SharingStarted.Eagerly, AppSettings())
 
-    /** Long-press selections of the app list and of the Configured list. */
+    /** Long-press selections of the app list, the Configured list and its uninstalled apps. */
     val appSelection = AppSelection()
     val managedSelection = AppSelection()
+    val uninstalledSelection = AppSelection()
 
     /** Languages starred in the picker, in the order they were starred. */
     val favoriteLocales: StateFlow<List<String>> =
@@ -213,28 +233,32 @@ class MainViewModel(private val app: Application, private val container: AppCont
     }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppListState())
 
     val managedState: StateFlow<ManagedState> = combine(
-        combine(locales.desired, rows, locales.actual) { desired, rows, actual -> Triple(desired, rows, actual) },
+        combine(container.apps.apps, rows, locales.desired) { apps, rows, desired -> Triple(apps != null, rows, desired) },
+        combine(managedQuery, container.preferences.managedList) { query, preferences -> query to preferences },
         container.activityLog.entries,
-        locales.lastCheck,
-        locales.checking,
+        combine(locales.lastCheck, locales.checking, container.apps.refreshing) { lastCheck, checking, refreshing ->
+            lastCheck to (checking || refreshing)
+        },
         shizuku.state,
-    ) { (desired, rows, actual), activity, lastCheck, checking, shizukuState ->
-        val managed = buildMap {
-            desired.values.forEach { put(it.packageName, it) }
-        }.keys + rows.values.filter { it.locales.isNotEmpty() }.map { it.app.packageName }
+    ) { (loaded, rows, desired), (query, preferences), activity, (lastCheck, checking), shizukuState ->
+        val configured = rows.values.filter { it.locales.isNotEmpty() || it.app.packageName in desired }
+        // Until the app list has loaded, every app would look uninstalled.
+        val uninstalled = if (!loaded) emptyList() else desired.values.filter { it.packageName !in rows }.map { record ->
+            val label = activity.firstOrNull { it.packageName == record.packageName && it.label != record.packageName }?.label
+            UninstalledRecord(record.packageName, label ?: record.packageName, record.locales)
+        }
         val collator = Collator.getInstance(uiLocale())
+        val keywords = Search.keywords(query)
         ManagedState(
-            apps = managed.map { packageName ->
-                val row = rows[packageName]
-                ManagedApp(
-                    packageName = packageName,
-                    label = row?.app?.label ?: packageName,
-                    locales = row?.locales ?: desired[packageName]?.locales.orEmpty(),
-                    status = row?.status ?: if (actual.containsKey(packageName)) LocaleStatus.Applied else LocaleStatus.Pending,
-                    row = row,
-                )
-            }.sortedWith(compareBy<ManagedApp> { it.row == null }.thenBy { it.status != LocaleStatus.Mismatch }.thenBy(collator) { it.label }),
-            activity = activity,
+            loaded = loaded,
+            apps = if (keywords.isEmpty()) configured.sortedWith(ordering(preferences, collator)) else search(configured, keywords, collator),
+            configuredCount = configured.size,
+            mismatchCount = configured.count { it.status == LocaleStatus.Mismatch },
+            uninstalled = uninstalled.sortedWith(compareBy(collator) { it.label }),
+            activity = if (keywords.isEmpty()) activity else activity.filter { Search.score(keywords, it.searchTarget()) != null },
+            hasActivity = activity.isNotEmpty(),
+            query = query,
+            preferences = preferences,
             lastCheck = lastCheck,
             checking = checking,
             shizuku = shizukuState,
@@ -263,6 +287,14 @@ class MainViewModel(private val app: Application, private val container: AppCont
 
     fun updatePreferences(transform: (ListPreferences) -> ListPreferences) {
         viewModelScope.launch { container.preferences.update(transform) }
+    }
+
+    fun onManagedQueryChange(value: String) {
+        managedQuery.value = value
+    }
+
+    fun updateManagedOrder(sort: AppSort, reverseOrder: Boolean) {
+        viewModelScope.launch { container.preferences.updateManaged(sort, reverseOrder) }
     }
 
     fun refresh() {
@@ -313,41 +345,30 @@ class MainViewModel(private val app: Application, private val container: AppCont
 
     suspend fun extras(packageName: String): AppExtras = loadAppExtras(app, packageName)
 
-    /** Sets [chain] for the app (empty: back to the system language) once the undo period is over. */
+    /** Sets [chain] for the app (empty: back to the system language). */
     fun applyLocales(packageName: String, chain: List<String>) {
-        val label = rows.value[packageName]?.app?.label ?: packageName
-        afterUndoPeriod(app.getString(if (chain.isEmpty()) R.string.pending_reset else R.string.pending_apply, label)) {
-            val message = try {
-                when (locales.apply(packageName, chain)) {
-                    ApplyResult.Applied -> UserMessage(
-                        app.getString(if (chain.isEmpty()) R.string.message_reset else R.string.message_applied),
-                    )
-                    ApplyResult.Saved -> UserMessage(app.getString(R.string.message_saved_pending))
-                }
-            } catch (e: Exception) {
-                UserMessage(app.getString(R.string.message_apply_failed, e.message ?: e.toString()))
+        changeWithUndo {
+            val change = locales.change(listOf(packageName), chain)
+            when {
+                change.failed > 0 -> app.getString(R.string.message_apply_failed, change.error) to null
+                change.result == ApplyResult.Saved -> app.getString(R.string.message_saved_pending) to change
+                else -> app.getString(if (chain.isEmpty()) R.string.message_reset else R.string.message_applied) to change
             }
-            localMessages.send(message)
         }
     }
 
-    /** Applies [chain] to every app in [selection] once the undo period is over; undo selects them again. */
+    /** Applies [chain] to every app in [selection]; undo selects them again. */
     fun applyToSelection(selection: AppSelection, chain: List<String>) {
         val packages = selection.packages.value
         selection.clear()
-        val countdown = app.resources.getQuantityString(
-            if (chain.isEmpty()) R.plurals.pending_batch_reset else R.plurals.pending_batch_apply,
-            packages.size,
-            packages.size,
-        )
-        afterUndoPeriod(countdown, onUndo = { selection.selectAll(packages) }) {
-            val failed = locales.applyMany(packages, chain)
-            val text = if (failed == 0) {
-                app.resources.getQuantityString(R.plurals.message_batch_applied, packages.size, packages.size)
-            } else {
-                app.getString(R.string.message_batch_failed, failed, packages.size)
+        changeWithUndo(onUndo = { selection.selectAll(packages) }) {
+            val change = locales.change(packages, chain)
+            val text = when {
+                change.failed > 0 -> app.getString(R.string.message_batch_failed, change.failed, packages.size)
+                change.result == ApplyResult.Saved -> app.getString(R.string.message_saved_pending)
+                else -> app.resources.getQuantityString(R.plurals.message_batch_applied, packages.size, packages.size)
             }
-            localMessages.send(UserMessage(text))
+            text to change.takeIf { it.changed > 0 }
         }
     }
 
@@ -377,51 +398,64 @@ class MainViewModel(private val app: Application, private val container: AppCont
         }
     }
 
-    fun forget(packageName: String) {
-        afterUndoPeriod(app.getString(R.string.pending_forget, packageName)) { locales.forget(packageName) }
-    }
-
-    // --- Undo period -----------------------------------------------------------------------------
-    // Changing, clearing or forgetting a language is written only after a short countdown, so a
-    // mis-tap can be taken back before the previous choice is lost.
-
-    private fun afterUndoPeriod(text: String, onUndo: () -> Unit = {}, write: suspend () -> Unit) {
-        // One countdown at a time. The waiting change was confirmed too, so it is written now
-        // rather than dropped.
-        writePendingNow()
-        pendingWrite = write
-        pendingUndo = onUndo
-        _pendingChange.value = PendingChange(++lastPendingId, text, SystemClock.uptimeMillis(), UNDO_PERIOD_MS)
-        pendingTimer = viewModelScope.launch {
-            delay(UNDO_PERIOD_MS)
-            pendingTimer = null
-            writePendingNow()
+    /** Drops the records of uninstalled apps; undo selects them again where [selection] is given. */
+    fun forget(packageNames: Collection<String>, selection: AppSelection? = null) {
+        selection?.clear()
+        changeWithUndo(onUndo = { selection?.selectAll(packageNames) }) {
+            val change = locales.forget(packageNames)
+            app.resources.getQuantityString(R.plurals.message_records_removed, packageNames.size, packageNames.size) to change
         }
     }
 
-    fun undoPendingChange() {
-        pendingTimer?.cancel()
-        pendingTimer = null
-        pendingWrite = null
-        pendingUndo?.invoke()
-        pendingUndo = null
-        _pendingChange.value = null
+    // --- Undo ------------------------------------------------------------------------------------
+    // Every change is written right away, then offered for undo for a few seconds: Undo puts back the
+    // records, the system values and the log as they were.
+
+    private class UndoTarget(val change: LocaleChange, val onUndo: () -> Unit)
+
+    /**
+     * Runs [change] and, once it is done, shows the text it returns: with Undo when it returns a
+     * change to take back, as a plain message otherwise (it failed).
+     */
+    private fun changeWithUndo(onUndo: () -> Unit = {}, change: suspend () -> Pair<String, LocaleChange?>) {
+        val request = ++lastChangeRequest
+        // One undo at a time: a new change ends the chance to undo the previous one, which stays.
+        endUndo()
+        // App-wide scope: the change goes through even if this screen is closed for good meanwhile.
+        container.scope.launch {
+            val (text, done) = changeMutex.withLock { change() }
+            when {
+                done == null -> localMessages.send(UserMessage(text))
+                // A newer change has been asked for meanwhile and takes the snackbar.
+                request != lastChangeRequest -> Unit
+                else -> {
+                    val id = ++lastUndoId
+                    undoTarget = UndoTarget(done, onUndo)
+                    _undoableChange.value = UndoableChange(id, text, SystemClock.uptimeMillis(), UNDO_PERIOD_MS)
+                    undoTimer = viewModelScope.launch {
+                        delay(UNDO_PERIOD_MS)
+                        endUndo()
+                    }
+                }
+            }
+        }
     }
 
-    private fun writePendingNow() {
-        val write = pendingWrite ?: return
-        pendingTimer?.cancel()
-        pendingTimer = null
-        pendingWrite = null
-        pendingUndo = null
-        _pendingChange.value = null
-        // App-wide scope: the write goes through even if this screen is closed for good meanwhile.
-        container.scope.launch { write() }
+    fun undoChange() {
+        val target = undoTarget ?: return
+        endUndo()
+        target.onUndo()
+        container.scope.launch {
+            val complete = changeMutex.withLock { locales.undo(target.change) }
+            if (!complete) localMessages.send(UserMessage(app.getString(R.string.message_needs_shizuku)))
+        }
     }
 
-    /** Leaving Applingo during a countdown writes the change instead of silently dropping it. */
-    override fun onCleared() {
-        writePendingNow()
+    private fun endUndo() {
+        undoTimer?.cancel()
+        undoTimer = null
+        undoTarget = null
+        _undoableChange.value = null
     }
 
     fun clearActivity() {
@@ -531,22 +565,9 @@ class MainViewModel(private val app: Application, private val container: AppCont
     ): List<AppRow> {
         val keywords = Search.keywords(query)
         val collator = Collator.getInstance(uiLocale())
-        val byName = compareBy<AppRow, String>(collator) { it.app.label }
+        // Searching always covers every app, so nothing is hidden behind the type filter.
+        if (keywords.isNotEmpty()) return search(rows, keywords, collator)
 
-        if (keywords.isNotEmpty()) {
-            // Searching always covers every app, so nothing is hidden behind the type filter.
-            return rows.mapNotNull { row -> Search.score(keywords, row.searchTarget)?.let { row to it } }
-                .sortedWith(compareByDescending<Pair<AppRow, Int>> { it.second }.thenBy(collator) { it.first.app.label })
-                .map { it.first }
-        }
-
-        val sortOrder = when (preferences.sort) {
-            AppSort.Name -> byName
-            AppSort.RecentlySet -> compareByDescending<AppRow> { it.setAt }.then(byName)
-            AppSort.RecentlyUpdated -> compareByDescending<AppRow> { it.app.lastUpdateTime }.then(byName)
-            AppSort.RecentlyInstalled -> compareByDescending<AppRow> { it.app.firstInstallTime }.then(byName)
-        }
-        val ordering = if (preferences.reverseOrder) sortOrder.reversed() else sortOrder
         return rows.filter { row ->
             when (typeFilter) {
                 // Picked one by one, so all of them show whatever the other filters say.
@@ -561,7 +582,32 @@ class MainViewModel(private val app: Application, private val container: AppCont
                         (row.app.isEnabled || !preferences.enabledOnly)
                 }
             }
-        }.sortedWith(ordering)
+        }.sortedWith(ordering(preferences, collator))
+    }
+
+    /** Rows matching every keyword, most relevant first. */
+    private fun search(rows: Collection<AppRow>, keywords: List<String>, collator: Collator): List<AppRow> =
+        rows.mapNotNull { row -> Search.score(keywords, row.searchTarget)?.let { row to it } }
+            .sortedWith(compareByDescending<Pair<AppRow, Int>> { it.second }.thenBy(collator) { it.first.app.label })
+            .map { it.first }
+
+    private fun ordering(preferences: ListPreferences, collator: Collator): Comparator<AppRow> {
+        val byName = compareBy<AppRow, String>(collator) { it.app.label }
+        val sortOrder = when (preferences.sort) {
+            AppSort.Name -> byName
+            AppSort.RecentlySet -> compareByDescending<AppRow> { it.setAt }.then(byName)
+            AppSort.RecentlyUpdated -> compareByDescending<AppRow> { it.app.lastUpdateTime }.then(byName)
+            AppSort.RecentlyInstalled -> compareByDescending<AppRow> { it.app.firstInstallTime }.then(byName)
+        }
+        return if (preferences.reverseOrder) sortOrder.reversed() else sortOrder
+    }
+
+    /** An activity entry matches by app (name, pinyin, package) and by the languages it names. */
+    private fun ActivityEntry.searchTarget(): Search.Target {
+        val ui = uiLocale()
+        val localeTerms = (from + to).distinct().flatMap { listOf(it, LocaleTags.nativeName(it), LocaleTags.localizedName(it, ui)) }
+        val pinyin = pinyinCache.getOrPut(label) { Pinyin.spellings(label) }
+        return Search.Target(label, packageName, localeTerms, pinyin)
     }
 
     private fun uiLocale(): Locale = app.resources.configuration.locales[0]

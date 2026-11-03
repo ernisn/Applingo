@@ -33,7 +33,6 @@
     <!-- Navigation -->
     <string name="nav_apps">Aplikacje</string>
     <string name="nav_managed">Ustawione</string>
-    <string name="managed_title">Ustawione aplikacje</string>
     <string name="nav_settings">Ustawienia</string>
 
     <!-- App list -->
@@ -67,21 +66,29 @@
     <string name="managed_empty">Brak ustawionych aplikacji</string>
     <string name="managed_section_activity">Dziennik aktywności</string>
     <string name="managed_activity_empty">Brak aktywności</string>
+    <string name="activity_search_hint">Szukaj w dzienniku aktywności</string>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d różni się od systemu</item>
+        <item quantity="few">%1$d różnią się od systemu</item>
+        <item quantity="many">%1$d różni się od systemu</item>
+        <item quantity="other">%1$d różni się od systemu</item>
+    </plurals>
+    <plurals name="managed_uninstalled">
+        <item quantity="one">%1$d odinstalowana aplikacja</item>
+        <item quantity="few">%1$d odinstalowane aplikacje</item>
+        <item quantity="many">%1$d odinstalowanych aplikacji</item>
+        <item quantity="other">%1$d odinstalowanej aplikacji</item>
+    </plurals>
+    <string name="managed_uninstalled_title">Odinstalowane aplikacje</string>
+    <string name="managed_uninstalled_hint">Język zostanie przywrócony po ponownej instalacji aplikacji.</string>
     <plurals name="managed_summary_count">
         <item quantity="one">%1$d ustawiona aplikacja</item>
         <item quantity="few">%1$d ustawione aplikacje</item>
         <item quantity="many">%1$d ustawionych aplikacji</item>
         <item quantity="other">%1$d ustawionej aplikacji</item>
     </plurals>
-    <plurals name="managed_summary_attention">
-        <item quantity="one">%1$d wymaga uwagi</item>
-        <item quantity="few">%1$d wymagają uwagi</item>
-        <item quantity="many">%1$d wymaga uwagi</item>
-        <item quantity="other">%1$d wymaga uwagi</item>
-    </plurals>
     <string name="managed_last_check_never">Jeszcze nie sprawdzono</string>
     <string name="managed_last_check">Ostatnie sprawdzenie %1$s · przywrócono: %2$d · zaimportowano: %3$d</string>
-    <string name="managed_not_installed">Niezainstalowana</string>
     <string name="activity_applied">Ustawiono: %1$s</string>
     <string name="activity_reset">Ustawiono: jak w systemie</string>
     <string name="activity_repaired">Przywrócono po zmianie przez system: %1$s → %2$s</string>
@@ -229,21 +236,30 @@
         <item quantity="other">Zaimportowano istniejące ustawienia %1$d aplikacji</item>
     </plurals>
 
-    <!-- Undo countdown before a change is written -->
+    <!-- Undo and confirmations -->
     <string name="action_undo">Cofnij</string>
-    <string name="pending_apply">Zmiana języka: %1$s</string>
-    <string name="pending_reset">Ustawianie jak w systemie: %1$s</string>
-    <string name="pending_forget">Usuwanie wpisu: %1$s</string>
-    <plurals name="pending_batch_apply">
-        <item quantity="one">Zmiana języka %1$d aplikacji</item>
-        <item quantity="few">Zmiana języka %1$d aplikacji</item>
-        <item quantity="many">Zmiana języka %1$d aplikacji</item>
-        <item quantity="other">Zmiana języka %1$d aplikacji</item>
+    <string name="action_cancel">Anuluj</string>
+    <string name="action_remove_records">Usuń</string>
+    <string name="action_forget_all">Usuń wszystkie</string>
+    <string name="action_clear_log">Wyczyść dziennik aktywności</string>
+    <string name="confirm_reset">Ustawić jak w systemie: %1$s?</string>
+    <plurals name="confirm_reset_batch">
+        <item quantity="one">Ustawić jak w systemie dla %1$d aplikacji?</item>
+        <item quantity="few">Ustawić jak w systemie dla %1$d aplikacji?</item>
+        <item quantity="many">Ustawić jak w systemie dla %1$d aplikacji?</item>
+        <item quantity="other">Ustawić jak w systemie dla %1$d aplikacji?</item>
     </plurals>
-    <plurals name="pending_batch_reset">
-        <item quantity="one">Ustawianie jak w systemie dla %1$d aplikacji</item>
-        <item quantity="few">Ustawianie jak w systemie dla %1$d aplikacji</item>
-        <item quantity="many">Ustawianie jak w systemie dla %1$d aplikacji</item>
-        <item quantity="other">Ustawianie jak w systemie dla %1$d aplikacji</item>
+    <plurals name="confirm_remove_records">
+        <item quantity="one">Usunąć %1$d wpis?</item>
+        <item quantity="few">Usunąć %1$d wpisy?</item>
+        <item quantity="many">Usunąć %1$d wpisów?</item>
+        <item quantity="other">Usunąć %1$d wpisu?</item>
+    </plurals>
+    <string name="confirm_clear_activity">Wyczyścić dziennik aktywności?</string>
+    <plurals name="message_records_removed">
+        <item quantity="one">Usunięto %1$d wpis</item>
+        <item quantity="few">Usunięto %1$d wpisy</item>
+        <item quantity="many">Usunięto %1$d wpisów</item>
+        <item quantity="other">Usunięto %1$d wpisu</item>
     </plurals>
 </resources>

@@ -33,7 +33,6 @@
     <!-- Navigation -->
     <string name="nav_apps">App</string>
     <string name="nav_managed">Configurate</string>
-    <string name="managed_title">App configurate</string>
     <string name="nav_settings">Impostazioni</string>
 
     <!-- App list -->
@@ -66,19 +65,26 @@
     <string name="managed_empty">Nessuna app configurata</string>
     <string name="managed_section_activity">Registro attività</string>
     <string name="managed_activity_empty">Nessuna attività</string>
+    <string name="activity_search_hint">Cerca nel registro attività</string>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d differisce dal sistema</item>
+        <item quantity="many">%1$d differiscono dal sistema</item>
+        <item quantity="other">%1$d differiscono dal sistema</item>
+    </plurals>
+    <plurals name="managed_uninstalled">
+        <item quantity="one">%1$d app disinstallata</item>
+        <item quantity="many">%1$d app disinstallate</item>
+        <item quantity="other">%1$d app disinstallate</item>
+    </plurals>
+    <string name="managed_uninstalled_title">App disinstallate</string>
+    <string name="managed_uninstalled_hint">La lingua viene ripristinata se l’app viene reinstallata.</string>
     <plurals name="managed_summary_count">
         <item quantity="one">%1$d app configurata</item>
         <item quantity="many">%1$d app configurate</item>
         <item quantity="other">%1$d app configurate</item>
     </plurals>
-    <plurals name="managed_summary_attention">
-        <item quantity="one">%1$d richiede attenzione</item>
-        <item quantity="many">%1$d richiedono attenzione</item>
-        <item quantity="other">%1$d richiedono attenzione</item>
-    </plurals>
     <string name="managed_last_check_never">Non ancora controllato</string>
     <string name="managed_last_check">Ultimo controllo %1$s · %2$d ripristinate · %3$d importate</string>
-    <string name="managed_not_installed">Non installata</string>
     <string name="activity_applied">Impostata su %1$s</string>
     <string name="activity_reset">Impostata su Segui il sistema</string>
     <string name="activity_repaired">Ripristinata dopo una modifica del sistema: %1$s → %2$s</string>
@@ -220,19 +226,27 @@
         <item quantity="other">Importate le impostazioni esistenti di %1$d app</item>
     </plurals>
 
-    <!-- Undo countdown before a change is written -->
+    <!-- Undo and confirmations -->
     <string name="action_undo">Annulla</string>
-    <string name="pending_apply">Modifica della lingua di %1$s</string>
-    <string name="pending_reset">%1$s seguirà il sistema</string>
-    <string name="pending_forget">Rimozione della voce di %1$s</string>
-    <plurals name="pending_batch_apply">
-        <item quantity="one">Modifica della lingua di %1$d app</item>
-        <item quantity="many">Modifica della lingua di %1$d app</item>
-        <item quantity="other">Modifica della lingua di %1$d app</item>
+    <string name="action_cancel">Annulla</string>
+    <string name="action_remove_records">Rimuovi</string>
+    <string name="action_forget_all">Rimuovi tutte</string>
+    <string name="action_clear_log">Cancella registro attività</string>
+    <string name="confirm_reset">Impostare %1$s su Segui il sistema?</string>
+    <plurals name="confirm_reset_batch">
+        <item quantity="one">Impostare %1$d app su Segui il sistema?</item>
+        <item quantity="many">Impostare %1$d app su Segui il sistema?</item>
+        <item quantity="other">Impostare %1$d app su Segui il sistema?</item>
     </plurals>
-    <plurals name="pending_batch_reset">
-        <item quantity="one">%1$d app seguirà il sistema</item>
-        <item quantity="many">%1$d app seguiranno il sistema</item>
-        <item quantity="other">%1$d app seguiranno il sistema</item>
+    <plurals name="confirm_remove_records">
+        <item quantity="one">Rimuovere %1$d voce?</item>
+        <item quantity="many">Rimuovere %1$d voci?</item>
+        <item quantity="other">Rimuovere %1$d voci?</item>
+    </plurals>
+    <string name="confirm_clear_activity">Cancellare il registro attività?</string>
+    <plurals name="message_records_removed">
+        <item quantity="one">%1$d voce rimossa</item>
+        <item quantity="many">%1$d voci rimosse</item>
+        <item quantity="other">%1$d voci rimosse</item>
     </plurals>
 </resources>

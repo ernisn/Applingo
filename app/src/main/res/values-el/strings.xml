@@ -33,7 +33,6 @@
     <!-- Navigation -->
     <string name="nav_apps">Εφαρμογές</string>
     <string name="nav_managed">Ρυθμισμένες</string>
-    <string name="managed_title">Ρυθμισμένες εφαρμογές</string>
     <string name="nav_settings">Ρυθμίσεις</string>
 
     <!-- App list -->
@@ -65,17 +64,23 @@
     <string name="managed_empty">Καμία ρυθμισμένη εφαρμογή</string>
     <string name="managed_section_activity">Αρχείο δραστηριότητας</string>
     <string name="managed_activity_empty">Καμία δραστηριότητα</string>
+    <string name="activity_search_hint">Αναζήτηση στο αρχείο δραστηριότητας</string>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d διαφέρει από το σύστημα</item>
+        <item quantity="other">%1$d διαφέρουν από το σύστημα</item>
+    </plurals>
+    <plurals name="managed_uninstalled">
+        <item quantity="one">%1$d απεγκατεστημένη εφαρμογή</item>
+        <item quantity="other">%1$d απεγκατεστημένες εφαρμογές</item>
+    </plurals>
+    <string name="managed_uninstalled_title">Απεγκατεστημένες εφαρμογές</string>
+    <string name="managed_uninstalled_hint">Η γλώσσα επανέρχεται αν η εφαρμογή εγκατασταθεί ξανά.</string>
     <plurals name="managed_summary_count">
         <item quantity="one">%1$d ρυθμισμένη εφαρμογή</item>
         <item quantity="other">%1$d ρυθμισμένες εφαρμογές</item>
     </plurals>
-    <plurals name="managed_summary_attention">
-        <item quantity="one">%1$d χρειάζεται προσοχή</item>
-        <item quantity="other">%1$d χρειάζονται προσοχή</item>
-    </plurals>
     <string name="managed_last_check_never">Δεν έχει ελεγχθεί ακόμη</string>
     <string name="managed_last_check">Τελευταίος έλεγχος %1$s · επαναφορές: %2$d · εισαγωγές: %3$d</string>
-    <string name="managed_not_installed">Δεν είναι εγκατεστημένη</string>
     <string name="activity_applied">Ορίστηκε σε %1$s</string>
     <string name="activity_reset">Ορίστηκε όπως το σύστημα</string>
     <string name="activity_repaired">Επαναφορά μετά από αλλαγή του συστήματος: %1$s → %2$s</string>
@@ -211,17 +216,24 @@
         <item quantity="other">Εισαγωγή υπαρχουσών ρυθμίσεων %1$d εφαρμογών</item>
     </plurals>
 
-    <!-- Undo countdown before a change is written -->
+    <!-- Undo and confirmations -->
     <string name="action_undo">Αναίρεση</string>
-    <string name="pending_apply">Αλλαγή γλώσσας για %1$s</string>
-    <string name="pending_reset">Ορισμός του %1$s όπως το σύστημα</string>
-    <string name="pending_forget">Διαγραφή εγγραφής για %1$s</string>
-    <plurals name="pending_batch_apply">
-        <item quantity="one">Αλλαγή γλώσσας για %1$d εφαρμογή</item>
-        <item quantity="other">Αλλαγή γλώσσας για %1$d εφαρμογές</item>
+    <string name="action_cancel">Ακύρωση</string>
+    <string name="action_remove_records">Διαγραφή</string>
+    <string name="action_forget_all">Διαγραφή όλων</string>
+    <string name="action_clear_log">Εκκαθάριση αρχείου δραστηριότητας</string>
+    <string name="confirm_reset">Ορισμός του %1$s όπως το σύστημα;</string>
+    <plurals name="confirm_reset_batch">
+        <item quantity="one">Ορισμός %1$d εφαρμογής όπως το σύστημα;</item>
+        <item quantity="other">Ορισμός %1$d εφαρμογών όπως το σύστημα;</item>
     </plurals>
-    <plurals name="pending_batch_reset">
-        <item quantity="one">Ορισμός %1$d εφαρμογής όπως το σύστημα</item>
-        <item quantity="other">Ορισμός %1$d εφαρμογών όπως το σύστημα</item>
+    <plurals name="confirm_remove_records">
+        <item quantity="one">Διαγραφή %1$d εγγραφής;</item>
+        <item quantity="other">Διαγραφή %1$d εγγραφών;</item>
+    </plurals>
+    <string name="confirm_clear_activity">Εκκαθάριση του αρχείου δραστηριότητας;</string>
+    <plurals name="message_records_removed">
+        <item quantity="one">Διαγράφηκε %1$d εγγραφή</item>
+        <item quantity="other">Διαγράφηκαν %1$d εγγραφές</item>
     </plurals>
 </resources>

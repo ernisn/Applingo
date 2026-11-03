@@ -33,7 +33,6 @@
     <!-- Navigation -->
     <string name="nav_apps">Appar</string>
     <string name="nav_managed">Inställda</string>
-    <string name="managed_title">Inställda appar</string>
     <string name="nav_settings">Inställningar</string>
 
     <!-- App list -->
@@ -65,17 +64,23 @@
     <string name="managed_empty">Inga inställda appar</string>
     <string name="managed_section_activity">Aktivitetslogg</string>
     <string name="managed_activity_empty">Ingen aktivitet</string>
+    <string name="activity_search_hint">Sök i aktivitetsloggen</string>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d skiljer sig från systemet</item>
+        <item quantity="other">%1$d skiljer sig från systemet</item>
+    </plurals>
+    <plurals name="managed_uninstalled">
+        <item quantity="one">%1$d avinstallerad app</item>
+        <item quantity="other">%1$d avinstallerade appar</item>
+    </plurals>
+    <string name="managed_uninstalled_title">Avinstallerade appar</string>
+    <string name="managed_uninstalled_hint">Språket återställs om appen installeras igen.</string>
     <plurals name="managed_summary_count">
         <item quantity="one">%1$d app inställd</item>
         <item quantity="other">%1$d appar inställda</item>
     </plurals>
-    <plurals name="managed_summary_attention">
-        <item quantity="one">%1$d behöver åtgärdas</item>
-        <item quantity="other">%1$d behöver åtgärdas</item>
-    </plurals>
     <string name="managed_last_check_never">Inte kontrollerat än</string>
     <string name="managed_last_check">Senaste kontroll %1$s · %2$d återställda · %3$d importerade</string>
-    <string name="managed_not_installed">Inte installerad</string>
     <string name="activity_applied">Inställt på %1$s</string>
     <string name="activity_reset">Inställd på Följ systemet</string>
     <string name="activity_repaired">Återställd efter en systemändring: %1$s → %2$s</string>
@@ -211,17 +216,24 @@
         <item quantity="other">Befintliga inställningar för %1$d appar importerade</item>
     </plurals>
 
-    <!-- Undo countdown before a change is written -->
+    <!-- Undo and confirmations -->
     <string name="action_undo">Ångra</string>
-    <string name="pending_apply">Ändrar språk för %1$s</string>
-    <string name="pending_reset">Ställer in %1$s på Följ systemet</string>
-    <string name="pending_forget">Tar bort posten för %1$s</string>
-    <plurals name="pending_batch_apply">
-        <item quantity="one">Ändrar språk för %1$d app</item>
-        <item quantity="other">Ändrar språk för %1$d appar</item>
+    <string name="action_cancel">Avbryt</string>
+    <string name="action_remove_records">Ta bort</string>
+    <string name="action_forget_all">Ta bort alla</string>
+    <string name="action_clear_log">Rensa aktivitetsloggen</string>
+    <string name="confirm_reset">Ställ in %1$s på Följ systemet?</string>
+    <plurals name="confirm_reset_batch">
+        <item quantity="one">Ställ in %1$d app på Följ systemet?</item>
+        <item quantity="other">Ställ in %1$d appar på Följ systemet?</item>
     </plurals>
-    <plurals name="pending_batch_reset">
-        <item quantity="one">Ställer in %1$d app på Följ systemet</item>
-        <item quantity="other">Ställer in %1$d appar på Följ systemet</item>
+    <plurals name="confirm_remove_records">
+        <item quantity="one">Ta bort %1$d post?</item>
+        <item quantity="other">Ta bort %1$d poster?</item>
+    </plurals>
+    <string name="confirm_clear_activity">Rensa aktivitetsloggen?</string>
+    <plurals name="message_records_removed">
+        <item quantity="one">%1$d post borttagen</item>
+        <item quantity="other">%1$d poster borttagna</item>
     </plurals>
 </resources>

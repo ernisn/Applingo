@@ -81,6 +81,13 @@ class ActivityLog(context: Context) {
 
     suspend fun add(entry: ActivityEntry) = add(listOf(entry))
 
+    /** Drops [entries] again, for a change that was undone. */
+    suspend fun remove(entries: Collection<ActivityEntry>) {
+        if (entries.isEmpty()) return
+        val dropped = entries.toSet()
+        store.updateData { data -> ActivityEntries(data.entries.filterNot { it in dropped }) }
+    }
+
     suspend fun clear() {
         store.updateData { ActivityEntries() }
     }

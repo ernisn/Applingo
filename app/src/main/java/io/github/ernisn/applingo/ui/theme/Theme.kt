@@ -122,8 +122,9 @@ private val CondensedTypography = with(DefaultTypography) {
  * same corner-to-height ratio, so a 40 dp button and a 56 dp field read as one family.
  */
 
-/** Cards (Material's `medium` shape, which cards use by default). */
-val CardShape = RoundedCornerShape(20.dp)
+/** Cards (Material's `medium` shape, which cards use by default), and groups of rows drawn as cards. */
+val CardRadius = 20.dp
+val CardShape = RoundedCornerShape(CardRadius)
 
 /** Buttons, segmented rows and snackbars, about 40 dp tall. */
 val ControlShape = RoundedCornerShape(12.dp)

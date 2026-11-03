@@ -7,6 +7,12 @@ import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +25,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.displayCutout
@@ -35,10 +40,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -61,7 +62,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -103,6 +103,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ernisn.applingo.R
 import io.github.ernisn.applingo.ui.applist.AppListPane
 import io.github.ernisn.applingo.ui.components.FocusOnReturnRequest
+import io.github.ernisn.applingo.ui.components.backdropSource
+import io.github.ernisn.applingo.ui.components.isDpadDevice
+import io.github.ernisn.applingo.ui.components.rememberBackdrop
 import io.github.ernisn.applingo.ui.detail.AppDetailPane
 import io.github.ernisn.applingo.ui.detail.EmptyDetailPane
 import io.github.ernisn.applingo.ui.managed.ManagedPane
@@ -120,26 +123,33 @@ private const val RAIL_MIN_WIDTH_DP = 600
 private val PaneMargin = 16.dp
 
 /**
- * Space between content and a system bar or cutout beside it: what the rail leaves between the bar
- * or cutout on its side and its items (an 80 dp rail with 56 dp indicators), so both sides match.
+ * Space between content and a system bar or cutout beside it, and between the upright island and the
+ * first pane next to it.
  */
 private val BarGap = 12.dp
 
+/** The island's way out with a secondary page or selection, and back: about as long as the pane's. */
+private const val ISLAND_ENTER_MS = 300
+private const val ISLAND_EXIT_MS = 200
+
 /**
- * Top-level navigation: a bottom bar on narrow screens, a side rail on wider ones. Everything is drawn
- * edge to edge; each piece of content keeps clear of system bars, the display cutout and the keyboard
- * only where it actually overlaps them (see [safeArea]), so the background shows through instead of
- * black bars. Each destination keeps its own state (scroll position, open app) while switching.
+ * Top-level navigation: a floating island at the bottom of narrow screens, an upright one at the
+ * start of wider ones (see NavIsland.kt). Everything is drawn edge to edge; each piece of content
+ * keeps clear of system bars, the display cutout and the keyboard only where it actually overlaps
+ * them (see [safeArea]), so the background shows through instead of black bars, and lists run on
+ * behind the bottom bars with their ends padded clear (see [bottomChrome]). Each destination keeps
+ * its own state (scroll position, open app) while switching.
  */
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
     var destination by rememberSaveable { mutableStateOf(Destination.Apps) }
     val stateHolder = rememberSaveableStateHolder()
     val snackbarHostState = remember { SnackbarHostState() }
-    var bottomBarHeight by remember { mutableIntStateOf(0) }
+    val island = remember { NavIslandState() }
     val useRail = with(LocalDensity.current) {
         LocalWindowInfo.current.containerSize.width.toDp() >= RAIL_MIN_WIDTH_DP.dp
     }
+    island.atBottom = !useRail
 
     LaunchedEffect(Unit) {
         viewModel.messages.collect { message ->
@@ -147,26 +157,26 @@ fun MainScreen(viewModel: MainViewModel) {
         }
     }
 
-    val pendingChange by viewModel.pendingChange.collectAsStateWithLifecycle()
+    val undoableChange by viewModel.undoableChange.collectAsStateWithLifecycle()
     // Kept while the countdown fades out after it ends.
-    var lastPendingChange by remember { mutableStateOf<PendingChange?>(null) }
-    if (pendingChange != null && pendingChange != lastPendingChange) lastPendingChange = pendingChange
+    var lastUndoableChange by remember { mutableStateOf<UndoableChange?>(null) }
+    if (undoableChange != null && undoableChange != lastUndoableChange) lastUndoableChange = undoableChange
     // A countdown takes the place of whatever message is showing.
-    LaunchedEffect(pendingChange?.id) {
-        if (pendingChange != null) snackbarHostState.currentSnackbarData?.dismiss()
+    LaunchedEffect(undoableChange?.id) {
+        if (undoableChange != null) snackbarHostState.currentSnackbarData?.dismiss()
     }
 
-    // While a change counts down, D-pad Down from the bottom of a pane goes on to its Undo, the only
+    // While a change can be undone, D-pad Down from the bottom of a pane goes on to its Undo, the only
     // way to reach it: the snackbar lies over the panes, beside rather than below their controls.
     val undoFocus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     var undoFocused by remember { mutableStateOf(false) }
     // Once the countdown is over, undone or not, focus on Undo goes back up into the pane rather than
     // nowhere when the snackbar leaves.
-    LaunchedEffect(pendingChange == null) {
-        if (pendingChange == null && undoFocused) focusManager.moveFocus(FocusDirection.Up)
+    LaunchedEffect(undoableChange == null) {
+        if (undoableChange == null && undoFocused) focusManager.moveFocus(FocusDirection.Up)
     }
-    val downToUndo = if (pendingChange == null) {
+    val downToUndo = if (undoableChange == null) {
         Modifier
     } else {
         Modifier.onKeyEvent { event ->
@@ -178,6 +188,15 @@ fun MainScreen(viewModel: MainViewModel) {
 
     // Back from another destination returns to the app list before leaving Applingo.
     BackHandler(enabled = destination != Destination.Apps) { destination = Destination.Apps }
+
+    val islandItems = Destination.entries.map { item ->
+        NavIslandItem(
+            label = stringResource(item.label),
+            selected = item == destination,
+            onClick = { destination = item },
+            icon = { DestinationIcon(item) },
+        )
+    }
 
     val content: @Composable (Modifier) -> Unit = { modifier ->
         Box(modifier.then(downToUndo)) {
@@ -194,32 +213,37 @@ fun MainScreen(viewModel: MainViewModel) {
                     }
                 }
             }
-            // Messages keep clear of whatever covers the bottom of the content: next to the rail the
-            // system bar or the keyboard, above the bottom bar only the part of the keyboard that
-            // reaches past the bar.
-            val snackbarInsets = if (useRail) {
-                WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)
-            } else {
-                val keyboard = WindowInsets.ime.getBottom(LocalDensity.current)
-                WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
-                    .add(WindowInsets(bottom = (keyboard - bottomBarHeight).coerceAtLeast(0)))
-            }
-            Box(Modifier.align(Alignment.BottomCenter).windowInsetsPadding(snackbarInsets)) {
+            // Messages keep clear of whatever covers the bottom of the content: the system bar or the
+            // keyboard, and the island while it shows. They follow it as it leaves and comes back.
+            val density = LocalDensity.current
+            val bars = WindowInsets.systemBars.union(WindowInsets.displayCutout).getBottom(density)
+            val keyboard = WindowInsets.ime.getBottom(density)
+            val islandSpace = if (island.shown) island.heightPx + with(density) { IslandGap.roundToPx() } else 0
+            val snackbarBottom by animateDpAsState(
+                with(density) { maxOf(keyboard, bars + islandSpace).toDp() },
+                label = "snackbarBottom",
+            )
+            Box(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                    .padding(bottom = snackbarBottom),
+            ) {
                 AnimatedVisibility(
-                    visible = pendingChange != null,
+                    visible = undoableChange != null,
                     enter = fadeIn() + scaleIn(initialScale = 0.8f),
                     exit = fadeOut(),
                 ) {
-                    lastPendingChange?.let {
+                    lastUndoableChange?.let {
                         UndoCountdownSnackbar(
                             change = it,
-                            onUndo = viewModel::undoPendingChange,
+                            onUndo = viewModel::undoChange,
                             undoModifier = Modifier.focusRequester(undoFocus).onFocusChanged { state -> undoFocused = state.isFocused },
                         )
                     }
                 }
                 // Messages that arrive during a countdown wait until it is over.
-                if (pendingChange == null) {
+                if (undoableChange == null) {
                     SnackbarHost(hostState = snackbarHostState) { data ->
                         // The default inverse colors put a light snackbar on a dark theme.
                         Snackbar(
@@ -236,56 +260,63 @@ fun MainScreen(viewModel: MainViewModel) {
         }
     }
 
-    // The bars stay put behind the keyboard instead of riding on top of it and taking room from the
-    // content (a search with the keyboard open showed only a few results).
+    // The island stays put behind the keyboard instead of riding on top of it and taking room from
+    // the content (a search with the keyboard open showed only a few results).
     val barInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
 
-    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        if (useRail) {
-            Row(Modifier.fillMaxSize()) {
-                NavigationRail(
-                    windowInsets = barInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Vertical),
-                    modifier = Modifier.keepVerticalFocus(enabled = true),
-                ) {
-                    Spacer(Modifier.weight(1f))
-                    Destination.entries.forEach { item ->
-                        NavigationRailItem(
-                            selected = item == destination,
-                            onClick = { destination = item },
-                            icon = { DestinationIcon(item) },
-                            label = { Text(stringResource(item.label)) },
-                        )
+    ProvideNavIsland(island) {
+        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            if (useRail) {
+                Row(Modifier.fillMaxSize()) {
+                    // Beside the content, not over it: [IslandGap] from the bar or cutout on its side
+                    // ([BarGap] on a TV, clear of a bezel that may crop the picture), [BarGap] from
+                    // the first pane.
+                    val edgeGap = if (isDpadDevice()) BarGap else IslandGap
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .windowInsetsPadding(barInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Vertical))
+                            .padding(start = edgeGap, top = edgeGap, bottom = edgeGap),
+                    ) {
+                        NavIsland(islandItems, vertical = true, modifier = Modifier.keepVerticalFocus(enabled = true))
                     }
-                    Spacer(Modifier.weight(1f))
+                    // The bar or cutout at the far edge is kept out at this level, so side-by-side
+                    // panes split only the usable width and come out equally wide. The last pane's
+                    // content then sits [BarGap] from it, as the island does from the bar or cutout
+                    // on its side: the pane's own margin partly lies over the bar (see [safeArea])
+                    // instead of adding to it, which left a wide empty strip.
+                    val farEdge = WindowInsets.safeDrawing.only(WindowInsetsSides.End).asPaddingValues()
+                        .calculateEndPadding(LocalLayoutDirection.current)
+                    content(
+                        Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .padding(start = BarGap, end = (farEdge - (PaneMargin - BarGap)).coerceAtLeast(0.dp)),
+                    )
                 }
-                // Breathing room between the rail (whose labels can be as wide as it is) and the first
-                // pane. The bar or cutout at the far edge is kept out at this level, so side-by-side
-                // panes split only the usable width and come out equally wide. The last pane's
-                // content then sits [BarGap] from it, as the rail's items do from the bar or cutout
-                // on their side: its own margin partly lies over the bar (see [safeArea]) instead of
-                // adding to it, which left a wide empty strip.
-                val farEdge = WindowInsets.safeDrawing.only(WindowInsetsSides.End).asPaddingValues()
-                    .calculateEndPadding(LocalLayoutDirection.current)
-                content(
-                    Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .padding(start = 12.dp, end = (farEdge - (PaneMargin - BarGap)).coerceAtLeast(0.dp)),
-                )
-            }
-        } else {
-            Column(Modifier.fillMaxSize()) {
-                content(Modifier.weight(1f).fillMaxWidth())
-                NavigationBar(
-                    windowInsets = barInsets.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
-                    modifier = Modifier.onSizeChanged { bottomBarHeight = it.height },
-                ) {
-                    Destination.entries.forEach { item ->
-                        NavigationBarItem(
-                            selected = item == destination,
-                            onClick = { destination = item },
-                            icon = { DestinationIcon(item) },
-                            label = { Text(stringResource(item.label)) },
+            } else {
+                // Always there on top-level pages (lists end clear of it, see bottomChrome); it only
+                // leaves for secondary pages and selections, easing down out of sight and back up.
+                val backdrop = rememberBackdrop()
+                Box(Modifier.fillMaxSize()) {
+                    content(Modifier.fillMaxSize().backdropSource(backdrop))
+                    AnimatedVisibility(
+                        visible = island.shown,
+                        enter = slideInVertically(tween(ISLAND_ENTER_MS, easing = LinearOutSlowInEasing)) { it } +
+                            fadeIn(tween(ISLAND_ENTER_MS)),
+                        exit = slideOutVertically(tween(ISLAND_EXIT_MS, easing = FastOutLinearInEasing)) { it } +
+                            fadeOut(tween(ISLAND_EXIT_MS, easing = FastOutLinearInEasing)),
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .windowInsetsPadding(barInsets.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
+                            .padding(bottom = IslandGap),
+                    ) {
+                        NavIsland(
+                            islandItems,
+                            vertical = false,
+                            backdrop = backdrop,
+                            modifier = Modifier.onSizeChanged { island.heightPx = it.height },
                         )
                     }
                 }
@@ -311,9 +342,16 @@ fun MainScreen(viewModel: MainViewModel) {
  * At the sides, every pane keeps its content [PaneMargin] from its edges anyway. Content only needs
  * to stay [BarGap] clear of a bar or cutout, so the rest of that margin may lie over it (only
  * background shows there) and is not taken off again.
+ *
+ * Panes leave the bottom to their content ([bottom] false): lists run on behind the system bar and
+ * the floating island, ending in [bottomChrome] padding, and bottom bars reach down behind the
+ * system bar with their buttons above it. They leave the top to their header ([top] false), which
+ * keeps clear of the status bar itself while the list runs on behind both (see FrostedHeaderLayout).
  */
 @Composable
-fun Modifier.safeArea(): Modifier {
+fun Modifier.safeArea(top: Boolean = true, bottom: Boolean = true): Modifier {
+    val keepTop = top
+    val keepBottom = bottom
     val insets = WindowInsets.safeDrawing
     return layout { measurable, constraints ->
         if (!constraints.hasBoundedWidth || !constraints.hasBoundedHeight) {
@@ -336,10 +374,10 @@ fun Modifier.safeArea(): Modifier {
                 val y = origin.y.roundToInt()
                 val spare = (PaneMargin - BarGap).roundToPx()
                 left = (overlap(x, x + width, 0, insets.getLeft(this@layout, direction)) - spare).coerceAtLeast(0)
-                top = overlap(y, y + height, 0, insets.getTop(this@layout))
+                if (keepTop) top = overlap(y, y + height, 0, insets.getTop(this@layout))
                 right = (overlap(x, x + width, window.width - insets.getRight(this@layout, direction), window.width) - spare)
                     .coerceAtLeast(0)
-                bottom = overlap(y, y + height, window.height - insets.getBottom(this@layout), window.height)
+                if (keepBottom) bottom = overlap(y, y + height, window.height - insets.getBottom(this@layout), window.height)
             }
             val placeable = measurable.measure(
                 Constraints.fixed(
@@ -386,12 +424,12 @@ private fun AnimatedPaneScope.heldWhileExiting(value: Boolean): Boolean {
 }
 
 /**
- * A change about to be written: a ring running down with the seconds left, what will happen, and
- * Undo. Times come from the uptime clock, so the countdown stays right across rotation (the timer
- * itself runs in the ViewModel).
+ * A change just made: a ring running down with the seconds left to undo it, what happened, and Undo.
+ * Times come from the uptime clock, so the countdown stays right across rotation (the timer itself
+ * runs in the ViewModel).
  */
 @Composable
-private fun UndoCountdownSnackbar(change: PendingChange, onUndo: () -> Unit, undoModifier: Modifier) {
+private fun UndoCountdownSnackbar(change: UndoableChange, onUndo: () -> Unit, undoModifier: Modifier) {
     var now by remember { mutableLongStateOf(SystemClock.uptimeMillis()) }
     LaunchedEffect(change.id) {
         while (true) withFrameMillis { now = SystemClock.uptimeMillis() }
@@ -475,6 +513,9 @@ private fun AppsListDetail(
     val listHidden = navigator.scaffoldValue[ListDetailPaneScaffoldRole.List] == PaneAdaptedValue.Hidden
     val detailHidden = navigator.scaffoldValue[ListDetailPaneScaffoldRole.Detail] == PaneAdaptedValue.Hidden
     val pickerHidden = navigator.scaffoldValue[ListDetailPaneScaffoldRole.Extra] == PaneAdaptedValue.Hidden
+    // One pane at a time, an app's detail or the picker is a secondary page: the island makes way,
+    // as the pane starts moving in (the target) rather than once it is in place (scaffoldValue).
+    HideNavIsland(navigator.scaffoldState.targetState[ListDetailPaneScaffoldRole.List] == PaneAdaptedValue.Hidden)
 
     // Only after the list made way for the detail alone: when it made way for the picker beside the
     // detail, focus goes to Change language instead.

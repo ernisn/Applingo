@@ -33,7 +33,6 @@
     <!-- Navigation -->
     <string name="nav_apps">Apps</string>
     <string name="nav_managed">Ingesteld</string>
-    <string name="managed_title">Ingestelde apps</string>
     <string name="nav_settings">Instellingen</string>
 
     <!-- App list -->
@@ -65,17 +64,23 @@
     <string name="managed_empty">Geen ingestelde apps</string>
     <string name="managed_section_activity">Activiteitenlogboek</string>
     <string name="managed_activity_empty">Geen activiteit</string>
+    <string name="activity_search_hint">Activiteitenlogboek doorzoeken</string>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d wijkt af van het systeem</item>
+        <item quantity="other">%1$d wijken af van het systeem</item>
+    </plurals>
+    <plurals name="managed_uninstalled">
+        <item quantity="one">%1$d verwijderde app</item>
+        <item quantity="other">%1$d verwijderde apps</item>
+    </plurals>
+    <string name="managed_uninstalled_title">Verwijderde apps</string>
+    <string name="managed_uninstalled_hint">De taal wordt hersteld als de app opnieuw wordt geïnstalleerd.</string>
     <plurals name="managed_summary_count">
         <item quantity="one">%1$d app ingesteld</item>
         <item quantity="other">%1$d apps ingesteld</item>
     </plurals>
-    <plurals name="managed_summary_attention">
-        <item quantity="one">%1$d vraagt aandacht</item>
-        <item quantity="other">%1$d vragen aandacht</item>
-    </plurals>
     <string name="managed_last_check_never">Nog niet gecontroleerd</string>
     <string name="managed_last_check">Laatste controle %1$s · %2$d hersteld · %3$d geïmporteerd</string>
-    <string name="managed_not_installed">Niet geïnstalleerd</string>
     <string name="activity_applied">Ingesteld op %1$s</string>
     <string name="activity_reset">Ingesteld op Systeem volgen</string>
     <string name="activity_repaired">Hersteld na een systeemwijziging: %1$s → %2$s</string>
@@ -211,17 +216,24 @@
         <item quantity="other">Bestaande instellingen van %1$d apps geïmporteerd</item>
     </plurals>
 
-    <!-- Undo countdown before a change is written -->
+    <!-- Undo and confirmations -->
     <string name="action_undo">Ongedaan maken</string>
-    <string name="pending_apply">Taal van %1$s wordt gewijzigd</string>
-    <string name="pending_reset">%1$s wordt ingesteld op Systeem volgen</string>
-    <string name="pending_forget">Vermelding van %1$s wordt verwijderd</string>
-    <plurals name="pending_batch_apply">
-        <item quantity="one">Taal van %1$d app wordt gewijzigd</item>
-        <item quantity="other">Taal van %1$d apps wordt gewijzigd</item>
+    <string name="action_cancel">Annuleren</string>
+    <string name="action_remove_records">Verwijderen</string>
+    <string name="action_forget_all">Alles verwijderen</string>
+    <string name="action_clear_log">Activiteitenlogboek wissen</string>
+    <string name="confirm_reset">%1$s instellen op Systeem volgen?</string>
+    <plurals name="confirm_reset_batch">
+        <item quantity="one">%1$d app instellen op Systeem volgen?</item>
+        <item quantity="other">%1$d apps instellen op Systeem volgen?</item>
     </plurals>
-    <plurals name="pending_batch_reset">
-        <item quantity="one">%1$d app wordt ingesteld op Systeem volgen</item>
-        <item quantity="other">%1$d apps worden ingesteld op Systeem volgen</item>
+    <plurals name="confirm_remove_records">
+        <item quantity="one">%1$d vermelding verwijderen?</item>
+        <item quantity="other">%1$d vermeldingen verwijderen?</item>
+    </plurals>
+    <string name="confirm_clear_activity">Activiteitenlogboek wissen?</string>
+    <plurals name="message_records_removed">
+        <item quantity="one">%1$d vermelding verwijderd</item>
+        <item quantity="other">%1$d vermeldingen verwijderd</item>
     </plurals>
 </resources>

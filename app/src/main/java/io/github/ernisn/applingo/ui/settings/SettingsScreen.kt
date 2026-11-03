@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -62,8 +64,15 @@ import io.github.ernisn.applingo.data.SEED_COLORS
 import io.github.ernisn.applingo.data.ThemeMode
 import io.github.ernisn.applingo.shizuku.ShizukuState
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.bottomChrome
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.components.AppTypeFilterRow
+import io.github.ernisn.applingo.ui.components.FrostedHeaderLayout
+import io.github.ernisn.applingo.ui.components.GroupHeader
+import io.github.ernisn.applingo.ui.components.frostedTopAppBarColors
+import io.github.ernisn.applingo.ui.components.GroupPosition
+import io.github.ernisn.applingo.ui.components.groupedRow
+import io.github.ernisn.applingo.ui.components.groupedRowColors
 import io.github.ernisn.applingo.ui.components.ShizukuStatusCard
 import io.github.ernisn.applingo.ui.components.isDpadDevice
 import io.github.ernisn.applingo.ui.theme.ControlShape
@@ -107,13 +116,19 @@ fun SettingsScreen(viewModel: MainViewModel) {
         )
     }
 
-    Scaffold(
-        modifier = Modifier.safeArea(),
-        contentWindowInsets = WindowInsets(0),
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.nav_settings)) }, windowInsets = WindowInsets(0)) },
-    ) { padding ->
+    // The list scrolls on behind the title, frosted (see FrostedHeaderLayout).
+    FrostedHeaderLayout(
+        modifier = Modifier.safeArea(top = false, bottom = false).fillMaxSize(),
+        header = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.nav_settings)) },
+                windowInsets = WindowInsets(0),
+                colors = frostedTopAppBarColors(),
+            )
+        },
+    ) { headerHeight ->
         LazyColumn(
-            contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = 16.dp),
+            contentPadding = PaddingValues(top = headerHeight, bottom = 16.dp + bottomChrome()),
             modifier = Modifier.fillMaxSize(),
         ) {
             item {
@@ -125,198 +140,261 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
             }
             (listState.shizuku as? ShizukuState.Connected)?.let { connected ->
-                item {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.shizuku_title)) },
-                        supportingContent = {
-                            Text(
-                                stringResource(
-                                    R.string.settings_shizuku_connected,
-                                    if (connected.uid == 0) "root" else "adb",
-                                ),
+                group(
+                    title = null,
+                    rows = listOf(
+                        GroupRow("shizuku") { modifier ->
+                            ListItem(
+                                modifier = modifier,
+                                colors = groupedRowColors(),
+                                headlineContent = { Text(stringResource(R.string.shizuku_title)) },
+                                supportingContent = {
+                                    Text(
+                                        stringResource(
+                                            R.string.settings_shizuku_connected,
+                                            if (connected.uid == 0) "root" else "adb",
+                                        ),
+                                    )
+                                },
+                            )
+                        },
+                    ),
+                )
+            }
+
+            group(
+                R.string.settings_section_appearance,
+                buildList {
+                    add(
+                        GroupRow("theme") { modifier ->
+                            ListItem(
+                                modifier = modifier,
+                                colors = groupedRowColors(),
+                                headlineContent = { Text(stringResource(R.string.settings_theme)) },
+                                supportingContent = {
+                                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                                        val modes = ThemeMode.entries
+                                        modes.forEachIndexed { index, mode ->
+                                            SegmentedButton(
+                                                selected = settings.themeMode == mode,
+                                                onClick = { viewModel.updateSettings { it.copy(themeMode = mode) } },
+                                                shape = SegmentedButtonDefaults.itemShape(index, modes.size, baseShape = ControlShape),
+                                                icon = {},
+                                            ) {
+                                                Text(
+                                                    stringResource(
+                                                        when (mode) {
+                                                            ThemeMode.System -> R.string.settings_theme_system
+                                                            ThemeMode.Light -> R.string.settings_theme_light
+                                                            ThemeMode.Dark -> R.string.settings_theme_dark
+                                                        },
+                                                    ),
+                                                )
+                                            }
+                                        }
+                                    }
+                                },
                             )
                         },
                     )
-                }
-            }
-
-            sectionHeader(R.string.settings_section_appearance)
-            item {
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_theme)) },
-                    supportingContent = {
-                        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                            val modes = ThemeMode.entries
-                            modes.forEachIndexed { index, mode ->
-                                SegmentedButton(
-                                    selected = settings.themeMode == mode,
-                                    onClick = { viewModel.updateSettings { it.copy(themeMode = mode) } },
-                                    shape = SegmentedButtonDefaults.itemShape(index, modes.size, baseShape = ControlShape),
-                                    icon = {},
-                                ) {
-                                    Text(
-                                        stringResource(
-                                            when (mode) {
-                                                ThemeMode.System -> R.string.settings_theme_system
-                                                ThemeMode.Light -> R.string.settings_theme_light
-                                                ThemeMode.Dark -> R.string.settings_theme_dark
-                                            },
-                                        ),
-                                    )
-                                }
-                            }
-                        }
-                    },
-                )
-            }
-            item {
-                SwitchRow(
-                    title = stringResource(R.string.settings_dynamic_color),
-                    summary = stringResource(R.string.settings_dynamic_color_summary),
-                    checked = settings.dynamicColor,
-                    onCheckedChange = { value -> viewModel.updateSettings { it.copy(dynamicColor = value) } },
-                )
-            }
-            if (!settings.dynamicColor) {
-                item {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.settings_seed_color)) },
-                        supportingContent = {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                modifier = Modifier.padding(top = 8.dp),
-                            ) {
-                                SEED_COLORS.forEach { seed ->
-                                    ColorSwatch(
-                                        color = Color(seed),
-                                        selected = settings.seedColor == seed,
-                                        onClick = { viewModel.updateSettings { it.copy(seedColor = seed) } },
-                                    )
-                                }
-                            }
+                    add(
+                        GroupRow("dynamic_color") { modifier ->
+                            SwitchRow(
+                                modifier = modifier,
+                                title = stringResource(R.string.settings_dynamic_color),
+                                summary = stringResource(R.string.settings_dynamic_color_summary),
+                                checked = settings.dynamicColor,
+                                onCheckedChange = { value -> viewModel.updateSettings { it.copy(dynamicColor = value) } },
+                            )
                         },
                     )
-                }
-            }
-            item {
-                SwitchRow(
-                    title = stringResource(R.string.settings_pure_black),
-                    summary = stringResource(R.string.settings_pure_black_summary),
-                    checked = settings.pureBlack,
-                    onCheckedChange = { value -> viewModel.updateSettings { it.copy(pureBlack = value) } },
-                )
-            }
-            item {
-                SwitchRow(
-                    title = stringResource(R.string.settings_system_font),
-                    summary = stringResource(R.string.settings_system_font_summary),
-                    checked = settings.systemFont,
-                    onCheckedChange = { value -> viewModel.updateSettings { it.copy(systemFont = value) } },
-                )
-            }
-
-            sectionHeader(R.string.settings_section_keeping)
-            item {
-                SwitchRow(
-                    title = stringResource(R.string.settings_auto_repair),
-                    summary = stringResource(R.string.settings_auto_repair_summary),
-                    checked = settings.autoRepair,
-                    onCheckedChange = { value -> viewModel.updateSettings { it.copy(autoRepair = value) } },
-                )
-            }
-            item {
-                SwitchRow(
-                    title = stringResource(R.string.settings_background_check),
-                    summary = stringResource(R.string.settings_background_check_summary),
-                    checked = settings.backgroundCheck,
-                    onCheckedChange = { value -> viewModel.updateSettings { it.copy(backgroundCheck = value) } },
-                )
-            }
-            if (settings.backgroundCheck) {
-                item {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.settings_background_interval)) },
-                        supportingContent = {
-                            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                                BACKGROUND_CHECK_HOURS.forEachIndexed { index, hours ->
-                                    SegmentedButton(
-                                        selected = settings.backgroundCheckHours == hours,
-                                        onClick = { viewModel.updateSettings { it.copy(backgroundCheckHours = hours) } },
-                                        shape = SegmentedButtonDefaults.itemShape(index, BACKGROUND_CHECK_HOURS.size, baseShape = ControlShape),
-                                        icon = {},
-                                    ) { Text(stringResource(R.string.settings_hours, hours)) }
-                                }
-                            }
+                    if (!settings.dynamicColor) {
+                        add(
+                            GroupRow("seed_color") { modifier ->
+                                ListItem(
+                                    modifier = modifier,
+                                    colors = groupedRowColors(),
+                                    headlineContent = { Text(stringResource(R.string.settings_seed_color)) },
+                                    supportingContent = {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            modifier = Modifier.padding(top = 8.dp),
+                                        ) {
+                                            SEED_COLORS.forEach { seed ->
+                                                ColorSwatch(
+                                                    color = Color(seed),
+                                                    selected = settings.seedColor == seed,
+                                                    onClick = { viewModel.updateSettings { it.copy(seedColor = seed) } },
+                                                )
+                                            }
+                                        }
+                                    },
+                                )
+                            },
+                        )
+                    }
+                    add(
+                        GroupRow("pure_black") { modifier ->
+                            SwitchRow(
+                                modifier = modifier,
+                                title = stringResource(R.string.settings_pure_black),
+                                summary = stringResource(R.string.settings_pure_black_summary),
+                                checked = settings.pureBlack,
+                                onCheckedChange = { value -> viewModel.updateSettings { it.copy(pureBlack = value) } },
+                            )
                         },
                     )
-                }
-            }
+                    add(
+                        GroupRow("system_font") { modifier ->
+                            SwitchRow(
+                                modifier = modifier,
+                                title = stringResource(R.string.settings_system_font),
+                                summary = stringResource(R.string.settings_system_font_summary),
+                                checked = settings.systemFont,
+                                onCheckedChange = { value -> viewModel.updateSettings { it.copy(systemFont = value) } },
+                            )
+                        },
+                    )
+                },
+            )
 
-            sectionHeader(R.string.settings_section_app_list)
-            item {
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_start_filter)) },
-                    supportingContent = {
-                        AppTypeFilterRow(
-                            selected = settings.startFilter,
-                            onSelect = { filter -> viewModel.updateSettings { it.copy(startFilter = filter) } },
-                            modifier = Modifier.padding(top = 8.dp),
+            group(
+                R.string.settings_section_keeping,
+                buildList {
+                    add(
+                        GroupRow("auto_repair") { modifier ->
+                            SwitchRow(
+                                modifier = modifier,
+                                title = stringResource(R.string.settings_auto_repair),
+                                summary = stringResource(R.string.settings_auto_repair_summary),
+                                checked = settings.autoRepair,
+                                onCheckedChange = { value -> viewModel.updateSettings { it.copy(autoRepair = value) } },
+                            )
+                        },
+                    )
+                    add(
+                        GroupRow("background_check") { modifier ->
+                            SwitchRow(
+                                modifier = modifier,
+                                title = stringResource(R.string.settings_background_check),
+                                summary = stringResource(R.string.settings_background_check_summary),
+                                checked = settings.backgroundCheck,
+                                onCheckedChange = { value -> viewModel.updateSettings { it.copy(backgroundCheck = value) } },
+                            )
+                        },
+                    )
+                    if (settings.backgroundCheck) {
+                        add(
+                            GroupRow("background_interval") { modifier ->
+                                ListItem(
+                                    modifier = modifier,
+                                    colors = groupedRowColors(),
+                                    headlineContent = { Text(stringResource(R.string.settings_background_interval)) },
+                                    supportingContent = {
+                                        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                                            BACKGROUND_CHECK_HOURS.forEachIndexed { index, hours ->
+                                                SegmentedButton(
+                                                    selected = settings.backgroundCheckHours == hours,
+                                                    onClick = { viewModel.updateSettings { it.copy(backgroundCheckHours = hours) } },
+                                                    shape = SegmentedButtonDefaults.itemShape(index, BACKGROUND_CHECK_HOURS.size, baseShape = ControlShape),
+                                                    icon = {},
+                                                ) { Text(stringResource(R.string.settings_hours, hours)) }
+                                            }
+                                        }
+                                    },
+                                )
+                            },
+                        )
+                    }
+                },
+            )
+
+            group(
+                R.string.settings_section_app_list,
+                listOf(
+                    GroupRow("start_filter") { modifier ->
+                        ListItem(
+                            modifier = modifier,
+                            colors = groupedRowColors(),
+                            headlineContent = { Text(stringResource(R.string.settings_start_filter)) },
+                            supportingContent = {
+                                AppTypeFilterRow(
+                                    selected = settings.startFilter,
+                                    onSelect = { filter -> viewModel.updateSettings { it.copy(startFilter = filter) } },
+                                    modifier = Modifier.padding(top = 8.dp),
+                                )
+                            },
                         )
                     },
-                )
-            }
-            item {
-                SwitchRow(
-                    title = stringResource(R.string.settings_refresh_on_launch),
-                    // D-pad devices have no pull to refresh (see AppListPane).
-                    summary = stringResource(
-                        if (isDpadDevice()) R.string.settings_refresh_on_launch_summary_dpad else R.string.settings_refresh_on_launch_summary,
-                    ),
-                    checked = settings.refreshOnLaunch,
-                    onCheckedChange = { value -> viewModel.updateSettings { it.copy(refreshOnLaunch = value) } },
-                )
-            }
-
-            sectionHeader(R.string.settings_section_data)
-            item {
-                ClickRow(
-                    title = stringResource(R.string.settings_export),
-                    summary = stringResource(R.string.settings_export_summary),
-                    onClick = {
-                        val date = SimpleDateFormat("yyyyMMdd", Locale.ROOT).format(Date())
-                        exportLauncher.launch("applingo-locales-$date.json")
+                    GroupRow("refresh_on_launch") { modifier ->
+                        SwitchRow(
+                            modifier = modifier,
+                            title = stringResource(R.string.settings_refresh_on_launch),
+                            // D-pad devices have no pull to refresh (see AppListPane).
+                            summary = stringResource(
+                                if (isDpadDevice()) R.string.settings_refresh_on_launch_summary_dpad else R.string.settings_refresh_on_launch_summary,
+                            ),
+                            checked = settings.refreshOnLaunch,
+                            onCheckedChange = { value -> viewModel.updateSettings { it.copy(refreshOnLaunch = value) } },
+                        )
                     },
-                )
-            }
-            item {
-                ClickRow(
-                    title = stringResource(R.string.settings_import),
-                    summary = stringResource(R.string.settings_import_summary),
-                    onClick = { importLauncher.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
-                )
-            }
+                ),
+            )
 
-            sectionHeader(R.string.settings_section_about)
-            item {
-                ClickRow(
-                    title = stringResource(R.string.settings_own_language),
-                    summary = ownLocale?.let(LocaleTags::nativeName) ?: stringResource(R.string.locale_follow_system),
-                    onClick = { showLanguageDialog = true },
-                )
-            }
-            item {
-                ClickRow(
-                    title = stringResource(R.string.settings_source),
-                    summary = REPOSITORY_URL.removePrefix("https://"),
-                    onClick = { open(Intent(Intent.ACTION_VIEW, REPOSITORY_URL.toUri())) },
-                )
-            }
-            item {
-                ListItem(
-                    headlineContent = { Text(stringResource(R.string.settings_version)) },
-                    supportingContent = { Text(viewModel.versionName + " · " + stringResource(R.string.settings_license)) },
-                )
-            }
+            group(
+                R.string.settings_section_data,
+                listOf(
+                    GroupRow("export") { modifier ->
+                        ClickRow(
+                            modifier = modifier,
+                            title = stringResource(R.string.settings_export),
+                            summary = stringResource(R.string.settings_export_summary),
+                            onClick = {
+                                val date = SimpleDateFormat("yyyyMMdd", Locale.ROOT).format(Date())
+                                exportLauncher.launch("applingo-locales-$date.json")
+                            },
+                        )
+                    },
+                    GroupRow("import") { modifier ->
+                        ClickRow(
+                            modifier = modifier,
+                            title = stringResource(R.string.settings_import),
+                            summary = stringResource(R.string.settings_import_summary),
+                            onClick = { importLauncher.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
+                        )
+                    },
+                ),
+            )
+
+            group(
+                R.string.settings_section_about,
+                listOf(
+                    GroupRow("own_language") { modifier ->
+                        ClickRow(
+                            modifier = modifier,
+                            title = stringResource(R.string.settings_own_language),
+                            summary = ownLocale?.let(LocaleTags::nativeName) ?: stringResource(R.string.locale_follow_system),
+                            onClick = { showLanguageDialog = true },
+                        )
+                    },
+                    GroupRow("source") { modifier ->
+                        ClickRow(
+                            modifier = modifier,
+                            title = stringResource(R.string.settings_source),
+                            summary = REPOSITORY_URL.removePrefix("https://"),
+                            onClick = { open(Intent(Intent.ACTION_VIEW, REPOSITORY_URL.toUri())) },
+                        )
+                    },
+                    GroupRow("version") { modifier ->
+                        ListItem(
+                            modifier = modifier,
+                            colors = groupedRowColors(),
+                            headlineContent = { Text(stringResource(R.string.settings_version)) },
+                            supportingContent = { Text(viewModel.versionName + " · " + stringResource(R.string.settings_license)) },
+                        )
+                    },
+                ),
+            )
         }
     }
 }
@@ -355,9 +433,16 @@ private fun OwnLanguageDialog(
 }
 
 @Composable
-private fun SwitchRow(title: String, summary: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+private fun SwitchRow(
+    title: String,
+    summary: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     ListItem(
-        modifier = Modifier.clickable(role = Role.Switch) { onCheckedChange(!checked) },
+        modifier = modifier.clickable(role = Role.Switch) { onCheckedChange(!checked) },
+        colors = groupedRowColors(),
         headlineContent = { Text(title) },
         supportingContent = { Text(summary) },
         trailingContent = { Switch(checked = checked, onCheckedChange = null) },
@@ -365,9 +450,10 @@ private fun SwitchRow(title: String, summary: String, checked: Boolean, onChecke
 }
 
 @Composable
-private fun ClickRow(title: String, summary: String, onClick: () -> Unit) {
+private fun ClickRow(title: String, summary: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     ListItem(
-        modifier = Modifier.clickable(onClick = onClick),
+        modifier = modifier.clickable(onClick = onClick),
+        colors = groupedRowColors(),
         headlineContent = { Text(title) },
         supportingContent = { Text(summary) },
     )
@@ -391,13 +477,15 @@ private fun ColorSwatch(color: Color, selected: Boolean, onClick: () -> Unit) {
     }
 }
 
-private fun LazyListScope.sectionHeader(title: Int) {
-    item(key = "header:$title") {
-        Text(
-            text = stringResource(title),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 4.dp),
-        )
+/** One setting; [content] gets the modifier that draws its slice of the group's card. */
+private class GroupRow(val key: String, val content: @Composable (Modifier) -> Unit)
+
+/** A titled group of settings drawn as one card, like the cards of the detail page. */
+private fun LazyListScope.group(title: Int?, rows: List<GroupRow>) {
+    item(key = "header:${title ?: rows.first().key}") {
+        if (title != null) GroupHeader(stringResource(title)) else Spacer(Modifier.height(8.dp))
+    }
+    itemsIndexed(rows, key = { _, row -> row.key }) { index, row ->
+        row.content(Modifier.groupedRow(GroupPosition.of(index, rows.size)))
     }
 }

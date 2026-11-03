@@ -224,8 +224,9 @@ private fun PriorityRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
+            // Lighter than the card the list sits on, as if lifted off it.
             .background(
-                if (highlighted) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
+                if (highlighted) MaterialTheme.colorScheme.surfaceBright else Color.Transparent,
                 RoundedCornerShape(12.dp),
             )
             .padding(start = 4.dp, top = 4.dp, bottom = 4.dp),

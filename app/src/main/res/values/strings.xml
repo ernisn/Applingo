@@ -35,7 +35,6 @@
     <!-- Navigation -->
     <string name="nav_apps">Apps</string>
     <string name="nav_managed">Configured</string>
-    <string name="managed_title">Configured apps</string>
     <string name="nav_settings">Settings</string>
 
     <!-- App list -->
@@ -67,17 +66,23 @@
     <string name="managed_empty">No configured apps</string>
     <string name="managed_section_activity">Activity log</string>
     <string name="managed_activity_empty">No activity</string>
+    <string name="activity_search_hint">Search activity log</string>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d differs from the system</item>
+        <item quantity="other">%1$d differ from the system</item>
+    </plurals>
+    <plurals name="managed_uninstalled">
+        <item quantity="one">%1$d uninstalled app</item>
+        <item quantity="other">%1$d uninstalled apps</item>
+    </plurals>
+    <string name="managed_uninstalled_title">Uninstalled apps</string>
+    <string name="managed_uninstalled_hint">Languages are restored if the app is reinstalled.</string>
     <plurals name="managed_summary_count">
         <item quantity="one">%1$d app configured</item>
         <item quantity="other">%1$d apps configured</item>
     </plurals>
-    <plurals name="managed_summary_attention">
-        <item quantity="one">%1$d needs attention</item>
-        <item quantity="other">%1$d need attention</item>
-    </plurals>
     <string name="managed_last_check_never">Not checked yet</string>
     <string name="managed_last_check" tools:ignore="PluralsCandidate">Last check %1$s · %2$d restored · %3$d imported</string>
-    <string name="managed_not_installed">Not installed</string>
     <string name="activity_applied">Set to %1$s</string>
     <string name="activity_reset">Set to follow system</string>
     <string name="activity_repaired">Restored after a system change: %1$s → %2$s</string>
@@ -214,17 +219,24 @@
         <item quantity="other">Imported existing settings of %1$d apps</item>
     </plurals>
 
-    <!-- Undo countdown before a change is written -->
+    <!-- Undo and confirmations -->
     <string name="action_undo">Undo</string>
-    <string name="pending_apply">Changing the language of %1$s</string>
-    <string name="pending_reset">Setting %1$s to follow system</string>
-    <string name="pending_forget">Removing the record of %1$s</string>
-    <plurals name="pending_batch_apply">
-        <item quantity="one">Changing the language of %1$d app</item>
-        <item quantity="other">Changing the language of %1$d apps</item>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_remove_records">Remove</string>
+    <string name="action_forget_all">Remove all</string>
+    <string name="action_clear_log">Clear activity log</string>
+    <string name="confirm_reset">Set %1$s to follow system?</string>
+    <plurals name="confirm_reset_batch">
+        <item quantity="one">Set %1$d app to follow system?</item>
+        <item quantity="other">Set %1$d apps to follow system?</item>
     </plurals>
-    <plurals name="pending_batch_reset">
-        <item quantity="one">Setting %1$d app to follow system</item>
-        <item quantity="other">Setting %1$d apps to follow system</item>
+    <plurals name="confirm_remove_records">
+        <item quantity="one">Remove %1$d record?</item>
+        <item quantity="other">Remove %1$d records?</item>
+    </plurals>
+    <string name="confirm_clear_activity">Clear the activity log?</string>
+    <plurals name="message_records_removed">
+        <item quantity="one">Removed %1$d record</item>
+        <item quantity="other">Removed %1$d records</item>
     </plurals>
 </resources>

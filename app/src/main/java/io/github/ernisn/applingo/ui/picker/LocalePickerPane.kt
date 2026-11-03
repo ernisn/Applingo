@@ -4,17 +4,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
+
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -26,7 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -68,8 +70,15 @@ import io.github.ernisn.applingo.core.Search
 import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.components.EditablePriorityList
 import io.github.ernisn.applingo.ui.components.FavoriteButton
+import io.github.ernisn.applingo.ui.components.FrostedBarsLayout
+import io.github.ernisn.applingo.ui.components.frostedTopAppBarColors
+import io.github.ernisn.applingo.ui.components.GroupHeader
+import io.github.ernisn.applingo.ui.components.GroupPosition
+import io.github.ernisn.applingo.ui.components.groupedRow
+import io.github.ernisn.applingo.ui.components.groupedRowColors
 import io.github.ernisn.applingo.ui.components.SearchField
 import io.github.ernisn.applingo.ui.components.isDpadDevice
+import io.github.ernisn.applingo.ui.bottomChrome
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.theme.ControlShape
 import kotlinx.coroutines.launch
@@ -173,9 +182,10 @@ private fun LocalePickerContent(
 
     // Every language row: ticking it adds it to the chain, its star keeps it under Favorites.
     @Composable
-    fun Option(option: LocaleOption, indent: Boolean = false, group: LanguageGroup? = null) {
+    fun Option(option: LocaleOption, position: GroupPosition, indent: Boolean = false, group: LanguageGroup? = null) {
         OptionRow(
             option = option,
+            position = position,
             selected = option.tag in chain,
             onClick = { toggle(option.tag) },
             favorite = option.tag in favorites,
@@ -214,142 +224,158 @@ private fun LocalePickerContent(
     }
 
     Scaffold(
-        modifier = Modifier.safeArea(),
+        modifier = Modifier.safeArea(top = false, bottom = false),
         contentWindowInsets = WindowInsets(0),
-        topBar = {
-            TopAppBar(
-                windowInsets = WindowInsets(0),
-                title = {
-                    Text(text = title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                },
-                navigationIcon = {
-                    IconButton(onClick = onClose) {
-                        if (closeAsBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
-                        } else {
-                            Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.action_close))
-                        }
-                    }
-                },
-                actions = {
-                    if (dpad) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(end = 8.dp),
-                        ) { chainActions() }
-                    }
-                },
-            )
-        },
-        bottomBar = {
-            if (!dpad) {
-                Surface(tonalElevation = 3.dp) {
+    ) { padding ->
+        // The list scrolls on behind the top bar and the buttons, frosted, except with a D-pad, where
+        // it stays between them (see FrostedHeaderLayout). The buttons are the only bar at the bottom
+        // (the island leaves secondary pages), down behind the system bar and above it and the
+        // keyboard. Without them (D-pad) the list itself clears the system bar and the keyboard.
+        FrostedBarsLayout(
+            modifier = Modifier.padding(padding).fillMaxSize(),
+            footer = if (dpad) {
+                null
+            } else {
+                {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                     ) { chainActions() }
                 }
-            }
-        },
-    ) { padding ->
-        // The bars' heights go outside the list, not into its content padding: a list reaching behind
-        // the top bar starts above the back button, so D-pad focus search doesn't count it as below
-        // the button and Down skipped it (likewise Up from below).
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.padding(padding).fillMaxSize(),
-        ) {
-            // Header, chain and divider come before the search field: SEARCH_ITEM_INDEX counts them.
-            sectionHeader(R.string.picker_selected)
-            item(key = "chain") {
-                Column(Modifier.padding(horizontal = 16.dp)) {
-                    Text(
-                        text = stringResource(
-                            when {
-                                chain.isEmpty() -> R.string.picker_selected_empty
-                                !dpad -> R.string.picker_order_hint
-                                else -> R.string.picker_order_hint_dpad
-                            },
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 8.dp),
-                    )
-                    EditablePriorityList(chain = chain, systemLocales = viewModel.systemLocales)
-                }
-            }
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
-            item(key = "search") {
-                SearchField(
-                    query = query,
-                    onQueryChange = { query = it },
-                    placeholder = stringResource(R.string.picker_search_hint),
-                    onFocused = ::showSearchAtTop,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                        .onFocusChanged { searchFocused = it.hasFocus },
+            },
+            header = {
+                TopAppBar(
+                    windowInsets = WindowInsets(0),
+                    colors = frostedTopAppBarColors(),
+                    title = {
+                        Text(text = title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onClose) {
+                            if (closeAsBack) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                            } else {
+                                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.action_close))
+                            }
+                        }
+                    },
+                    actions = {
+                        if (dpad) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(end = 8.dp),
+                            ) { chainActions() }
+                        }
+                    },
                 )
-            }
+            },
+        ) { headerHeight, footerHeight ->
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(top = headerHeight, bottom = if (dpad) bottomChrome() else footerHeight),
+            ) {
+                // The chain comes before the search field: SEARCH_ITEM_INDEX counts it. A card like the
+                // detail page's language card, and every section below one card each.
+                item(key = "chain") {
+                    Column {
+                        GroupHeader(stringResource(R.string.picker_selected))
+                        Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    text = stringResource(
+                                        when {
+                                            chain.isEmpty() -> R.string.picker_selected_empty
+                                            !dpad -> R.string.picker_order_hint
+                                            else -> R.string.picker_order_hint_dpad
+                                        },
+                                    ),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                EditablePriorityList(chain = chain, systemLocales = viewModel.systemLocales)
+                            }
+                        }
+                    }
+                }
+                item(key = "search") {
+                    SearchField(
+                        query = query,
+                        onQueryChange = { query = it },
+                        placeholder = stringResource(R.string.picker_search_hint),
+                        onFocused = ::showSearchAtTop,
+                        modifier = Modifier
+                            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp)
+                            .onFocusChanged { searchFocused = it.hasFocus },
+                    )
+                }
 
-            val groups = catalog
-            val keywords = Search.keywords(query)
-            when {
-                groups == null -> item {
-                    Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-                keywords.isNotEmpty() -> {
-                    val matches = groups.asSequence()
-                        .flatMap { sequenceOf(it.language) + it.variants }
-                        .mapNotNull { option -> Search.score(keywords, option.searchTarget)?.let { option to it } }
-                        // Plain languages before their regional variants when equally relevant.
-                        .sortedWith(compareByDescending<Pair<LocaleOption, Int>> { it.second }.thenBy { it.first.tag.length })
-                        .map { it.first }
-                        .take(MAX_RESULTS)
-                        .toList()
-                    if (matches.isEmpty()) {
-                        item {
-                            Text(
-                                stringResource(R.string.list_no_results),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(16.dp),
-                            )
+                val groups = catalog
+                val keywords = Search.keywords(query)
+                when {
+                    groups == null -> item {
+                        Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
                         }
                     }
-                    items(matches, key = { "search:${it.tag}" }) { option -> Option(option) }
-                    // Room to scroll the field to the top even when only a few languages match.
-                    item(key = "search-room") { Spacer(Modifier.fillParentMaxHeight()) }
-                }
-                else -> {
-                    // First, right below the field: the point is not having to search for them again.
-                    // Apps can declare dozens of languages, which would push them far down.
-                    sectionHeader(R.string.picker_section_favorites)
-                    if (favoriteOptions.isEmpty()) {
-                        item(key = "favorites-hint") {
-                            Text(
-                                text = stringResource(R.string.picker_favorites_empty),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                            )
+                    keywords.isNotEmpty() -> {
+                        val matches = groups.asSequence()
+                            .flatMap { sequenceOf(it.language) + it.variants }
+                            .mapNotNull { option -> Search.score(keywords, option.searchTarget)?.let { option to it } }
+                            // Plain languages before their regional variants when equally relevant.
+                            .sortedWith(compareByDescending<Pair<LocaleOption, Int>> { it.second }.thenBy { it.first.tag.length })
+                            .map { it.first }
+                            .take(MAX_RESULTS)
+                            .toList()
+                        if (matches.isEmpty()) {
+                            item {
+                                Text(
+                                    stringResource(R.string.list_no_results),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp),
+                                )
+                            }
+                        } else {
+                            item(key = "search-top") { Spacer(Modifier.height(12.dp)) }
                         }
+                        itemsIndexed(matches, key = { _, option -> "search:${option.tag}" }) { index, option ->
+                            Option(option, GroupPosition.of(index, matches.size))
+                        }
+                        // Room to scroll the field to the top even when only a few languages match.
+                        item(key = "search-room") { Spacer(Modifier.fillParentMaxHeight()) }
                     }
-                    items(favoriteOptions, key = { "favorite:${it.tag}" }) { option -> Option(option) }
-                    if (declaredOptions.isNotEmpty()) {
-                        sectionHeader(R.string.picker_section_declared)
-                        items(declaredOptions, key = { "declared:${it.tag}" }) { option -> Option(option) }
-                    }
-                    sectionHeader(R.string.picker_section_system)
-                    items(systemOptions, key = { "system:${it.tag}" }) { option -> Option(option) }
-                    sectionHeader(R.string.picker_section_all)
-                    groups.forEach { group ->
-                        val language = group.language
-                        item(key = "all:${language.tag}") { Option(language, group = group) }
-                        if (language.tag in expanded) {
-                            items(group.variants, key = { "all:${it.tag}" }) { option -> Option(option, indent = true) }
+                    else -> {
+                        // First, right below the field: the point is not having to search for them again.
+                        // Apps can declare dozens of languages, which would push them far down.
+                        sectionHeader(R.string.picker_section_favorites)
+                        if (favoriteOptions.isEmpty()) {
+                            item(key = "favorites-hint") {
+                                Text(
+                                    text = stringResource(R.string.picker_favorites_empty),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier
+                                        .groupedRow(GroupPosition.Only)
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                )
+                            }
+                        }
+                        options("favorite", favoriteOptions) { option, position -> Option(option, position) }
+                        if (declaredOptions.isNotEmpty()) {
+                            sectionHeader(R.string.picker_section_declared)
+                            options("declared", declaredOptions) { option, position -> Option(option, position) }
+                        }
+                        sectionHeader(R.string.picker_section_system)
+                        options("system", systemOptions) { option, position -> Option(option, position) }
+                        sectionHeader(R.string.picker_section_all)
+                        // Languages and their shown regions make one card.
+                        val all = groups.flatMap { group ->
+                            listOf(group.language to group) +
+                                if (group.language.tag in expanded) group.variants.map { it to null } else emptyList()
+                        }
+                        itemsIndexed(all, key = { _, (option, _) -> "all:${option.tag}" }) { index, (option, group) ->
+                            Option(option, GroupPosition.of(index, all.size), indent = group == null, group = group)
                         }
                     }
                 }
@@ -359,19 +385,24 @@ private fun LocalePickerContent(
 }
 
 private fun LazyListScope.sectionHeader(title: Int) {
-    item(key = "header:$title") {
-        Text(
-            text = stringResource(title),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
-        )
+    item(key = "header:$title") { GroupHeader(stringResource(title)) }
+}
+
+/** One section's languages as one card. */
+private fun LazyListScope.options(
+    section: String,
+    options: List<LocaleOption>,
+    row: @Composable (LocaleOption, GroupPosition) -> Unit,
+) {
+    itemsIndexed(options, key = { _, option -> "$section:${option.tag}" }) { index, option ->
+        row(option, GroupPosition.of(index, options.size))
     }
 }
 
 @Composable
 private fun OptionRow(
     option: LocaleOption,
+    position: GroupPosition,
     selected: Boolean,
     onClick: () -> Unit,
     favorite: Boolean,
@@ -383,8 +414,10 @@ private fun OptionRow(
 ) {
     ListItem(
         modifier = Modifier
+            .groupedRow(position)
             .clickable(onClick = onClick)
             .padding(start = if (indent) 24.dp else 0.dp),
+        colors = groupedRowColors(),
         leadingContent = { Checkbox(checked = selected, onCheckedChange = null) },
         headlineContent = { Text(option.nativeName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         supportingContent = {
@@ -411,4 +444,4 @@ private fun OptionRow(
 private const val MAX_RESULTS = 100
 
 /** Position of the search field in the picker's list. */
-private const val SEARCH_ITEM_INDEX = 3
+private const val SEARCH_ITEM_INDEX = 1

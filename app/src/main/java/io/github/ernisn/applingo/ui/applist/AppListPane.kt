@@ -61,12 +61,18 @@ import io.github.ernisn.applingo.ui.AppIcon
 import io.github.ernisn.applingo.ui.AppRow
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.HideNavIsland
+import io.github.ernisn.applingo.ui.bottomChrome
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.components.AppTypeFilterRow
 import io.github.ernisn.applingo.ui.components.FocusOnReturnRequest
+import io.github.ernisn.applingo.ui.components.FrostedBarsLayout
+import io.github.ernisn.applingo.ui.components.FrostedPullToRefresh
 import io.github.ernisn.applingo.ui.components.FocusRowOnReturn
 import io.github.ernisn.applingo.ui.components.FocusWhenPending
 import io.github.ernisn.applingo.ui.components.PackageLine
+import io.github.ernisn.applingo.ui.components.rememberRevealer
+import io.github.ernisn.applingo.ui.components.revealable
 import io.github.ernisn.applingo.ui.components.SelectionActionsBar
 import io.github.ernisn.applingo.ui.components.SelectionTopBar
 import io.github.ernisn.applingo.ui.components.SearchField
@@ -119,6 +125,7 @@ fun AppListPane(
     val selecting = selectionStarted || selection.isNotEmpty()
     var showBatchPicker by rememberSaveable { mutableStateOf(false) }
     BackHandler(enabled = selecting) { viewModel.appSelection.clear() }
+    HideNavIsland(selecting)
     val dpad = isDpadDevice()
     val batchActions = @Composable { underTopBar: Boolean ->
         SelectionActionsBar(
@@ -139,61 +146,64 @@ fun AppListPane(
     }
 
     Scaffold(
-        modifier = Modifier.safeArea(),
+        modifier = Modifier.safeArea(top = false, bottom = false),
         contentWindowInsets = WindowInsets(0),
-        topBar = {
-            if (selecting) {
-                Column {
+    ) { padding ->
+        // A search covers every app, which the row shows by switching to All while it is disabled.
+        val searching = state.query.isNotBlank()
+        // Everything above the list stays put and the list scrolls on behind it, frosted.
+        FrostedBarsLayout(
+            footer = if (selecting && !dpad) { { batchActions(false) } } else null,
+            modifier = Modifier.padding(padding).fillMaxSize(),
+            tint = if (selecting) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.background,
+            header = {
+                if (selecting) {
                     SelectionTopBar(
                         count = selection.size,
                         onClose = viewModel.appSelection::clear,
                         onSelectAll = { viewModel.appSelection.selectAll(state.rows.map { it.app.packageName }) },
                     )
                     if (dpad) batchActions(true)
+                } else {
+                    SearchHeader(
+                        query = queryText,
+                        onQueryChange = { value ->
+                            queryText = value
+                            viewModel.onQueryChange(value)
+                        },
+                        preferences = state.preferences,
+                        filtersApply = state.typeFilter != AppTypeFilter.Favorites,
+                        onPreferencesChange = { next -> viewModel.updatePreferences { next } },
+                        onSelectApps = {
+                            selectFocusAt = listState.firstVisibleItemIndex
+                            viewModel.appSelection.start()
+                        },
+                        onRescan = if (dpad) viewModel::refresh else null,
+                    )
                 }
-            } else {
-                SearchHeader(
-                    query = queryText,
-                    onQueryChange = { value ->
-                        queryText = value
-                        viewModel.onQueryChange(value)
-                    },
-                    preferences = state.preferences,
-                    filtersApply = state.typeFilter != AppTypeFilter.Favorites,
-                    onPreferencesChange = { next -> viewModel.updatePreferences { next } },
-                    onSelectApps = {
-                        selectFocusAt = listState.firstVisibleItemIndex
-                        viewModel.appSelection.start()
-                    },
-                    onRescan = if (dpad) viewModel::refresh else null,
+                ShizukuStatusCard(
+                    state = state.shizuku,
+                    onRequestPermission = viewModel::requestShizukuPermission,
+                    onRetry = viewModel::retryShizuku,
+                    shizukuLaunchIntent = viewModel::shizukuLaunchIntent,
                 )
-            }
-        },
-        bottomBar = {
-            if (selecting && !dpad) batchActions(false)
-        },
-    ) { padding ->
-        Column(Modifier.padding(padding).fillMaxSize()) {
-            ShizukuStatusCard(
-                state = state.shizuku,
-                onRequestPermission = viewModel::requestShizukuPermission,
-                onRetry = viewModel::retryShizuku,
-                shizukuLaunchIntent = viewModel::shizukuLaunchIntent,
-            )
-            // A search covers every app, which the row shows by switching to All while it is disabled.
-            val searching = state.query.isNotBlank()
-            AppTypeFilterRow(
-                selected = if (searching) AppTypeFilter.All else state.typeFilter,
-                onSelect = viewModel::setTypeFilter,
-                enabled = !searching,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
-            )
+                AppTypeFilterRow(
+                    selected = if (searching) AppTypeFilter.All else state.typeFilter,
+                    onSelect = viewModel::setTypeFilter,
+                    enabled = !searching,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                )
+            },
+        ) { headerHeight, footerHeight ->
             val listContent = @Composable {
                 when {
-                    state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    state.loading -> Box(Modifier.fillMaxSize().padding(top = headerHeight), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
-                    state.rows.isEmpty() -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                    state.rows.isEmpty() -> Box(
+                        Modifier.fillMaxSize().padding(top = headerHeight).padding(24.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
                         Text(
                             text = stringResource(
                                 when {
@@ -210,7 +220,11 @@ fun AppListPane(
                     else -> LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 16.dp),
+                        // Runs on behind the header, the island and the system bar; its ends clear them.
+                        contentPadding = PaddingValues(
+                            top = headerHeight,
+                            bottom = 16.dp + if (selecting && !dpad) footerHeight else bottomChrome(),
+                        ),
                     ) {
                         itemsIndexed(state.rows, key = { _, row -> row.app.packageName }) { index, row ->
                             val packageName = row.app.packageName
@@ -242,10 +256,10 @@ fun AppListPane(
                     }
                 }
             } else {
-                PullToRefreshBox(
-                    isRefreshing = state.refreshing,
+                FrostedPullToRefresh(
+                    refreshing = state.refreshing,
                     onRefresh = viewModel::refresh,
-                    modifier = Modifier.fillMaxSize(),
+                    headerHeight = headerHeight,
                 ) { listContent() }
             }
         }
@@ -280,19 +294,11 @@ private fun SearchHeader(
                 Icon(painterResource(R.drawable.ic_sort), contentDescription = stringResource(R.string.action_sort))
             }
             DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, shape = FieldShape) {
-                AppSort.entries.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(stringResource(option.labelRes())) },
-                        leadingIcon = { RadioButton(selected = option == preferences.sort, onClick = null) },
-                        onClick = {
-                            onPreferencesChange(preferences.copy(sort = option))
-                            menuOpen = false
-                        },
-                    )
-                }
-                CheckItem(R.string.sort_reverse, preferences.reverseOrder) {
-                    onPreferencesChange(preferences.copy(reverseOrder = it))
-                }
+                SortMenuItems(
+                    preferences = preferences,
+                    onChange = onPreferencesChange,
+                    onPicked = { menuOpen = false },
+                )
                 HorizontalDivider()
                 CheckItem(R.string.filter_launchable_only, preferences.launchableOnly, enabled = filtersApply) {
                     onPreferencesChange(preferences.copy(launchableOnly = it))
@@ -301,27 +307,36 @@ private fun SearchHeader(
                     onPreferencesChange(preferences.copy(enabledOnly = it))
                 }
                 HorizontalDivider()
-                // The empty icons line the labels up with the radio buttons and checkboxes above.
                 if (onRescan != null) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.action_rescan_apps)) },
-                        leadingIcon = { Spacer(Modifier.size(24.dp)) },
-                        onClick = {
-                            menuOpen = false
-                            onRescan()
-                        },
-                    )
-                }
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.action_select_apps)) },
-                    leadingIcon = { Spacer(Modifier.size(24.dp)) },
-                    onClick = {
+                    ActionItem(R.string.action_rescan_apps) {
                         menuOpen = false
-                        onSelectApps()
-                    },
-                )
+                        onRescan()
+                    }
+                }
+                ActionItem(R.string.action_select_apps) {
+                    menuOpen = false
+                    onSelectApps()
+                }
             }
         }
+    }
+}
+
+/** The orders and Reverse order, for the app list's menu and the Configured list's. */
+@Composable
+internal fun SortMenuItems(preferences: ListPreferences, onChange: (ListPreferences) -> Unit, onPicked: () -> Unit) {
+    AppSort.entries.forEach { option ->
+        DropdownMenuItem(
+            text = { Text(stringResource(option.labelRes())) },
+            leadingIcon = { RadioButton(selected = option == preferences.sort, onClick = null) },
+            onClick = {
+                onChange(preferences.copy(sort = option))
+                onPicked()
+            },
+        )
+    }
+    CheckItem(R.string.sort_reverse, preferences.reverseOrder) {
+        onChange(preferences.copy(reverseOrder = it))
     }
 }
 
@@ -335,6 +350,16 @@ private fun CheckItem(label: Int, checked: Boolean, enabled: Boolean = true, onC
     )
 }
 
+/** A plain menu action; the empty icon lines its label up with the radio buttons and checkboxes above. */
+@Composable
+internal fun ActionItem(label: Int, onClick: () -> Unit) {
+    DropdownMenuItem(
+        text = { Text(stringResource(label)) },
+        leadingIcon = { Spacer(Modifier.size(24.dp)) },
+        onClick = onClick,
+    )
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun AppListItem(
@@ -345,8 +370,20 @@ private fun AppListItem(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val revealer = rememberRevealer()
     ListItem(
-        modifier = modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        modifier = modifier
+            .revealable(revealer)
+            .combinedClickable(
+                onClick = {
+                    revealer.reveal()
+                    onClick()
+                },
+                onLongClick = {
+                    revealer.reveal()
+                    onLongClick()
+                },
+            ),
         colors = if (selected || checked == true) {
             ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         } else {

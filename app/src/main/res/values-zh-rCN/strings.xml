@@ -33,7 +33,6 @@
     <!-- Navigation -->
     <string name="nav_apps">应用</string>
     <string name="nav_managed">已设置</string>
-    <string name="managed_title">已设置语言的应用</string>
     <string name="nav_settings">设置</string>
 
     <!-- App list -->
@@ -64,15 +63,20 @@
     <string name="managed_empty">暂无已设置语言的应用</string>
     <string name="managed_section_activity">活动记录</string>
     <string name="managed_activity_empty">暂无记录</string>
+    <string name="activity_search_hint">搜索活动记录</string>
+    <plurals name="managed_summary_attention">
+        <item quantity="other">%1$d 个与系统不一致</item>
+    </plurals>
+    <plurals name="managed_uninstalled">
+        <item quantity="other">%1$d 个已卸载的应用</item>
+    </plurals>
+    <string name="managed_uninstalled_title">已卸载的应用</string>
+    <string name="managed_uninstalled_hint">重新安装后会恢复语言设置。</string>
     <plurals name="managed_summary_count">
         <item quantity="other">已为 %1$d 个应用设置语言</item>
     </plurals>
-    <plurals name="managed_summary_attention">
-        <item quantity="other">%1$d 个需要注意</item>
-    </plurals>
     <string name="managed_last_check_never">尚未检查</string>
     <string name="managed_last_check">上次检查 %1$s · 恢复 %2$d 个 · 导入 %3$d 个</string>
-    <string name="managed_not_installed">未安装</string>
     <string name="activity_applied">设置为 %1$s</string>
     <string name="activity_reset">改为跟随系统</string>
     <string name="activity_repaired">系统更改后已恢复：%1$s → %2$s</string>
@@ -202,15 +206,21 @@
         <item quantity="other">已导入 %1$d 个应用的已有设置</item>
     </plurals>
 
-    <!-- Undo countdown before a change is written -->
+    <!-- Undo and confirmations -->
     <string name="action_undo">撤销</string>
-    <string name="pending_apply">即将更改「%1$s」的语言</string>
-    <string name="pending_reset">即将把「%1$s」改为跟随系统</string>
-    <string name="pending_forget">即将删除「%1$s」的记录</string>
-    <plurals name="pending_batch_apply">
-        <item quantity="other">即将更改 %1$d 个应用的语言</item>
+    <string name="action_cancel">取消</string>
+    <string name="action_remove_records">删除</string>
+    <string name="action_forget_all">全部删除</string>
+    <string name="action_clear_log">清空活动记录</string>
+    <string name="confirm_reset">将「%1$s」改为跟随系统？</string>
+    <plurals name="confirm_reset_batch">
+        <item quantity="other">将 %1$d 个应用改为跟随系统？</item>
     </plurals>
-    <plurals name="pending_batch_reset">
-        <item quantity="other">即将把 %1$d 个应用改为跟随系统</item>
+    <plurals name="confirm_remove_records">
+        <item quantity="other">删除 %1$d 条记录？</item>
+    </plurals>
+    <string name="confirm_clear_activity">清空活动记录？</string>
+    <plurals name="message_records_removed">
+        <item quantity="other">已删除 %1$d 条记录</item>
     </plurals>
 </resources>

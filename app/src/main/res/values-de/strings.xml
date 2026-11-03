@@ -33,7 +33,6 @@
     <!-- Navigation -->
     <string name="nav_apps">Apps</string>
     <string name="nav_managed">Eingestellt</string>
-    <string name="managed_title">Eingestellte Apps</string>
     <string name="nav_settings">Einstellungen</string>
 
     <!-- App list -->
@@ -65,17 +64,23 @@
     <string name="managed_empty">Keine eingestellten Apps</string>
     <string name="managed_section_activity">Aktivitätsprotokoll</string>
     <string name="managed_activity_empty">Keine Aktivität</string>
+    <string name="activity_search_hint">Aktivitätsprotokoll durchsuchen</string>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d weicht vom System ab</item>
+        <item quantity="other">%1$d weichen vom System ab</item>
+    </plurals>
+    <plurals name="managed_uninstalled">
+        <item quantity="one">%1$d deinstallierte App</item>
+        <item quantity="other">%1$d deinstallierte Apps</item>
+    </plurals>
+    <string name="managed_uninstalled_title">Deinstallierte Apps</string>
+    <string name="managed_uninstalled_hint">Die Sprache wird bei einer Neuinstallation wiederhergestellt.</string>
     <plurals name="managed_summary_count">
         <item quantity="one">%1$d App eingestellt</item>
         <item quantity="other">%1$d Apps eingestellt</item>
     </plurals>
-    <plurals name="managed_summary_attention">
-        <item quantity="one">%1$d erfordert Aufmerksamkeit</item>
-        <item quantity="other">%1$d erfordern Aufmerksamkeit</item>
-    </plurals>
     <string name="managed_last_check_never">Noch nicht geprüft</string>
     <string name="managed_last_check">Letzte Prüfung %1$s · %2$d wiederhergestellt · %3$d importiert</string>
-    <string name="managed_not_installed">Nicht installiert</string>
     <string name="activity_applied">Festgelegt auf %1$s</string>
     <string name="activity_reset">Auf Systemsprache gesetzt</string>
     <string name="activity_repaired">Nach Systemänderung wiederhergestellt: %1$s → %2$s</string>
@@ -211,17 +216,24 @@
         <item quantity="other">Bestehende Einstellungen von %1$d Apps importiert</item>
     </plurals>
 
-    <!-- Undo countdown before a change is written -->
+    <!-- Undo and confirmations -->
     <string name="action_undo">Rückgängig</string>
-    <string name="pending_apply">Sprache von %1$s wird geändert</string>
-    <string name="pending_reset">%1$s wird auf Systemsprache gesetzt</string>
-    <string name="pending_forget">Eintrag für %1$s wird entfernt</string>
-    <plurals name="pending_batch_apply">
-        <item quantity="one">Sprache von %1$d App wird geändert</item>
-        <item quantity="other">Sprache von %1$d Apps wird geändert</item>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_remove_records">Entfernen</string>
+    <string name="action_forget_all">Alle entfernen</string>
+    <string name="action_clear_log">Aktivitätsprotokoll leeren</string>
+    <string name="confirm_reset">%1$s auf Systemsprache setzen?</string>
+    <plurals name="confirm_reset_batch">
+        <item quantity="one">%1$d App auf Systemsprache setzen?</item>
+        <item quantity="other">%1$d Apps auf Systemsprache setzen?</item>
     </plurals>
-    <plurals name="pending_batch_reset">
-        <item quantity="one">%1$d App wird auf Systemsprache gesetzt</item>
-        <item quantity="other">%1$d Apps werden auf Systemsprache gesetzt</item>
+    <plurals name="confirm_remove_records">
+        <item quantity="one">%1$d Eintrag entfernen?</item>
+        <item quantity="other">%1$d Einträge entfernen?</item>
+    </plurals>
+    <string name="confirm_clear_activity">Aktivitätsprotokoll leeren?</string>
+    <plurals name="message_records_removed">
+        <item quantity="one">%1$d Eintrag entfernt</item>
+        <item quantity="other">%1$d Einträge entfernt</item>
     </plurals>
 </resources>

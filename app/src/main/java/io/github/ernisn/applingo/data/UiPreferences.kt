@@ -69,6 +69,14 @@ class UiPreferences(context: Context) {
 
     val list: Flow<ListPreferences> = store.data.map { it.toListPreferences() }
 
+    /** Order of the Configured list, kept apart from the app list's; it has no filters. */
+    val managedList: Flow<ListPreferences> = store.data.map { prefs ->
+        ListPreferences(
+            sort = enumOr(prefs[MANAGED_SORT], ListPreferences().sort),
+            reverseOrder = prefs[MANAGED_REVERSE_ORDER] ?: false,
+        )
+    }
+
     val settings: Flow<AppSettings> = store.data.map { it.toSettings() }
 
     val favoriteApps: Flow<Set<String>> = store.data.map { it[FAVORITE_APPS].orEmpty() }
@@ -83,6 +91,13 @@ class UiPreferences(context: Context) {
             prefs[REVERSE_ORDER] = next.reverseOrder
             prefs[LAUNCHABLE_ONLY] = next.launchableOnly
             prefs[ENABLED_ONLY] = next.enabledOnly
+        }
+    }
+
+    suspend fun updateManaged(sort: AppSort, reverseOrder: Boolean) {
+        store.edit { prefs ->
+            prefs[MANAGED_SORT] = sort.name
+            prefs[MANAGED_REVERSE_ORDER] = reverseOrder
         }
     }
 
@@ -152,6 +167,8 @@ class UiPreferences(context: Context) {
         val REVERSE_ORDER = booleanPreferencesKey("reverse_order")
         val LAUNCHABLE_ONLY = booleanPreferencesKey("launchable_only")
         val ENABLED_ONLY = booleanPreferencesKey("enabled_only")
+        val MANAGED_SORT = stringPreferencesKey("managed_sort")
+        val MANAGED_REVERSE_ORDER = booleanPreferencesKey("managed_reverse_order")
         val REFRESH_ON_LAUNCH = booleanPreferencesKey("refresh_on_launch")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")

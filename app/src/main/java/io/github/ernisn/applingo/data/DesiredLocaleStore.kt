@@ -75,4 +75,12 @@ class DesiredLocaleStore(context: Context) {
             }
         }
     }
+
+    /** Puts back an earlier [record] of the package as it was, time included; null forgets the package. */
+    suspend fun restore(userId: Int, packageName: String, record: DesiredLocale?) {
+        store.updateData { data ->
+            val others = data.entries.filterNot { it.userId == userId && it.packageName == packageName }
+            data.copy(entries = if (record == null) others else others + record)
+        }
+    }
 }
