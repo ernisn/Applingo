@@ -61,6 +61,7 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Εφαρμογές</string>
+    <string name="managed_section_languages">Γλώσσες</string>
     <string name="managed_empty">Καμία ρυθμισμένη εφαρμογή</string>
     <string name="managed_section_activity">Αρχείο δραστηριότητας</string>
     <string name="managed_activity_empty">Καμία δραστηριότητα</string>
@@ -103,13 +104,17 @@
     <string name="settings_pure_black_summary">Μόνο στο σκοτεινό θέμα</string>
     <string name="settings_system_font">Γραμματοσειρά συστήματος</string>
     <string name="settings_system_font_summary">Γραμματοσειρά συστήματος αντί για Roboto Condensed</string>
+    <string name="settings_section_general">Γενικά</string>
+    <string name="settings_swipe_navigation">Πλοήγηση με σάρωση</string>
+    <string name="settings_swipe_navigation_summary">Πλάγια σάρωση μεταξύ σελίδων και επιπέδων</string>
+    <string name="settings_island_drag">Σύρσιμο στη γραμμή πλοήγησης</string>
+    <string name="settings_island_drag_summary">Σύρσιμο κατά μήκος της γραμμής πλοήγησης για εναλλαγή σελίδων</string>
     <string name="settings_section_keeping">Έλεγχος και επαναφορά</string>
     <string name="settings_auto_repair">Αυτόματη επαναφορά</string>
     <string name="settings_auto_repair_summary">Εκ νέου εγγραφή γλωσσών που το σύστημα διαγράφει ή περικόπτει, π.χ. μετά από ενημέρωση εφαρμογής. Όταν είναι ανενεργή, οι αλλαγές μόνο καταγράφονται.</string>
     <string name="settings_background_check">Έλεγχος στο παρασκήνιο</string>
     <string name="settings_background_check_summary">Περιοδικός έλεγχος όσο το Applingo είναι κλειστό. Απαιτεί να εκτελείται το Shizuku.</string>
     <string name="settings_background_interval">Διάστημα ελέγχου</string>
-    <string name="settings_section_app_list">Λίστα εφαρμογών</string>
     <string name="settings_start_filter">Προεπιλεγμένη καρτέλα</string>
     <string name="settings_refresh_on_launch">Νέα σάρωση κατά την εκκίνηση</string>
     <string name="settings_refresh_on_launch_summary">Επιβραδύνει την εκκίνηση. Όταν είναι ανενεργή, εμφανίζεται η αποθηκευμένη λίστα· σύρετε προς τα κάτω για ανανέωση.</string>

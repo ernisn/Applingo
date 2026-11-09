@@ -61,6 +61,7 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Apps</string>
+    <string name="managed_section_languages">Sprachen</string>
     <string name="managed_empty">Keine eingestellten Apps</string>
     <string name="managed_section_activity">Aktivitätsprotokoll</string>
     <string name="managed_activity_empty">Keine Aktivität</string>
@@ -103,13 +104,17 @@
     <string name="settings_pure_black_summary">Nur im dunklen Design</string>
     <string name="settings_system_font">Systemschrift</string>
     <string name="settings_system_font_summary">Systemschrift statt Roboto Condensed verwenden</string>
+    <string name="settings_section_general">Allgemein</string>
+    <string name="settings_swipe_navigation">Wischnavigation</string>
+    <string name="settings_swipe_navigation_summary">Seitlich zwischen Seiten und Ebenen wischen</string>
+    <string name="settings_island_drag">Navigationsleiste ziehen</string>
+    <string name="settings_island_drag_summary">Entlang der Navigationsleiste ziehen, um Seiten zu wechseln</string>
     <string name="settings_section_keeping">Prüfen und wiederherstellen</string>
     <string name="settings_auto_repair">Automatisch wiederherstellen</string>
     <string name="settings_auto_repair_summary">Vom System entfernte oder gekürzte Sprachen erneut schreiben, z. B. nach einem App-Update. Wenn aus, werden Änderungen nur protokolliert.</string>
     <string name="settings_background_check">Hintergrundprüfung</string>
     <string name="settings_background_check_summary">Regelmäßig prüfen, während Applingo geschlossen ist. Shizuku muss dabei laufen.</string>
     <string name="settings_background_interval">Prüfintervall</string>
-    <string name="settings_section_app_list">App-Liste</string>
     <string name="settings_start_filter">Standard-Tab</string>
     <string name="settings_refresh_on_launch">Beim Start neu einlesen</string>
     <string name="settings_refresh_on_launch_summary">Verlangsamt den Start. Wenn aus, wird die zwischengespeicherte Liste angezeigt; zum Aktualisieren nach unten ziehen.</string>

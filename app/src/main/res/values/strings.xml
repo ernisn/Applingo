@@ -63,6 +63,7 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Apps</string>
+    <string name="managed_section_languages">Languages</string>
     <string name="managed_empty">No configured apps</string>
     <string name="managed_section_activity">Activity log</string>
     <string name="managed_activity_empty">No activity</string>
@@ -105,13 +106,17 @@
     <string name="settings_pure_black_summary">Dark theme only</string>
     <string name="settings_system_font">System font</string>
     <string name="settings_system_font_summary">Use the system default instead of Roboto Condensed</string>
+    <string name="settings_section_general">General</string>
+    <string name="settings_swipe_navigation">Swipe navigation</string>
+    <string name="settings_swipe_navigation_summary">Swipe sideways between pages and levels</string>
+    <string name="settings_island_drag">Navigation bar dragging</string>
+    <string name="settings_island_drag_summary">Slide along the navigation bar to switch pages</string>
     <string name="settings_section_keeping">Check &amp; restore</string>
     <string name="settings_auto_repair">Auto-restore</string>
     <string name="settings_auto_repair_summary">Rewrite languages the system clears or trims, e.g. after an app update. When off, changes are only logged.</string>
     <string name="settings_background_check">Background check</string>
     <string name="settings_background_check_summary">Check periodically while Applingo is closed. Requires Shizuku to be running.</string>
     <string name="settings_background_interval">Check interval</string>
-    <string name="settings_section_app_list">App list</string>
     <string name="settings_start_filter">Default tab</string>
     <string name="settings_refresh_on_launch">Rescan on launch</string>
     <string name="settings_refresh_on_launch_summary">Slows startup. When off, the cached list is shown; pull down to refresh.</string>

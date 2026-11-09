@@ -60,6 +60,7 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">应用</string>
+    <string name="managed_section_languages">语言</string>
     <string name="managed_empty">暂无已设置语言的应用</string>
     <string name="managed_section_activity">活动记录</string>
     <string name="managed_activity_empty">暂无记录</string>
@@ -99,13 +100,17 @@
     <string name="settings_pure_black_summary">仅深色主题生效</string>
     <string name="settings_system_font">系统字体</string>
     <string name="settings_system_font_summary">以系统默认字体替代 Roboto Condensed</string>
+    <string name="settings_section_general">通用</string>
+    <string name="settings_swipe_navigation">滑动导航</string>
+    <string name="settings_swipe_navigation_summary">横向滑动切换页面与层级</string>
+    <string name="settings_island_drag">导航栏拖动</string>
+    <string name="settings_island_drag_summary">沿导航栏滑动切换页面</string>
     <string name="settings_section_keeping">检查与恢复</string>
     <string name="settings_auto_repair">自动恢复</string>
     <string name="settings_auto_repair_summary">系统清除或删减已设置的语言时（如应用更新后）自动写回；关闭后仅记录。</string>
     <string name="settings_background_check">后台检查</string>
     <string name="settings_background_check_summary">Applingo 未运行时定期检查，需 Shizuku 处于运行状态</string>
     <string name="settings_background_interval">检查间隔</string>
-    <string name="settings_section_app_list">应用列表</string>
     <string name="settings_start_filter">默认标签页</string>
     <string name="settings_refresh_on_launch">启动时重新扫描</string>
     <string name="settings_refresh_on_launch_summary">会延长启动时间。关闭时显示缓存的列表，可下拉刷新。</string>

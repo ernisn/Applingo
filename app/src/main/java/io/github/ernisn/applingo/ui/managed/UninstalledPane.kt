@@ -1,6 +1,6 @@
 package io.github.ernisn.applingo.ui.managed
 
-import androidx.activity.compose.BackHandler
+import io.github.ernisn.applingo.ui.PageBackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -90,9 +90,9 @@ internal fun UninstalledPane(viewModel: MainViewModel, records: List<Uninstalled
     var confirmRemove by rememberSaveable { mutableStateOf<List<String>?>(null) }
     var removeSelection by rememberSaveable { mutableStateOf(false) }
 
-    BackHandler(onBack = onBack)
+    PageBackHandler(onBack = onBack)
     // Composed later, so it comes first: Back ends the selection before it leaves the list.
-    BackHandler(enabled = selecting) { viewModel.uninstalledSelection.clear() }
+    PageBackHandler(enabled = selecting) { viewModel.uninstalledSelection.clear() }
     // A secondary page: the island makes way.
     HideNavIsland()
 

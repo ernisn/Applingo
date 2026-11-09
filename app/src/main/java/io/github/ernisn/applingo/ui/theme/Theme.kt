@@ -1,5 +1,6 @@
 package io.github.ernisn.applingo.ui.theme
 
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.RippleAlpha
@@ -137,15 +138,27 @@ val RowShape = RoundedCornerShape(CardRadius)
 
 /*
  * Translucency. Fills on the frosted bars and the island let what scrolls behind them show through,
- * as the bars themselves do: surfaces (the island, search fields) a little more than highlights (the
- * island's indicator, the selected tab), and panels full of text (headers, menus, dialogs) less, so
- * it stays readable. A filled button keeps most of its colour, so its label stays readable (4.5:1)
- * over whatever passes behind it.
+ * as the bars themselves do: surfaces (the island, search fields) most, and panels full of text
+ * (headers, menus, dialogs) less, so it stays readable. A filled button keeps most of its colour,
+ * so its label stays readable (4.5:1) over whatever passes behind it; highlights (the island's
+ * indicator, the selected tab) see [highlightAlpha].
  */
 const val TRANSLUCENT_PANEL_ALPHA = 0.7f
 const val TRANSLUCENT_SURFACE_ALPHA = 0.55f
-const val TRANSLUCENT_FILL_ALPHA = 0.6f
 const val TRANSLUCENT_BUTTON_ALPHA = 0.85f
+
+/*
+ * The selected item of the island and of segmented rows (tabs, theme, interval). Material's
+ * secondaryContainer is about as light as the surfaces round it in light themes (tone 90 on 92) and
+ * little darker in dark ones, more so at 60 %, and the selection was hard to make out. Secondary is
+ * clear of them in both, translucent so what passes behind frosted bars still shows, and its label
+ * is the opposite of the others round it: dark on light in dark themes, white on dark in light
+ * ones. White needs a little more of the fill: at 80 % it reads at about 4.2:1 over the island and
+ * the cards (3.5:1 at 70 %); dark themes keep 70 % (85 % looked heavy).
+ */
+val ColorScheme.highlight: Color get() = secondary
+val ColorScheme.onHighlight: Color get() = onSecondary
+val ColorScheme.highlightAlpha: Float get() = if (background.luminance() < 0.5f) 0.7f else 0.8f
 
 private fun seedColorScheme(seed: Int, dark: Boolean): ColorScheme {
     val scheme = SchemeTonalSpot(Hct.fromInt(seed), dark, 0.0)

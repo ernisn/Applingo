@@ -61,6 +61,7 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Apps</string>
+    <string name="managed_section_languages">Talen</string>
     <string name="managed_empty">Geen ingestelde apps</string>
     <string name="managed_section_activity">Activiteitenlogboek</string>
     <string name="managed_activity_empty">Geen activiteit</string>
@@ -103,13 +104,17 @@
     <string name="settings_pure_black_summary">Alleen in donker thema</string>
     <string name="settings_system_font">Systeemlettertype</string>
     <string name="settings_system_font_summary">Systeemlettertype gebruiken in plaats van Roboto Condensed</string>
+    <string name="settings_section_general">Algemeen</string>
+    <string name="settings_swipe_navigation">Veegnavigatie</string>
+    <string name="settings_swipe_navigation_summary">Zijwaarts vegen tussen pagina’s en niveaus</string>
+    <string name="settings_island_drag">Slepen in navigatiebalk</string>
+    <string name="settings_island_drag_summary">Langs de navigatiebalk slepen om van pagina te wisselen</string>
     <string name="settings_section_keeping">Controleren en herstellen</string>
     <string name="settings_auto_repair">Automatisch herstellen</string>
     <string name="settings_auto_repair_summary">Schrijft talen opnieuw die het systeem wist of inkort, bijv. na een app-update. Uitgeschakeld worden wijzigingen alleen gelogd.</string>
     <string name="settings_background_check">Achtergrondcontrole</string>
     <string name="settings_background_check_summary">Controleert periodiek terwijl Applingo gesloten is. Shizuku moet actief zijn.</string>
     <string name="settings_background_interval">Controle-interval</string>
-    <string name="settings_section_app_list">App-lijst</string>
     <string name="settings_start_filter">Standaardtabblad</string>
     <string name="settings_refresh_on_launch">Opnieuw scannen bij starten</string>
     <string name="settings_refresh_on_launch_summary">Vertraagt het starten. Uitgeschakeld wordt de gecachte lijst getoond; trek omlaag om te vernieuwen.</string>

@@ -62,6 +62,7 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">App</string>
+    <string name="managed_section_languages">Lingue</string>
     <string name="managed_empty">Nessuna app configurata</string>
     <string name="managed_section_activity">Registro attività</string>
     <string name="managed_activity_empty">Nessuna attività</string>
@@ -107,13 +108,17 @@
     <string name="settings_pure_black_summary">Solo con il tema scuro</string>
     <string name="settings_system_font">Carattere di sistema</string>
     <string name="settings_system_font_summary">Usa il carattere di sistema invece di Roboto Condensed</string>
+    <string name="settings_section_general">Generale</string>
+    <string name="settings_swipe_navigation">Navigazione a scorrimento</string>
+    <string name="settings_swipe_navigation_summary">Scorrere lateralmente tra pagine e livelli</string>
+    <string name="settings_island_drag">Trascinamento nella barra di navigazione</string>
+    <string name="settings_island_drag_summary">Scorrere lungo la barra di navigazione per cambiare pagina</string>
     <string name="settings_section_keeping">Controllo e ripristino</string>
     <string name="settings_auto_repair">Ripristino automatico</string>
     <string name="settings_auto_repair_summary">Riscrive le lingue che il sistema cancella o riduce, ad es. dopo un aggiornamento dell’app. Se disattivato, le modifiche vengono solo registrate.</string>
     <string name="settings_background_check">Controllo in background</string>
     <string name="settings_background_check_summary">Controlla periodicamente mentre Applingo è chiusa. Richiede Shizuku in esecuzione.</string>
     <string name="settings_background_interval">Intervallo di controllo</string>
-    <string name="settings_section_app_list">Elenco app</string>
     <string name="settings_start_filter">Scheda predefinita</string>
     <string name="settings_refresh_on_launch">Nuova scansione all’avvio</string>
     <string name="settings_refresh_on_launch_summary">Rallenta l’avvio. Se disattivata, viene mostrato l’elenco in cache; trascina verso il basso per aggiornare.</string>

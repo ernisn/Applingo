@@ -62,6 +62,7 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Apps</string>
+    <string name="managed_section_languages">Langues</string>
     <string name="managed_empty">Aucune app configurée</string>
     <string name="managed_section_activity">Journal d’activité</string>
     <string name="managed_activity_empty">Aucune activité</string>
@@ -107,13 +108,17 @@
     <string name="settings_pure_black_summary">Thème sombre uniquement</string>
     <string name="settings_system_font">Police du système</string>
     <string name="settings_system_font_summary">Utiliser la police du système au lieu de Roboto Condensed</string>
+    <string name="settings_section_general">Général</string>
+    <string name="settings_swipe_navigation">Navigation par balayage</string>
+    <string name="settings_swipe_navigation_summary">Balayer latéralement entre pages et niveaux</string>
+    <string name="settings_island_drag">Glissement sur la barre de navigation</string>
+    <string name="settings_island_drag_summary">Glisser le long de la barre de navigation pour changer de page</string>
     <string name="settings_section_keeping">Vérification et restauration</string>
     <string name="settings_auto_repair">Restauration automatique</string>
     <string name="settings_auto_repair_summary">Réécrit les langues que le système efface ou réduit, par ex. après une mise à jour de l’app. Désactivée, les modifications sont seulement journalisées.</string>
     <string name="settings_background_check">Vérification en arrière-plan</string>
     <string name="settings_background_check_summary">Vérifie périodiquement lorsque Applingo est fermé. Shizuku doit être en cours d’exécution.</string>
     <string name="settings_background_interval">Intervalle de vérification</string>
-    <string name="settings_section_app_list">Liste des apps</string>
     <string name="settings_start_filter">Onglet par défaut</string>
     <string name="settings_refresh_on_launch">Réanalyser au démarrage</string>
     <string name="settings_refresh_on_launch_summary">Ralentit le démarrage. Désactivé, la liste en cache est affichée ; balayez vers le bas pour actualiser.</string>

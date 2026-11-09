@@ -1,6 +1,6 @@
 package io.github.ernisn.applingo.ui.applist
 
-import androidx.activity.compose.BackHandler
+import io.github.ernisn.applingo.ui.PageBackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -60,6 +60,7 @@ import io.github.ernisn.applingo.ui.AppRow
 import io.github.ernisn.applingo.ui.LocaleStatus
 import io.github.ernisn.applingo.ui.MainViewModel
 import io.github.ernisn.applingo.ui.HideNavIsland
+import io.github.ernisn.applingo.ui.OnScrollToTop
 import io.github.ernisn.applingo.ui.bottomChrome
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.components.AppTypeFilterRow
@@ -91,7 +92,12 @@ fun AppListPane(
     val state by viewModel.listState.collectAsStateWithLifecycle()
     val selection by viewModel.appSelection.packages.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
-    val returnTo = remember { focusOnReturn }
+    // The island's Apps double-tapped: back to the start of the list.
+    OnScrollToTop { listState.animateScrollToItem(0) }
+    // Taken as a request comes (with the pane, or while it waits behind the upright island), and
+    // kept once it is done (see FocusRowOnReturn).
+    var returnTo by remember { mutableStateOf(focusOnReturn) }
+    if (focusOnReturn != null && focusOnReturn !== returnTo) returnTo = focusOnReturn
     val returnFocus = remember { FocusRequester() }
     // Select apps from the menu: the menu went with the search bar, so focus goes to the first row on
     // screen (see FocusWhenPending).
@@ -124,7 +130,7 @@ fun AppListPane(
     val selectionStarted by viewModel.appSelection.started.collectAsStateWithLifecycle()
     val selecting = selectionStarted || selection.isNotEmpty()
     var showBatchPicker by rememberSaveable { mutableStateOf(false) }
-    BackHandler(enabled = selecting) { viewModel.appSelection.clear() }
+    PageBackHandler(enabled = selecting) { viewModel.appSelection.clear() }
     HideNavIsland(selecting)
     val dpad = isDpadDevice()
     val batchActions = @Composable { underTopBar: Boolean ->

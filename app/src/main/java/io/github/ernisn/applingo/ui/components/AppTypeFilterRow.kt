@@ -17,7 +17,9 @@ import androidx.compose.ui.unit.sp
 import io.github.ernisn.applingo.R
 import io.github.ernisn.applingo.data.AppTypeFilter
 import io.github.ernisn.applingo.ui.theme.ControlShape
-import io.github.ernisn.applingo.ui.theme.TRANSLUCENT_FILL_ALPHA
+import io.github.ernisn.applingo.ui.theme.highlight
+import io.github.ernisn.applingo.ui.theme.highlightAlpha
+import io.github.ernisn.applingo.ui.theme.onHighlight
 
 /** All / User / System / Favorites, the app list's tabs (and the default one in settings). */
 @Composable
@@ -72,13 +74,18 @@ fun SegmentedTabRow(
 }
 
 /**
- * Every segmented row's colours: the selected segment translucent, like the island's indicator, so
- * what scrolls on behind a frosted header shows through it as it does through the others.
+ * Every segmented row's colours: the selected segment filled like the island's indicator (see
+ * [highlight]), translucent, so what scrolls on behind a frosted header still shows through it.
  */
 @Composable
 fun segmentedColors(): SegmentedButtonColors {
-    val fill = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = TRANSLUCENT_FILL_ALPHA)
-    return SegmentedButtonDefaults.colors(activeContainerColor = fill, disabledActiveContainerColor = fill)
+    val scheme = MaterialTheme.colorScheme
+    val fill = scheme.highlight.copy(alpha = scheme.highlightAlpha)
+    return SegmentedButtonDefaults.colors(
+        activeContainerColor = fill,
+        activeContentColor = scheme.onHighlight,
+        disabledActiveContainerColor = fill.copy(alpha = 0.38f),
+    )
 }
 
 fun AppTypeFilter.labelRes(): Int = when (this) {

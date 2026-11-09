@@ -63,6 +63,7 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Приложения</string>
+    <string name="managed_section_languages">Языки</string>
     <string name="managed_empty">Нет настроенных приложений</string>
     <string name="managed_section_activity">Журнал</string>
     <string name="managed_activity_empty">Записей нет</string>
@@ -111,13 +112,17 @@
     <string name="settings_pure_black_summary">Только в тёмной теме</string>
     <string name="settings_system_font">Системный шрифт</string>
     <string name="settings_system_font_summary">Системный шрифт вместо Roboto Condensed</string>
+    <string name="settings_section_general">Общие</string>
+    <string name="settings_swipe_navigation">Навигация свайпами</string>
+    <string name="settings_swipe_navigation_summary">Свайпы в сторону между страницами и уровнями</string>
+    <string name="settings_island_drag">Перетаскивание по панели навигации</string>
+    <string name="settings_island_drag_summary">Проведение вдоль панели навигации переключает страницы</string>
     <string name="settings_section_keeping">Проверка и восстановление</string>
     <string name="settings_auto_repair">Автовосстановление</string>
     <string name="settings_auto_repair_summary">Повторно записывать языки, которые система удаляет или урезает, например после обновления приложения. Если выключено, изменения только записываются в журнал.</string>
     <string name="settings_background_check">Фоновая проверка</string>
     <string name="settings_background_check_summary">Периодическая проверка, пока Applingo закрыт. Требуется запущенный Shizuku.</string>
     <string name="settings_background_interval">Интервал проверки</string>
-    <string name="settings_section_app_list">Список приложений</string>
     <string name="settings_start_filter">Вкладка по умолчанию</string>
     <string name="settings_refresh_on_launch">Сканировать при запуске</string>
     <string name="settings_refresh_on_launch_summary">Замедляет запуск. Если выключено, показывается кешированный список; потяните вниз, чтобы обновить.</string>

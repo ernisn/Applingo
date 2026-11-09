@@ -97,6 +97,8 @@ jobs:
           "$apksigner" verify --print-certs "$out"
           echo "file=$out" >> "$GITHUB_OUTPUT"
 
+      # The release notes are the tagged commit's message: its body (the change list), or its subject
+      # when it has none. A tag made in GitHub Desktop carries no message of its own to use instead.
       - name: Publish GitHub Release
         if: github.ref_type == 'tag'
         env:
@@ -107,9 +109,12 @@ jobs:
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" "$FILE" "$FILE.sha256" --clobber
           else
+            notes="$RUNNER_TEMP/release-notes.md"
+            git log -1 --format=%b > "$notes"
+            if [[ -z "$(tr -d '[:space:]' < "$notes")" ]]; then git log -1 --format=%s > "$notes"; fi
             flags=()
             [[ "$TAG" == *-* ]] && flags+=(--prerelease)
-            gh release create "$TAG" "$FILE" "$FILE.sha256" --title "Applingo $TAG" --generate-notes --verify-tag "${flags[@]}"
+            gh release create "$TAG" "$FILE" "$FILE.sha256" --title "Applingo $TAG" --notes-file "$notes" --verify-tag "${flags[@]}"
           fi
 
       - name: Upload test build

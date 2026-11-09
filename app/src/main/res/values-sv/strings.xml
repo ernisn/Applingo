@@ -61,6 +61,7 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Appar</string>
+    <string name="managed_section_languages">Språk</string>
     <string name="managed_empty">Inga inställda appar</string>
     <string name="managed_section_activity">Aktivitetslogg</string>
     <string name="managed_activity_empty">Ingen aktivitet</string>
@@ -103,13 +104,17 @@
     <string name="settings_pure_black_summary">Endast i mörkt tema</string>
     <string name="settings_system_font">Systemteckensnitt</string>
     <string name="settings_system_font_summary">Använd systemets teckensnitt i stället för Roboto Condensed</string>
+    <string name="settings_section_general">Allmänt</string>
+    <string name="settings_swipe_navigation">Svepnavigering</string>
+    <string name="settings_swipe_navigation_summary">Svep i sidled mellan sidor och nivåer</string>
+    <string name="settings_island_drag">Dra i navigeringsfältet</string>
+    <string name="settings_island_drag_summary">Dra längs navigeringsfältet för att byta sida</string>
     <string name="settings_section_keeping">Kontroll och återställning</string>
     <string name="settings_auto_repair">Automatisk återställning</string>
     <string name="settings_auto_repair_summary">Skriver om språk som systemet rensar eller kortar, t.ex. efter en appuppdatering. När den är av loggas ändringar bara.</string>
     <string name="settings_background_check">Bakgrundskontroll</string>
     <string name="settings_background_check_summary">Kontrollerar regelbundet medan Applingo är stängd. Kräver att Shizuku körs.</string>
     <string name="settings_background_interval">Kontrollintervall</string>
-    <string name="settings_section_app_list">Applista</string>
     <string name="settings_start_filter">Standardflik</string>
     <string name="settings_refresh_on_launch">Skanna om vid start</string>
     <string name="settings_refresh_on_launch_summary">Gör starten långsammare. När den är av visas den cachade listan; dra nedåt för att uppdatera.</string>

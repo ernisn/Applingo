@@ -63,6 +63,7 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Aplikacje</string>
+    <string name="managed_section_languages">Języki</string>
     <string name="managed_empty">Brak ustawionych aplikacji</string>
     <string name="managed_section_activity">Dziennik aktywności</string>
     <string name="managed_activity_empty">Brak aktywności</string>
@@ -111,13 +112,17 @@
     <string name="settings_pure_black_summary">Tylko w ciemnym motywie</string>
     <string name="settings_system_font">Czcionka systemowa</string>
     <string name="settings_system_font_summary">Używaj czcionki systemowej zamiast Roboto Condensed</string>
+    <string name="settings_section_general">Ogólne</string>
+    <string name="settings_swipe_navigation">Nawigacja przesunięciem</string>
+    <string name="settings_swipe_navigation_summary">Przesuwanie w bok między stronami i poziomami</string>
+    <string name="settings_island_drag">Przeciąganie po pasku nawigacji</string>
+    <string name="settings_island_drag_summary">Przesuwanie wzdłuż paska nawigacji przełącza strony</string>
     <string name="settings_section_keeping">Sprawdzanie i przywracanie</string>
     <string name="settings_auto_repair">Automatyczne przywracanie</string>
     <string name="settings_auto_repair_summary">Ponownie zapisuje języki, które system usuwa lub przycina, np. po aktualizacji aplikacji. Po wyłączeniu zmiany są tylko rejestrowane.</string>
     <string name="settings_background_check">Sprawdzanie w tle</string>
     <string name="settings_background_check_summary">Okresowe sprawdzanie, gdy Applingo jest zamknięte. Wymaga działającego Shizuku.</string>
     <string name="settings_background_interval">Interwał sprawdzania</string>
-    <string name="settings_section_app_list">Lista aplikacji</string>
     <string name="settings_start_filter">Domyślna karta</string>
     <string name="settings_refresh_on_launch">Skanuj przy uruchomieniu</string>
     <string name="settings_refresh_on_launch_summary">Spowalnia uruchamianie. Po wyłączeniu wyświetlana jest lista z pamięci podręcznej; przeciągnij w dół, aby odświeżyć.</string>

@@ -54,6 +54,13 @@ data class AppSettings(
      * "Launchable", once a tab and now the [ListPreferences.launchableOnly] filter, reads as All.)
      */
     val startFilter: AppTypeFilter = AppTypeFilter.All,
+    /**
+     * Sideways swipes on the content switch destinations under the island at the bottom, and go back
+     * or forward a level (list, detail, picker) beside the upright one.
+     */
+    val swipeNavigation: Boolean = true,
+    /** A finger dragged along the navigation island takes the pages with it; off, its items are plain buttons. */
+    val islandDrag: Boolean = true,
 )
 
 /** Seed colors offered when dynamic color is off (ARGB). */
@@ -114,6 +121,8 @@ class UiPreferences(context: Context) {
             prefs[BACKGROUND_CHECK_HOURS_KEY] = next.backgroundCheckHours
             prefs[REFRESH_ON_LAUNCH] = next.refreshOnLaunch
             prefs[START_FILTER] = next.startFilter.name
+            prefs[SWIPE_NAVIGATION] = next.swipeNavigation
+            prefs[ISLAND_DRAG] = next.islandDrag
         }
     }
 
@@ -155,6 +164,8 @@ class UiPreferences(context: Context) {
                 ?: defaults.backgroundCheckHours,
             refreshOnLaunch = this[REFRESH_ON_LAUNCH] ?: defaults.refreshOnLaunch,
             startFilter = enumOr(this[START_FILTER], defaults.startFilter),
+            swipeNavigation = this[SWIPE_NAVIGATION] ?: defaults.swipeNavigation,
+            islandDrag = this[ISLAND_DRAG] ?: defaults.islandDrag,
         )
     }
 
@@ -163,6 +174,8 @@ class UiPreferences(context: Context) {
 
     private companion object {
         val START_FILTER = stringPreferencesKey("start_filter")
+        val SWIPE_NAVIGATION = booleanPreferencesKey("swipe_navigation")
+        val ISLAND_DRAG = booleanPreferencesKey("island_drag")
         val SORT = stringPreferencesKey("sort")
         val REVERSE_ORDER = booleanPreferencesKey("reverse_order")
         val LAUNCHABLE_ONLY = booleanPreferencesKey("launchable_only")

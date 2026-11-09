@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -28,6 +29,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import io.github.ernisn.applingo.ui.theme.TRANSLUCENT_PANEL_ALPHA
 
@@ -57,6 +59,12 @@ fun FrostedHeaderLayout(
  * frosted the same way over the content running on behind it, and behind the system bar, whose
  * height (and the keyboard's) it keeps its own content clear of. [content] gets both bars'
  * heights. [footerTint] is the bar's colour.
+ *
+ * [pinned] is a strip held just under the header, frosted with it, over a list's rows (a group's
+ * header that scrolled away, see the Configured page's Languages tab). It comes and goes as the list
+ * scrolls, so it doesn't count towards the header's height, which would move the list each time.
+ * [pinnedOffset] moves it up, behind the header (in pixels, not above 0), as the next group's header
+ * pushes it out.
  */
 @Composable
 fun FrostedBarsLayout(
@@ -65,6 +73,8 @@ fun FrostedBarsLayout(
     header: @Composable ColumnScope.() -> Unit,
     footer: (@Composable ColumnScope.() -> Unit)?,
     footerTint: Color = MaterialTheme.colorScheme.surfaceContainer,
+    pinned: (@Composable ColumnScope.() -> Unit)? = null,
+    pinnedOffset: () -> Int = { 0 },
     content: @Composable (headerHeight: Dp, footerHeight: Dp) -> Unit,
 ) {
     val topInsets = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
@@ -72,7 +82,15 @@ fun FrostedBarsLayout(
     if (isDpadDevice()) {
         Column(modifier) {
             Column(Modifier.fillMaxWidth().background(tint).then(topInsets), content = header)
-            Box(Modifier.weight(1f)) { content(0.dp, 0.dp) }
+            Box(Modifier.weight(1f).clipToBounds()) {
+                content(0.dp, 0.dp)
+                if (pinned != null) {
+                    Column(
+                        Modifier.offset { IntOffset(0, pinnedOffset()) }.fillMaxWidth().background(tint),
+                        content = pinned,
+                    )
+                }
+            }
             if (footer != null) {
                 Column(Modifier.fillMaxWidth().background(footerTint).then(bottomInsets), content = footer)
             }
@@ -115,16 +133,25 @@ fun FrostedBarsLayout(
                 content(headerHeight.toDp(), footerHeight.toDp())
             }
         }.map { it.measure(constraints) }
-        // In drawing order: the content first, recording what the bars then draw blurred.
+        val pinnedPlaceables = if (pinned == null) {
+            emptyList()
+        } else {
+            subcompose(FrostedSlot.Pinned) {
+                Column(Modifier.frosted(tint), content = pinned)
+            }.map { it.measure(barConstraints) }
+        }
+        // In drawing order: the content first, recording what the bars then draw blurred, and the
+        // pinned strip under the header, which covers it as it is pushed up.
         layout(width, height) {
             contentPlaceables.forEach { it.place(0, 0) }
+            pinnedPlaceables.forEach { it.place(0, headerHeight + pinnedOffset()) }
             headerPlaceables.forEach { it.place(0, 0) }
             footerPlaceables.forEach { it.place(0, height - footerHeight) }
         }
     }
 }
 
-private enum class FrostedSlot { Header, Footer, Content }
+private enum class FrostedSlot { Header, Footer, Content, Pinned }
 
 /**
  * Pull to refresh for a list under a [FrostedHeaderLayout]: the indicator comes down from under the

@@ -63,6 +63,7 @@
 
     <!-- My languages -->
     <string name="managed_section_apps">Apps</string>
+    <string name="managed_section_languages">Idiomas</string>
     <string name="managed_empty">No hay apps configuradas</string>
     <string name="managed_section_activity">Registro de actividad</string>
     <string name="managed_activity_empty">Sin actividad</string>
@@ -108,13 +109,17 @@
     <string name="settings_pure_black_summary">Solo en el tema oscuro</string>
     <string name="settings_system_font">Fuente del sistema</string>
     <string name="settings_system_font_summary">Usar la fuente del sistema en lugar de Roboto Condensed</string>
+    <string name="settings_section_general">General</string>
+    <string name="settings_swipe_navigation">Navegación por deslizamiento</string>
+    <string name="settings_swipe_navigation_summary">Deslizar lateralmente entre páginas y niveles</string>
+    <string name="settings_island_drag">Arrastre en la barra de navegación</string>
+    <string name="settings_island_drag_summary">Deslizar por la barra de navegación para cambiar de página</string>
     <string name="settings_section_keeping">Comprobación y restauración</string>
     <string name="settings_auto_repair">Restauración automática</string>
     <string name="settings_auto_repair_summary">Reescribe los idiomas que el sistema borra o recorta, p. ej. tras actualizar una app. Si está desactivada, los cambios solo se registran.</string>
     <string name="settings_background_check">Comprobación en segundo plano</string>
     <string name="settings_background_check_summary">Comprueba periódicamente mientras Applingo está cerrado. Requiere que Shizuku esté en ejecución.</string>
     <string name="settings_background_interval">Intervalo de comprobación</string>
-    <string name="settings_section_app_list">Lista de apps</string>
     <string name="settings_start_filter">Pestaña predeterminada</string>
     <string name="settings_refresh_on_launch">Volver a escanear al iniciar</string>
     <string name="settings_refresh_on_launch_summary">Ralentiza el inicio. Si está desactivado, se muestra la lista en caché; desliza hacia abajo para actualizar.</string>

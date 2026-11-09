@@ -1,7 +1,30 @@
 package io.github.ernisn.applingo.ui.managed
 
+import io.github.ernisn.applingo.ui.OnBackToTop
+import io.github.ernisn.applingo.ui.OnScrollToTop
+import io.github.ernisn.applingo.ui.ConfiguredLanguage
+import io.github.ernisn.applingo.ui.LocaleStatus
+import io.github.ernisn.applingo.ui.theme.RowShape
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.referentialEqualityPolicy
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import kotlinx.coroutines.launch
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.collapse
+import androidx.compose.ui.semantics.expand
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import android.text.format.DateUtils
-import androidx.activity.compose.BackHandler
+import io.github.ernisn.applingo.ui.PageBackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,7 +42,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -100,15 +122,32 @@ private const val UNINSTALLED_CLOSE_DELAY_MS = 500L
 
 private enum class ManagedTab(val label: Int) {
     Apps(R.string.managed_section_apps),
+    Languages(R.string.managed_section_languages),
     Activity(R.string.managed_section_activity),
 }
 
+/** Content types of the rows D-pad focus can land on: apps (in the Apps and Languages tabs) and language headers. */
+private const val APP_ROW = "app"
+private const val LANGUAGE_HEADER = "language"
+
+/** A language group's key, for its header's list key and its place in the open groups ("" for the system language). */
+private val ConfiguredLanguage.key: String get() = tag.orEmpty()
+
 /**
- * Every installed app Applingo keeps a language for with the result of the last check, and recent
- * activity, as two tabs like the app list's: one list after the other meant scrolling past every app
- * to reach the activity. The search field on top filters whichever tab is shown (the log too), and
- * pull to refresh checks now. Long press (or Select apps) selects apps for a batch change, as in the
- * app list.
+ * Every installed app Applingo keeps a language for with the result of the last check, the same apps
+ * by language, and recent activity, as tabs like the app list's: one list after the other meant
+ * scrolling past every app to reach the activity. The search field on top filters whichever tab is
+ * shown (the log too), and pull to refresh checks now. Long press (or Select apps) selects apps for a
+ * batch change, as in the app list.
+ *
+ * The Languages tab groups the apps by the first language of their chain, the one they show in, so
+ * each app is in one group: a group per language a chain can start with would list most apps
+ * twice. Each group's header gives the language and how many apps there are, the groups with the
+ * most apps first, and opens or closes the group. They all start closed: the tab opens on the
+ * languages in use, one short row each, rather than on a long list where a language further down
+ * took a long scroll to reach. The apps keep the order chosen in the menu within each group and
+ * leave out the language badge, which the header already gives. A search opens every group (its
+ * results are what was asked for), as does a single group (there is nothing to choose between).
  *
  * Records of apps that are no longer installed sit apart, behind an entry in the summary card that
  * shows only while there are any (see [UninstalledPane]): they matter less than the apps on the
@@ -123,15 +162,29 @@ fun ManagedPane(
 ) {
     val state by viewModel.managedState.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableStateOf(ManagedTab.Apps) }
-    // One per tab, so each keeps its scroll position while the other is shown, and kept while the
+    // One per tab, so each keeps its scroll position while another is shown, and kept while the
     // uninstalled apps are.
     val appsListState = rememberLazyListState()
+    val languagesListState = rememberLazyListState()
     val activityListState = rememberLazyListState()
+    // The Languages tab's open groups (see ConfiguredLanguage.key), likewise kept.
+    val openLanguages = rememberSaveable { mutableStateOf(emptySet<String>()) }
+    // The island's Configured double-tapped: back to the start of the tab shown (the first tap
+    // already closed the uninstalled apps, see below).
+    OnScrollToTop {
+        when (tab) {
+            ManagedTab.Apps -> appsListState
+            ManagedTab.Languages -> languagesListState
+            ManagedTab.Activity -> activityListState
+        }.animateScrollToItem(0)
+    }
     // The field owns its text, as in the app list; the view model may have lost it with the process.
     var queryText by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(Unit) { viewModel.onManagedQueryChange(queryText) }
 
     var showUninstalled by rememberSaveable { mutableStateOf(false) }
+    // The island's Configured tapped again: back to the list from the uninstalled apps.
+    OnBackToTop { showUninstalled = false }
     // Closes by itself once the last record is gone, after the chance to undo that: Undo brings the
     // rows back in place, and the selection they were removed from. With a moment's grace, as the
     // snackbar leaves on Undo a little before the records are back.
@@ -165,7 +218,9 @@ fun ManagedPane(
             viewModel.onManagedQueryChange(value)
         },
         appsListState = appsListState,
+        languagesListState = languagesListState,
         activityListState = activityListState,
+        openLanguages = openLanguages,
         selectedPackage = selectedPackage,
         focusOnReturn = focusOnReturn,
         onOpenApp = onOpenApp,
@@ -183,7 +238,9 @@ private fun ConfiguredPane(
     query: String,
     onQueryChange: (String) -> Unit,
     appsListState: LazyListState,
+    languagesListState: LazyListState,
     activityListState: LazyListState,
+    openLanguages: MutableState<Set<String>>,
     selectedPackage: String?,
     focusOnReturn: FocusOnReturnRequest?,
     onOpenApp: (String) -> Unit,
@@ -194,20 +251,62 @@ private fun ConfiguredPane(
     val searching = state.query.isNotBlank()
     // The summary card leads the apps tab, except in search results.
     val firstRow = if (searching) 0 else 1
-    val returnTo = remember { focusOnReturn }
+    // Language groups the user can't open or close: all of them in search results, or the only one.
+    val languagesFixed = searching || state.languages.size == 1
+    fun isOpen(language: ConfiguredLanguage) = languagesFixed || language.key in openLanguages.value
+    // Taken as a request comes (with the pane, or while it waits behind the upright island), and
+    // kept once it is done (see FocusRowOnReturn). The app's language group opens with it: it may
+    // have moved to a closed one (its language changed), and its row has to be there to take focus.
+    // Written here, before the rows read it, rather than in an effect a frame later, when focus
+    // would have found no row to go to.
+    var returnTo by remember { mutableStateOf(focusOnReturn) }
+    if (focusOnReturn != null && focusOnReturn !== returnTo) {
+        returnTo = focusOnReturn
+        state.languages.firstOrNull { language -> language.apps.any { it.app.packageName == focusOnReturn.packageName } }
+            ?.let { openLanguages.value += it.key }
+    }
     val returnFocus = remember { FocusRequester() }
-    // Select apps: the menu went with the search bar, so focus goes to the first app row on screen
-    // (see FocusWhenPending).
-    var selectFocusAt by remember { mutableStateOf<Int?>(null) }
+    // Select apps: the menu went with the search bar, so focus goes to the first app row (or
+    // language header) on screen (see FocusWhenPending), by its list key.
+    var selectFocusKey by remember { mutableStateOf<String?>(null) }
     val selectFocus = remember { FocusRequester() }
-    FocusWhenPending(selectFocusAt != null, selectFocus) { selectFocusAt = null }
+    FocusWhenPending(selectFocusKey != null, selectFocus) { selectFocusKey = null }
     FocusRowOnReturn(
-        index = returnTo?.let { request -> state.apps.indexOfFirst { it.app.packageName == request.packageName } }
-            ?.takeIf { it >= 0 && tab == ManagedTab.Apps }?.let { it + firstRow },
-        listState = appsListState,
+        index = returnTo?.packageName?.let { packageName ->
+            when (tab) {
+                ManagedTab.Apps -> state.apps.indexOfFirst { it.app.packageName == packageName }.takeIf { it >= 0 }?.let { it + firstRow }
+                ManagedTab.Languages -> state.languages.rowIndex(packageName, ::isOpen)
+                ManagedTab.Activity -> null
+            }
+        },
+        listState = if (tab == ManagedTab.Languages) languagesListState else appsListState,
         requester = returnFocus,
         onDone = { returnTo?.onDone() },
     )
+
+    // The Languages tab's rows by list key, for the group pinned under the bars (see pinnedLanguage).
+    // Only a change of group recomposes; how far it is pushed up is read as it is placed.
+    val groupOf = remember(state.languages) {
+        buildMap<Any, ConfiguredLanguage> {
+            for (language in state.languages) {
+                put(headerKey(language), language)
+                language.apps.forEach { put(it.app.packageName, language) }
+            }
+        }
+    }
+    val currentGroupOf by rememberUpdatedState(groupOf)
+    val pinnedGroup by remember {
+        derivedStateOf(referentialEqualityPolicy()) { pinnedLanguage(languagesListState, currentGroupOf)?.language }
+    }
+    val scope = rememberCoroutineScope()
+
+    /** Closes [language] from its pinned header, with its header brought to the top, where the pinned one was. */
+    fun closePinned(language: ConfiguredLanguage) {
+        scope.launch {
+            languagesListState.scrollToItem(state.languages.headerIndex(language, ::isOpen))
+            openLanguages.value -= language.key
+        }
+    }
 
     // A new query or order is a new list: start at its top (only on an actual change, as in the
     // app list).
@@ -217,6 +316,7 @@ private fun ConfiguredPane(
         if (listKey != shownListKey) {
             shownListKey = listKey
             appsListState.scrollToItem(0)
+            languagesListState.scrollToItem(0)
             activityListState.scrollToItem(0)
         }
     }
@@ -225,7 +325,7 @@ private fun ConfiguredPane(
     val selecting = selectionStarted || selection.isNotEmpty()
     var showBatchPicker by rememberSaveable { mutableStateOf(false) }
     var confirmClearLog by rememberSaveable { mutableStateOf(false) }
-    BackHandler(enabled = selecting) { viewModel.managedSelection.clear() }
+    PageBackHandler(enabled = selecting) { viewModel.managedSelection.clear() }
     HideNavIsland(selecting)
     val dpad = isDpadDevice()
     // The lists run on behind the island and the system bar; their ends clear them (or end above
@@ -266,6 +366,17 @@ private fun ConfiguredPane(
             footer = if (selecting && !dpad) { { batchActions(false) } } else null,
             modifier = Modifier.padding(padding).fillMaxSize(),
             tint = if (selecting) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.background,
+            pinned = pinnedGroup?.takeIf { tab == ManagedTab.Languages }?.let { language ->
+                {
+                    LanguageHeader(
+                        language = language,
+                        open = true,
+                        onToggle = if (languagesFixed) null else { { closePinned(language) } },
+                        pinned = true,
+                    )
+                }
+            },
+            pinnedOffset = { pinnedLanguage(languagesListState, currentGroupOf)?.offset ?: 0 },
             header = {
                 if (selecting) {
                     SelectionTopBar(
@@ -278,15 +389,15 @@ private fun ConfiguredPane(
                     SearchField(
                         query = query,
                         onQueryChange = onQueryChange,
-                        placeholder = stringResource(if (tab == ManagedTab.Apps) R.string.search_hint else R.string.activity_search_hint),
+                        placeholder = stringResource(if (tab == ManagedTab.Activity) R.string.activity_search_hint else R.string.search_hint),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     ) {
                         when (tab) {
-                            ManagedTab.Apps -> AppsMenu(
+                            ManagedTab.Apps, ManagedTab.Languages -> AppsMenu(
                                 state = state,
                                 onPreferencesChange = { viewModel.updateManagedOrder(it.sort, it.reverseOrder) },
                                 onSelectApps = {
-                                    selectFocusAt = appsListState.firstVisibleItemIndex.coerceAtLeast(firstRow)
+                                    selectFocusKey = firstRowOnScreen(if (tab == ManagedTab.Apps) appsListState else languagesListState)
                                     viewModel.managedSelection.start()
                                 },
                             )
@@ -308,14 +419,36 @@ private fun ConfiguredPane(
                     labels = ManagedTab.entries.map { stringResource(it.label) },
                     selected = tab.ordinal,
                     onSelect = { onTabChange(ManagedTab.entries[it]) },
-                    // The selection lives in the apps tab; it is finished or dropped there first. A
-                    // search leaves both tabs open: it filters the log as well.
+                    // The selection lives in the tab it started in (Apps or Languages); it is finished
+                    // or dropped there first. A search leaves every tab open: it filters the log as
+                    // well.
                     enabled = !selecting,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
                 )
             },
         ) { headerHeight, footerHeight ->
             val listPadding = PaddingValues(top = headerHeight, bottom = listEnd + footerHeight)
+            // The same row in the Apps and Languages tabs, the latter without the language badge.
+            val appItem = @Composable { row: AppRow, showLocales: Boolean, modifier: Modifier ->
+                val packageName = row.app.packageName
+                ManagedAppItem(
+                    row = row,
+                    showLocales = showLocales,
+                    modifier = modifier.then(
+                        when (packageName) {
+                            returnTo?.packageName -> Modifier.focusRequester(returnFocus)
+                            selectFocusKey -> Modifier.focusRequester(selectFocus)
+                            else -> Modifier
+                        },
+                    ),
+                    selected = packageName == selectedPackage,
+                    checked = if (selecting) packageName in selection else null,
+                    onClick = {
+                        if (selecting) viewModel.managedSelection.toggle(packageName) else onOpenApp(packageName)
+                    },
+                    onLongClick = { viewModel.managedSelection.toggle(packageName) },
+                )
+            }
             val listContent = @Composable {
                 when (tab) {
                     ManagedTab.Apps -> LazyColumn(
@@ -339,22 +472,37 @@ private fun ConfiguredPane(
                                 Hint(stringResource(if (searching) R.string.list_no_results else R.string.managed_empty))
                             }
                         }
-                        itemsIndexed(state.apps, key = { _, row -> row.app.packageName }) { index, row ->
-                            val packageName = row.app.packageName
-                            ManagedAppItem(
-                                row = row,
-                                modifier = when {
-                                    packageName == returnTo?.packageName -> Modifier.focusRequester(returnFocus)
-                                    index + firstRow == selectFocusAt -> Modifier.focusRequester(selectFocus)
-                                    else -> Modifier
-                                },
-                                selected = packageName == selectedPackage,
-                                checked = if (selecting) packageName in selection else null,
-                                onClick = {
-                                    if (selecting) viewModel.managedSelection.toggle(packageName) else onOpenApp(packageName)
-                                },
-                                onLongClick = { viewModel.managedSelection.toggle(packageName) },
-                            )
+                        items(state.apps, key = { it.app.packageName }, contentType = { APP_ROW }) { appItem(it, true, Modifier) }
+                    }
+                    ManagedTab.Languages -> LazyColumn(
+                        state = languagesListState,
+                        contentPadding = listPadding,
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        if (state.loaded && state.apps.isEmpty()) {
+                            item(key = "empty") {
+                                Hint(stringResource(if (searching) R.string.list_no_results else R.string.managed_empty))
+                            }
+                        }
+                        // Rows slide aside for a group opening, and close up after one closing.
+                        for (language in state.languages) {
+                            val headerKey = headerKey(language)
+                            val open = isOpen(language)
+                            item(key = headerKey, contentType = LANGUAGE_HEADER) {
+                                LanguageHeader(
+                                    language = language,
+                                    open = open,
+                                    onToggle = if (languagesFixed) null else { { openLanguages.value = openLanguages.value.toggled(language.key) } },
+                                    modifier = Modifier
+                                        .animateItem()
+                                        .then(if (headerKey == selectFocusKey) Modifier.focusRequester(selectFocus) else Modifier),
+                                )
+                            }
+                            if (open) {
+                                items(language.apps, key = { it.app.packageName }, contentType = { APP_ROW }) {
+                                    appItem(it, false, Modifier.animateItem())
+                                }
+                            }
                         }
                     }
                     ManagedTab.Activity -> LazyColumn(
@@ -486,7 +634,142 @@ private fun SummaryCard(
     }
 }
 
-/** Like an app list row. */
+/** The list key of a language group's header in the Languages tab (app rows are keyed by package, which has no colon). */
+private fun headerKey(language: ConfiguredLanguage) = "language:${language.key}"
+
+private fun Set<String>.toggled(key: String): Set<String> = if (key in this) this - key else this + key
+
+/** Index of [language]'s header in the Languages tab, after the headers of the groups before it and the apps of the open ones. */
+private fun List<ConfiguredLanguage>.headerIndex(language: ConfiguredLanguage, isOpen: (ConfiguredLanguage) -> Boolean): Int {
+    var index = 0
+    for (other in this) {
+        if (other.key == language.key) return index
+        index += 1 + if (isOpen(other)) other.apps.size else 0
+    }
+    return 0
+}
+
+/**
+ * Index of [packageName]'s row in the Languages tab, where each group's header comes before its apps
+ * and a closed group ([isOpen] false) has only its header; null if it isn't there.
+ */
+private fun List<ConfiguredLanguage>.rowIndex(packageName: String, isOpen: (ConfiguredLanguage) -> Boolean): Int? {
+    var index = 0
+    for (language in this) {
+        index++
+        if (!isOpen(language)) continue
+        val at = language.apps.indexOfFirst { it.app.packageName == packageName }
+        if (at >= 0) return index + at
+        index += language.apps.size
+    }
+    return null
+}
+
+/** The list key of the first app row or language header laid out in [list] (the summary card and hints left out). */
+private fun firstRowOnScreen(list: LazyListState): String? =
+    list.layoutInfo.visibleItemsInfo.firstOrNull { it.contentType == APP_ROW || it.contentType == LANGUAGE_HEADER }?.key as? String
+
+/** Rotation of a language header's arrow: down while closed, up while open. */
+private const val OPEN_ARROW_DEGREES = 180f
+
+/**
+ * An open group whose header scrolled up out of sight while its apps still show in the Languages
+ * tab, pinned under the bars instead (see FrostedBarsLayout): [offset] (pixels, not above 0) is how
+ * far the next group's header has pushed it up.
+ */
+private class PinnedLanguage(val language: ConfiguredLanguage, val offset: Int)
+
+/**
+ * What the Languages tab pins from where [list] stands: the group of the row at the top edge (just
+ * under the bars), unless that row is its header, still in full view, or the header of a closed
+ * group, which has nothing below to stay for. [groupOf] has each row's group by list key.
+ */
+private fun pinnedLanguage(list: LazyListState, groupOf: Map<Any, ConfiguredLanguage>): PinnedLanguage? {
+    val items = list.layoutInfo.visibleItemsInfo
+    // Offsets count from the end of the list's top padding, under the bars.
+    val topIndex = items.indexOfFirst { it.offset + it.size > 0 }
+    val top = items.getOrNull(topIndex) ?: return null
+    val language = groupOf[top.key] ?: return null
+    if (top.contentType == LANGUAGE_HEADER) {
+        if (top.offset >= 0) return null
+        if (items.getOrNull(topIndex + 1)?.let { groupOf[it.key]?.key } != language.key) return null
+    }
+    // A header as tall as the pinned one coming up under it pushes it away.
+    val next = items.drop(topIndex + 1).firstOrNull { it.contentType == LANGUAGE_HEADER }
+    return PinnedLanguage(language, next?.let { (it.offset - it.size).coerceAtMost(0) } ?: 0)
+}
+
+/**
+ * A group's header in the Languages tab: the language, in itself as on the apps' badges, how many
+ * apps it has, and an arrow for opening or closing it ([onToggle]; none for groups that stay open).
+ * Its text lines up with the app icons, and it is drawn and focused as a row, as the apps are.
+ *
+ * As the [pinned] copy over the list, it takes neither focus nor accessibility services' attention:
+ * the header in the list does both, and focus moving onto a copy that changes with the scroll
+ * position, under the next press, lost its place.
+ */
+@Composable
+private fun LanguageHeader(
+    language: ConfiguredLanguage,
+    open: Boolean,
+    onToggle: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+    pinned: Boolean = false,
+) {
+    val name = language.tag?.let { LocaleTags.nativeName(it) } ?: stringResource(R.string.locale_follow_system)
+    val arrow by animateFloatAsState(if (open) OPEN_ARROW_DEGREES else 0f, label = "arrow")
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 2.dp)
+            .clip(RowShape)
+            .then(if (pinned) Modifier.focusProperties { canFocus = false } else Modifier)
+            .then(if (onToggle != null) Modifier.clickable(onClick = onToggle) else Modifier)
+            .then(
+                if (pinned) {
+                    Modifier.clearAndSetSemantics {}
+                } else {
+                    Modifier.semantics(mergeDescendants = true) {
+                        heading()
+                        if (onToggle != null) {
+                            if (open) collapse { onToggle(); true } else expand { onToggle(); true }
+                        }
+                    }
+                },
+            )
+            .heightIn(min = 48.dp)
+            .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
+    ) {
+        Text(
+            text = name,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = language.apps.size.toString(),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 16.dp),
+        )
+        if (onToggle != null) {
+            Icon(
+                Icons.Filled.KeyboardArrowDown,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 8.dp).graphicsLayer { rotationZ = arrow },
+            )
+        }
+    }
+}
+
+/**
+ * Like an app list row. Without [showLocales] (under its language's header) the language badge is
+ * left out, and only a warning stays where the system has something else.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ManagedAppItem(
@@ -496,6 +779,7 @@ private fun ManagedAppItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
+    showLocales: Boolean = true,
 ) {
     val highlighted = selected || checked == true
     val revealer = rememberRevealer()
@@ -525,10 +809,20 @@ private fun ManagedAppItem(
         },
         headlineContent = { Text(row.app.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         supportingContent = { PackageLine(row.app, favorite = row.favorite) },
-        trailingContent = if (row.locales.isNotEmpty()) {
-            { LocaleBadge(row.locales, row.status, onHighlight = highlighted) }
-        } else {
-            null
+        trailingContent = when {
+            showLocales && row.locales.isNotEmpty() -> {
+                { LocaleBadge(row.locales, row.status, onHighlight = highlighted) }
+            }
+            !showLocales && row.status == LocaleStatus.Mismatch -> {
+                {
+                    Icon(
+                        Icons.Filled.Warning,
+                        contentDescription = stringResource(R.string.status_mismatch, chain(row.systemLocales.orEmpty())),
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+            else -> null
         },
     )
 }

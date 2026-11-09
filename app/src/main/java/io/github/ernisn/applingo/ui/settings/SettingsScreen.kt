@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -66,6 +67,7 @@ import io.github.ernisn.applingo.data.SEED_COLORS
 import io.github.ernisn.applingo.data.ThemeMode
 import io.github.ernisn.applingo.shizuku.ShizukuState
 import io.github.ernisn.applingo.ui.MainViewModel
+import io.github.ernisn.applingo.ui.OnScrollToTop
 import io.github.ernisn.applingo.ui.bottomChrome
 import io.github.ernisn.applingo.ui.safeArea
 import io.github.ernisn.applingo.ui.components.AppTypeFilterRow
@@ -91,6 +93,7 @@ private const val REPOSITORY_URL = "https://github.com/ernisn/Applingo"
 fun SettingsScreen(viewModel: MainViewModel) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val listState by viewModel.listState.collectAsStateWithLifecycle()
+    val dpad = isDpadDevice()
     val context = LocalContext.current
     fun open(intent: Intent) {
         try {
@@ -120,6 +123,10 @@ fun SettingsScreen(viewModel: MainViewModel) {
         )
     }
 
+    val scrollState = rememberLazyListState()
+    // The island's Settings double-tapped: back to the top.
+    OnScrollToTop { scrollState.animateScrollToItem(0) }
+
     // The list scrolls on behind the title, frosted (see FrostedHeaderLayout).
     FrostedHeaderLayout(
         modifier = Modifier.safeArea(top = false, bottom = false).fillMaxSize(),
@@ -132,6 +139,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
         },
     ) { headerHeight ->
         LazyColumn(
+            state = scrollState,
             contentPadding = PaddingValues(top = headerHeight, bottom = 16.dp + bottomChrome()),
             modifier = Modifier.fillMaxSize(),
         ) {
@@ -263,6 +271,78 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 },
             )
 
+            // Interface language, navigation, and the app list on opening.
+            group(
+                R.string.settings_section_general,
+                buildList {
+                    add(
+                        GroupRow("own_language") { modifier ->
+                            ClickRow(
+                                modifier = modifier,
+                                title = stringResource(R.string.settings_own_language),
+                                summary = ownLocale?.let(LocaleTags::nativeName) ?: stringResource(R.string.locale_follow_system),
+                                onClick = { showLanguageDialog = true },
+                            )
+                        },
+                    )
+                    // Swipes need touch.
+                    if (!dpad) {
+                        add(
+                            GroupRow("swipe_navigation") { modifier ->
+                                SwitchRow(
+                                    modifier = modifier,
+                                    title = stringResource(R.string.settings_swipe_navigation),
+                                    summary = stringResource(R.string.settings_swipe_navigation_summary),
+                                    checked = settings.swipeNavigation,
+                                    onCheckedChange = { value -> viewModel.updateSettings { it.copy(swipeNavigation = value) } },
+                                )
+                            },
+                        )
+                        add(
+                            GroupRow("island_drag") { modifier ->
+                                SwitchRow(
+                                    modifier = modifier,
+                                    title = stringResource(R.string.settings_island_drag),
+                                    summary = stringResource(R.string.settings_island_drag_summary),
+                                    checked = settings.islandDrag,
+                                    onCheckedChange = { value -> viewModel.updateSettings { it.copy(islandDrag = value) } },
+                                )
+                            },
+                        )
+                    }
+                    add(
+                        GroupRow("start_filter") { modifier ->
+                            ListItem(
+                                modifier = modifier,
+                                colors = groupedRowColors(),
+                                headlineContent = { Text(stringResource(R.string.settings_start_filter)) },
+                                supportingContent = {
+                                    AppTypeFilterRow(
+                                        selected = settings.startFilter,
+                                        onSelect = { filter -> viewModel.updateSettings { it.copy(startFilter = filter) } },
+                                        modifier = Modifier.padding(top = 8.dp),
+                                    )
+                                },
+                            )
+                        },
+                    )
+                    add(
+                        GroupRow("refresh_on_launch") { modifier ->
+                            SwitchRow(
+                                modifier = modifier,
+                                title = stringResource(R.string.settings_refresh_on_launch),
+                                // D-pad devices have no pull to refresh (see AppListPane).
+                                summary = stringResource(
+                                    if (isDpadDevice()) R.string.settings_refresh_on_launch_summary_dpad else R.string.settings_refresh_on_launch_summary,
+                                ),
+                                checked = settings.refreshOnLaunch,
+                                onCheckedChange = { value -> viewModel.updateSettings { it.copy(refreshOnLaunch = value) } },
+                            )
+                        },
+                    )
+                },
+            )
+
             group(
                 R.string.settings_section_keeping,
                 buildList {
@@ -316,38 +396,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
             )
 
             group(
-                R.string.settings_section_app_list,
-                listOf(
-                    GroupRow("start_filter") { modifier ->
-                        ListItem(
-                            modifier = modifier,
-                            colors = groupedRowColors(),
-                            headlineContent = { Text(stringResource(R.string.settings_start_filter)) },
-                            supportingContent = {
-                                AppTypeFilterRow(
-                                    selected = settings.startFilter,
-                                    onSelect = { filter -> viewModel.updateSettings { it.copy(startFilter = filter) } },
-                                    modifier = Modifier.padding(top = 8.dp),
-                                )
-                            },
-                        )
-                    },
-                    GroupRow("refresh_on_launch") { modifier ->
-                        SwitchRow(
-                            modifier = modifier,
-                            title = stringResource(R.string.settings_refresh_on_launch),
-                            // D-pad devices have no pull to refresh (see AppListPane).
-                            summary = stringResource(
-                                if (isDpadDevice()) R.string.settings_refresh_on_launch_summary_dpad else R.string.settings_refresh_on_launch_summary,
-                            ),
-                            checked = settings.refreshOnLaunch,
-                            onCheckedChange = { value -> viewModel.updateSettings { it.copy(refreshOnLaunch = value) } },
-                        )
-                    },
-                ),
-            )
-
-            group(
                 R.string.settings_section_data,
                 listOf(
                     GroupRow("export") { modifier ->
@@ -375,14 +423,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
             group(
                 R.string.settings_section_about,
                 listOf(
-                    GroupRow("own_language") { modifier ->
-                        ClickRow(
-                            modifier = modifier,
-                            title = stringResource(R.string.settings_own_language),
-                            summary = ownLocale?.let(LocaleTags::nativeName) ?: stringResource(R.string.locale_follow_system),
-                            onClick = { showLanguageDialog = true },
-                        )
-                    },
                     GroupRow("source") { modifier ->
                         ClickRow(
                             modifier = modifier,

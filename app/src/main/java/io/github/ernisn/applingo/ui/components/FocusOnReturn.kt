@@ -1,8 +1,11 @@
 package io.github.ernisn.applingo.ui.components
 
+import io.github.ernisn.applingo.ui.LocalPageActive
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.InputMode
@@ -20,13 +23,16 @@ class FocusOnReturnRequest(val packageName: String, val onDone: () -> Unit)
 /**
  * When a list pane comes back, focuses the row at [index] (the app that was open), scrolling to it
  * only if it is out of sight, and calls [onDone]. Runs once each time the pane enters the
- * composition, with the index it had then; null does nothing.
+ * composition, or becomes the page shown again ([LocalPageActive]: beside the upright island the
+ * list stays composed behind it while the detail is shown), with the index it had then; null does
+ * nothing.
  */
 @Composable
 fun FocusRowOnReturn(index: Int?, listState: LazyListState, requester: FocusRequester, onDone: () -> Unit) {
     val inputModeManager = LocalInputModeManager.current
-    LaunchedEffect(Unit) {
-        if (index == null) return@LaunchedEffect
+    val shown = LocalPageActive.current
+    LaunchedEffect(shown) {
+        if (!shown || index == null) return@LaunchedEffect
         onDone()
         if (inputModeManager.inputMode != InputMode.Keyboard) return@LaunchedEffect
         withFrameNanos {}
@@ -40,18 +46,22 @@ fun FocusRowOnReturn(index: Int?, listState: LazyListState, requester: FocusRequ
 
 /**
  * Focuses [requester]'s control once [returned] turns true, after a frame for it to be laid out, and
- * calls [onDone] so the caller can reset [returned] (or the pane coming back for another reason,
- * such as switching destinations, would take the focus again).
+ * then calls [onDone] so the caller can reset [returned] (or the pane coming back for another reason,
+ * such as switching destinations, would take the focus again). Only then: resetting [returned]
+ * restarts this effect, and done first, a recomposition before the next frame (one more state change
+ * as the picker closed) cancelled it before it could take the focus.
  */
 @Composable
 fun FocusOnReturn(returned: Boolean, requester: FocusRequester, onDone: () -> Unit) {
     val inputModeManager = LocalInputModeManager.current
+    val currentOnDone by rememberUpdatedState(onDone)
     LaunchedEffect(returned) {
         if (!returned) return@LaunchedEffect
-        onDone()
-        if (inputModeManager.inputMode != InputMode.Keyboard) return@LaunchedEffect
-        withFrameNanos {}
-        requester.requestFocusIfShown()
+        if (inputModeManager.inputMode == InputMode.Keyboard) {
+            withFrameNanos {}
+            requester.requestFocusIfShown()
+        }
+        currentOnDone()
     }
 }
 

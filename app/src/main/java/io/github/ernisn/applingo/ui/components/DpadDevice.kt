@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -14,9 +15,9 @@ import androidx.compose.ui.platform.LocalContext
 @Composable
 fun isDpadDevice(): Boolean {
     val context = LocalContext.current
-    return remember {
-        val tv = context.resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
-            Configuration.UI_MODE_TYPE_TELEVISION
+    val uiMode = LocalConfiguration.current.uiMode
+    return remember(uiMode) {
+        val tv = uiMode and Configuration.UI_MODE_TYPE_MASK == Configuration.UI_MODE_TYPE_TELEVISION
         tv || !context.packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)
     }
 }

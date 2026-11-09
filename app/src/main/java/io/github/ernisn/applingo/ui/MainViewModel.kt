@@ -136,11 +136,22 @@ data class UninstalledRecord(val packageName: String, val label: String, val loc
  */
 data class UndoableChange(val id: Long, val text: String, val startedAt: Long, val durationMillis: Long)
 
+/**
+ * The configured apps whose chain starts with [tag], in the list's order; null for those set back to
+ * the system language, while the system still has theirs.
+ */
+data class ConfiguredLanguage(val tag: String?, val apps: List<AppRow>)
+
 data class ManagedState(
     /** The app list has loaded; until then nothing can tell installed apps from uninstalled ones. */
     val loaded: Boolean = false,
     /** Installed apps with a language, after [query] and in the chosen order. */
     val apps: List<AppRow> = emptyList(),
+    /**
+     * [apps] by the first language of each one's chain, so each app is in one group only: the
+     * language most apps have first comes first, the system language last.
+     */
+    val languages: List<ConfiguredLanguage> = emptyList(),
     /** All installed apps with a language, and how many of them differ from the system. */
     val configuredCount: Int = 0,
     val mismatchCount: Int = 0,
@@ -253,9 +264,17 @@ class MainViewModel(private val app: Application, private val container: AppCont
         }
         val collator = Collator.getInstance(uiLocale())
         val keywords = Search.keywords(query)
+        val apps = if (keywords.isEmpty()) configured.sortedWith(ordering(preferences, collator)) else search(configured, keywords, collator)
         ManagedState(
             loaded = loaded,
-            apps = if (keywords.isEmpty()) configured.sortedWith(ordering(preferences, collator)) else search(configured, keywords, collator),
+            apps = apps,
+            languages = apps.groupBy { it.locales.firstOrNull() }
+                .map { (tag, rows) -> ConfiguredLanguage(tag, rows) }
+                .sortedWith(
+                    compareBy<ConfiguredLanguage> { it.tag == null }
+                        .thenByDescending { it.apps.size }
+                        .thenBy(collator) { language -> language.tag?.let { LocaleTags.nativeName(it) }.orEmpty() },
+                ),
             configuredCount = configured.size,
             mismatchCount = configured.count { it.status == LocaleStatus.Mismatch },
             uninstalled = uninstalled.sortedWith(compareBy(collator) { it.label }),
