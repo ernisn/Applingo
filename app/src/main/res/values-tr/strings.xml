@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Common actions -->
+    <string name="action_back">Geri</string>
+    <string name="action_close">Kapat</string>
+    <string name="action_retry">Yeniden dene</string>
+    <string name="action_apply">Uygula</string>
+    <string name="action_open">Aç</string>
+    <string name="action_restart_app">Uygulamayı yeniden başlat</string>
+    <string name="action_force_stop">Zorla durdur</string>
+    <string name="action_app_info">Uygulama bilgisi</string>
+    <string name="action_system_language">Ayarlar\'da uygulama dili</string>
+    <string name="action_change_language">Dili değiştir</string>
+    <string name="action_reset_to_system">Sistemi takip et</string>
+    <string name="action_follow_system">Temizle</string>
+    <string name="action_move_up">Yukarı taşı</string>
+    <string name="action_move_down">Aşağı taşı</string>
+    <string name="action_remove">Kaldır</string>
+    <string name="action_expand">Bölgeleri göster</string>
+    <string name="action_collapse">Bölgeleri gizle</string>
+    <string name="action_sort">Sırala ve filtrele</string>
+    <string name="action_clear_search">Aramayı temizle</string>
+    <string name="action_select_all">Tümünü seç</string>
+    <string name="action_select_apps">Uygulamaları seç</string>
+    <string name="action_rescan_apps">Uygulamaları yeniden tara</string>
+    <string name="action_check_now">Şimdi kontrol et</string>
+    <string name="action_forget">Kaydı kaldır</string>
+    <string name="action_clear_activity">Temizle</string>
+    <string name="action_reorder">Sıralamak için sürükleyin</string>
+    <string name="action_favorite">Favorilere ekle</string>
+    <string name="action_unfavorite">Favorilerden çıkar</string>
+
+    <!-- Navigation -->
+    <string name="nav_apps">Uygulamalar</string>
+    <string name="nav_managed">Yapılandırılanlar</string>
+    <string name="nav_settings">Ayarlar</string>
+
+    <!-- App list -->
+    <string name="search_hint">Uygulama veya dil ara</string>
+    <string name="list_empty">Uygulama yok</string>
+    <string name="list_no_results">Eşleşme yok</string>
+    <string name="list_no_favorites">Henüz favori yok. Uygulamaları ayrıntı sayfasından ekleyin.</string>
+    <string name="filter_user">Kullanıcı</string>
+    <string name="filter_system">Sistem</string>
+    <string name="filter_all">Tümü</string>
+    <string name="filter_favorites">Favoriler</string>
+    <string name="filter_launchable_only">Yalnızca başlatılabilir uygulamalar</string>
+    <string name="filter_enabled_only">Yalnızca etkin uygulamalar</string>
+    <string name="sort_name">Ad</string>
+    <string name="sort_recently_set">Son ayarlanan</string>
+    <string name="sort_recently_updated">Son güncellenen</string>
+    <string name="sort_recently_installed">Son yüklenen</string>
+    <string name="sort_reverse">Ters sıra</string>
+    <string name="app_badge_system">Sistem</string>
+    <string name="app_badge_disabled">Devre dışı</string>
+    <string name="app_badge_favorite">Favori</string>
+    <plurals name="selection_count">
+        <item quantity="one">%1$d seçildi</item>
+        <item quantity="other">%1$d seçildi</item>
+    </plurals>
+
+    <!-- My languages -->
+    <string name="managed_section_apps">Uygulamalar</string>
+    <string name="managed_section_languages">Diller</string>
+    <string name="managed_empty">Yapılandırılmış uygulama yok</string>
+    <string name="managed_section_activity">Etkinlik günlüğü</string>
+    <string name="managed_activity_empty">Etkinlik yok</string>
+    <string name="activity_search_hint">Etkinlik günlüğünde ara</string>
+    <plurals name="managed_summary_attention">
+        <item quantity="one">%1$d tanesi sistemden farklı</item>
+        <item quantity="other">%1$d tanesi sistemden farklı</item>
+    </plurals>
+    <plurals name="managed_uninstalled">
+        <item quantity="one">%1$d kaldırılmış uygulama</item>
+        <item quantity="other">%1$d kaldırılmış uygulama</item>
+    </plurals>
+    <string name="managed_uninstalled_title">Kaldırılmış uygulamalar</string>
+    <string name="managed_uninstalled_hint">Uygulama yeniden yüklenirse diller geri yüklenir.</string>
+    <plurals name="managed_summary_count">
+        <item quantity="one">%1$d uygulama yapılandırıldı</item>
+        <item quantity="other">%1$d uygulama yapılandırıldı</item>
+    </plurals>
+    <string name="managed_last_check_never">Henüz kontrol edilmedi</string>
+    <string name="managed_last_check" tools:ignore="PluralsCandidate">Son kontrol %1$s · %2$d geri yüklendi · %3$d içe aktarıldı</string>
+    <string name="activity_applied">%1$s olarak ayarlandı</string>
+    <string name="activity_reset">Sistemi takip edecek şekilde ayarlandı</string>
+    <string name="activity_repaired">Sistem değişikliğinden sonra geri yüklendi: %1$s → %2$s</string>
+    <string name="activity_mismatch">Sistem tarafından %1$s olarak değiştirildi (yapılandırılan: %2$s); otomatik geri yükleme kapalı</string>
+    <string name="activity_adopted">Mevcut ayar içe aktarıldı: %1$s</string>
+    <string name="activity_imported">Dosyadan içe aktarıldı: %1$s</string>
+    <string name="activity_failed">Yazma başarısız: %1$s</string>
+
+    <!-- Settings -->
+    <string name="settings_shizuku_connected">Bağlı (%1$s)</string>
+    <string name="settings_section_appearance">Görünüm</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_system">Sistem</string>
+    <string name="settings_theme_light">Açık</string>
+    <string name="settings_theme_dark">Koyu</string>
+    <string name="settings_dynamic_color">Dinamik renk</string>
+    <string name="settings_dynamic_color_summary">Duvar kağıdından renk paleti oluştur</string>
+    <string name="settings_seed_color">Tema rengi</string>
+    <string name="settings_pure_black">Saf siyah</string>
+    <string name="settings_pure_black_summary">Yalnızca koyu temada</string>
+    <string name="settings_system_font">Sistem yazı tipi</string>
+    <string name="settings_system_font_summary">Roboto Condensed yerine sistem varsayılanını kullan</string>
+    <string name="settings_section_general">Genel</string>
+    <string name="settings_swipe_navigation">Kaydırmalı gezinme</string>
+    <string name="settings_swipe_navigation_summary">Sayfalar ve düzeyler arasında yana kaydırarak geç</string>
+    <string name="settings_island_drag">Gezinme çubuğu sürükleme</string>
+    <string name="settings_island_drag_summary">Sayfaları değiştirmek için gezinme çubuğu boyunca kaydır</string>
+    <string name="settings_section_keeping">Kontrol ve geri yükleme</string>
+    <string name="settings_auto_repair">Otomatik geri yükleme</string>
+    <string name="settings_auto_repair_summary">Sistemin temizlediği veya kısalttığı dilleri (ör. uygulama güncellemesinden sonra) yeniden yaz. Kapalıyken değişiklikler yalnızca günlüğe kaydedilir.</string>
+    <string name="settings_background_check">Arka plan kontrolü</string>
+    <string name="settings_background_check_summary">Applingo kapalıyken düzenli olarak kontrol et. Shizuku\'nun çalışıyor olmasını gerektirir.</string>
+    <string name="settings_background_interval">Kontrol aralığı</string>
+    <string name="settings_start_filter">Varsayılan sekme</string>
+    <string name="settings_refresh_on_launch">Başlatmada yeniden tara</string>
+    <string name="settings_refresh_on_launch_summary">Başlatmayı yavaşlatır. Kapalıyken önbelleğe alınan liste gösterilir; yenilemek için aşağı çekin.</string>
+    <string name="settings_refresh_on_launch_summary_dpad">Başlatmayı yavaşlatır. Kapalıyken önbelleğe alınan liste gösterilir; liste menüsünden yeniden tarayın.</string>
+    <string name="settings_hours" tools:ignore="PluralsCandidate">%1$d sa</string>
+    <string name="settings_section_data">Veri</string>
+    <string name="settings_export">Dışa aktar</string>
+    <string name="settings_export_summary">Uygulama dil ayarlarını JSON dosyası olarak kaydet</string>
+    <string name="settings_import">İçe aktar</string>
+    <string name="settings_import_summary">Bir JSON dışa aktarımından ayarları yükle ve uygula</string>
+    <string name="settings_section_about">Hakkında</string>
+    <string name="settings_own_language">Arayüz dili</string>
+    <string name="settings_source">Kaynak kodu</string>
+    <string name="settings_version">Sürüm</string>
+    <string name="settings_license">MIT Lisansı</string>
+    <string name="time_just_now">az önce</string>
+
+    <!-- Shizuku -->
+    <string name="shizuku_title" translatable="false">Shizuku</string>
+    <string name="shizuku_not_installed">Diğer uygulamaların dillerini değiştirmek için Shizuku (veya Sui) gereklidir.</string>
+    <string name="shizuku_not_running">Shizuku çalışmıyor. Değişiklikler kaydedilir ve başladığında yazılır.</string>
+    <string name="shizuku_unsupported">Bu Shizuku sürümü desteklenmiyor. Shizuku\'yu güncelleyin.</string>
+    <string name="shizuku_permission_required">Shizuku izni gerekli.</string>
+    <string name="shizuku_permission_denied">Shizuku izni reddedildi. Shizuku uygulamasından izin verip yeniden deneyin.</string>
+    <string name="shizuku_connecting">Shizuku\'ya bağlanılıyor…</string>
+    <string name="shizuku_failed">Shizuku hizmeti başlatılamadı: %1$s</string>
+    <string name="shizuku_action_get">Shizuku\'yu edin</string>
+    <string name="shizuku_action_grant">İzin ver</string>
+    <string name="shizuku_action_open">Shizuku\'yu aç</string>
+
+    <!-- Detail -->
+    <string name="detail_empty">Bir uygulama seçin</string>
+    <string name="detail_not_installed">Uygulama yüklü değil</string>
+    <string name="detail_language">Uygulama dili</string>
+    <string name="locale_follow_system">Sistem dili</string>
+    <string name="locale_system_fallback">Son yedek · %1$s</string>
+    <string name="detail_order_hint">Listedeki uygulamanın desteklediği ilk dil kullanılır.</string>
+    <string name="status_pending">Kaydedildi; Shizuku bağlandığında yazılacak</string>
+    <string name="status_mismatch">Sistem değeri farklı: %1$s</string>
+    <string name="info_version">Sürüm</string>
+    <string name="info_sdk">SDK</string>
+    <string name="info_sdk_value">Hedef %1$d · Min %2$d</string>
+    <string name="info_installed">Yüklendi</string>
+    <string name="info_updated">Güncellendi</string>
+    <string name="info_installer">Yükleyen</string>
+    <string name="info_type">Tür</string>
+    <string name="info_type_user">Kullanıcı uygulaması</string>
+    <string name="info_type_system">Sistem uygulaması</string>
+    <string name="info_type_updated_system">Sistem uygulaması (güncellenmiş)</string>
+    <string name="info_declared_locales">Bildirilen diller</string>
+    <string name="info_declared_none">Bildirilen yok</string>
+    <plurals name="info_declared_count">
+        <item quantity="one">%1$d dil</item>
+        <item quantity="other">%1$d dil</item>
+    </plurals>
+    <string name="info_system_value">Sistem değeri</string>
+    <string name="info_system_value_unknown">Bilinmiyor (Shizuku bağlı değil)</string>
+
+    <!-- Picker -->
+    <string name="picker_title">Dil · %1$s</string>
+    <plurals name="picker_title_batch">
+        <item quantity="one">Dil · %1$d uygulama</item>
+        <item quantity="other">Dil · %1$d uygulama</item>
+    </plurals>
+    <string name="picker_selected">Öncelik</string>
+    <string name="picker_selected_empty">Hiçbiri seçilmedi; uygulama sistem dilini takip eder.</string>
+    <string name="picker_search_hint">Dil ara</string>
+    <string name="picker_order_hint">Desteklenen ilk dil kullanılır; sistem dili son yedektir. Sıralamak için ≡ simgesini sürükleyin.</string>
+    <string name="picker_order_hint_dpad">Desteklenen ilk dil kullanılır; sistem dili son yedektir. Sıralamak için ≡ üzerinde Tamam\'a, ardından Yukarı veya Aşağı tuşuna basın.</string>
+    <string name="picker_section_declared">Uygulama tarafından bildirilen</string>
+    <string name="picker_section_system">Sistem dilleri</string>
+    <string name="picker_section_all">Tüm diller</string>
+    <string name="picker_section_favorites">Favoriler</string>
+    <string name="picker_favorites_empty">Yıldızlı diller burada görünür.</string>
+
+    <!-- Messages -->
+    <string name="message_applied">Uygulandı. Etkili olması için uygulamayı yeniden başlatın.</string>
+    <string name="message_reset">Sistemi takip edecek şekilde ayarlandı. Etkili olması için uygulamayı yeniden başlatın.</string>
+    <string name="message_saved_pending">Kaydedildi; Shizuku bağlandığında yazılacak.</string>
+    <string name="message_apply_failed">Uygulanamadı: %1$s</string>
+    <string name="message_needs_shizuku">Shizuku kullanılabilir değil</string>
+    <string name="message_restart_failed">Yeniden başlatılamadı: %1$s</string>
+    <string name="message_reconcile_failed">Kontrol başarısız: %1$s</string>
+    <string name="message_check_ok">Kontrol tamamlandı, fark yok</string>
+    <plurals name="message_batch_applied">
+        <item quantity="one">%1$d uygulamaya uygulandı</item>
+        <item quantity="other">%1$d uygulamaya uygulandı</item>
+    </plurals>
+    <string name="message_batch_failed" tools:ignore="PluralsCandidate">%2$d uygulamadan %1$d tanesi başarısız oldu</string>
+    <string name="message_exported">Dışa aktarıldı</string>
+    <string name="message_export_failed">Dışa aktarma başarısız: %1$s</string>
+    <plurals name="message_imported">
+        <item quantity="one">%1$d uygulama içe aktarıldı</item>
+        <item quantity="other">%1$d uygulama içe aktarıldı</item>
+    </plurals>
+    <string name="message_import_failed">İçe aktarma başarısız: %1$s</string>
+    <string name="message_force_stopped">Zorla durduruldu</string>
+    <string name="message_force_stop_failed">Zorla durdurulamadı: %1$s</string>
+    <plurals name="message_repaired">
+        <item quantity="one">%1$d uygulamanın dili geri yüklendi</item>
+        <item quantity="other">%1$d uygulamanın dili geri yüklendi</item>
+    </plurals>
+    <plurals name="message_adopted">
+        <item quantity="one">%1$d uygulamanın mevcut ayarı içe aktarıldı</item>
+        <item quantity="other">%1$d uygulamanın mevcut ayarları içe aktarıldı</item>
+    </plurals>
+
+    <!-- Undo and confirmations -->
+    <string name="action_undo">Geri al</string>
+    <string name="action_cancel">İptal</string>
+    <string name="action_remove_records">Kaldır</string>
+    <string name="action_forget_all">Tümünü kaldır</string>
+    <string name="action_clear_log">Etkinlik günlüğünü temizle</string>
+    <string name="confirm_reset">%1$s sistemi takip edecek şekilde ayarlansın mı?</string>
+    <plurals name="confirm_reset_batch">
+        <item quantity="one">%1$d uygulama sistemi takip edecek şekilde ayarlansın mı?</item>
+        <item quantity="other">%1$d uygulama sistemi takip edecek şekilde ayarlansın mı?</item>
+    </plurals>
+    <plurals name="confirm_remove_records">
+        <item quantity="one">%1$d kayıt kaldırılsın mı?</item>
+        <item quantity="other">%1$d kayıt kaldırılsın mı?</item>
+    </plurals>
+    <string name="confirm_clear_activity">Etkinlik günlüğü temizlensin mi?</string>
+    <plurals name="message_records_removed">
+        <item quantity="one">%1$d kayıt kaldırıldı</item>
+        <item quantity="other">%1$d kayıt kaldırıldı</item>
+    </plurals>
+</resources>
