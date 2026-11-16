@@ -1,6 +1,7 @@
 name: Release
 
-# Push a tag like v1.2.3 (or v1.2.3-beta.1 for a pre-release) to build a signed APK and publish a GitHub Release.
+# Push a tag like v1.2.3 (or v1.2.3-beta.1 for a pre-release) to build a signed APK and create a draft GitHub
+# Release with it; edit the notes on GitHub and publish it from there.
 # Run manually (Actions → Release → Run workflow) to produce a signed test build as a workflow artifact only.
 on:
   push:
@@ -20,6 +21,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Full history and tags, to list the commits since the previous release.
+          fetch-depth: 0
 
       - uses: actions/setup-java@v6
         with:
@@ -97,9 +101,12 @@ jobs:
           "$apksigner" verify --print-certs "$out"
           echo "file=$out" >> "$GITHUB_OUTPUT"
 
-      # The release notes are the tagged commit's message: its body (the change list), or its subject
-      # when it has none. A tag made in GitHub Desktop carries no message of its own to use instead.
-      - name: Publish GitHub Release
+      # Creates a draft: nothing is public until it is published on GitHub, after editing the notes.
+      # The notes start as the messages of every commit since the previous release, oldest first: each
+      # body (the change list) without trailers, or "- subject" when a commit has no body. A final release
+      # counts from the previous final one, so it also covers its pre-releases. When a release for the tag
+      # already exists (re-run, or created on GitHub beforehand), only the files are uploaded to it.
+      - name: Create draft GitHub Release
         if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -109,12 +116,24 @@ jobs:
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" "$FILE" "$FILE.sha256" --clobber
           else
+            exclude=()
+            [[ "$TAG" != *-* ]] && exclude=(--exclude '*-*')
+            prev=$(git describe --tags --abbrev=0 --match 'v*' "${exclude[@]}" "$TAG^" 2>/dev/null || true)
+            if [[ -n "$prev" ]]; then
+              commits=$(git rev-list --reverse --no-merges "$prev..$TAG")
+            else
+              commits=$(git rev-list -1 "$TAG")
+            fi
             notes="$RUNNER_TEMP/release-notes.md"
-            git log -1 --format=%b > "$notes"
-            if [[ -z "$(tr -d '[:space:]' < "$notes")" ]]; then git log -1 --format=%s > "$notes"; fi
-            flags=()
+            for c in $commits; do
+              body=$(git log -1 --format=%b "$c" | grep -v -i -E '^(co-authored-by|signed-off-by):|^-{3,}$' || true)
+              if [[ -z "$(tr -d '[:space:]' <<< "$body")" ]]; then body="- $(git log -1 --format=%s "$c")"; fi
+              printf '%s\n\n' "$body"
+            done | cat -s > "$notes"
+            flags=(--draft)
             [[ "$TAG" == *-* ]] && flags+=(--prerelease)
-            gh release create "$TAG" "$FILE" "$FILE.sha256" --title "Applingo $TAG" --notes-file "$notes" --verify-tag "${flags[@]}"
+            url=$(gh release create "$TAG" "$FILE" "$FILE.sha256" --title "Applingo $TAG" --notes-file "$notes" --verify-tag "${flags[@]}")
+            echo "Draft release created; edit the notes and publish it: $url" >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload test build
