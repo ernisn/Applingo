@@ -81,7 +81,7 @@
         <item quantity="other">%1$d uygulama yapılandırıldı</item>
     </plurals>
     <string name="managed_last_check_never">Henüz kontrol edilmedi</string>
-    <string name="managed_last_check" tools:ignore="PluralsCandidate">Son kontrol %1$s · %2$d geri yüklendi · %3$d içe aktarıldı</string>
+    <string name="managed_last_check">Son kontrol %1$s · %2$d geri yüklendi · %3$d içe aktarıldı</string>
     <string name="activity_applied">%1$s olarak ayarlandı</string>
     <string name="activity_reset">Sistemi takip edecek şekilde ayarlandı</string>
     <string name="activity_repaired">Sistem değişikliğinden sonra geri yüklendi: %1$s → %2$s</string>
@@ -119,7 +119,7 @@
     <string name="settings_refresh_on_launch">Başlatmada yeniden tara</string>
     <string name="settings_refresh_on_launch_summary">Başlatmayı yavaşlatır. Kapalıyken önbelleğe alınan liste gösterilir; yenilemek için aşağı çekin.</string>
     <string name="settings_refresh_on_launch_summary_dpad">Başlatmayı yavaşlatır. Kapalıyken önbelleğe alınan liste gösterilir; liste menüsünden yeniden tarayın.</string>
-    <string name="settings_hours" tools:ignore="PluralsCandidate">%1$d sa</string>
+    <string name="settings_hours">%1$d sa</string>
     <string name="settings_section_data">Veri</string>
     <string name="settings_export">Dışa aktar</string>
     <string name="settings_export_summary">Uygulama dil ayarlarını JSON dosyası olarak kaydet</string>
@@ -133,7 +133,6 @@
     <string name="time_just_now">az önce</string>
 
     <!-- Shizuku -->
-    <string name="shizuku_title" translatable="false">Shizuku</string>
     <string name="shizuku_not_installed">Diğer uygulamaların dillerini değiştirmek için Shizuku (veya Sui) gereklidir.</string>
     <string name="shizuku_not_running">Shizuku çalışmıyor. Değişiklikler kaydedilir ve başladığında yazılır.</string>
     <string name="shizuku_unsupported">Bu Shizuku sürümü desteklenmiyor. Shizuku\'yu güncelleyin.</string>
@@ -203,7 +202,7 @@
         <item quantity="one">%1$d uygulamaya uygulandı</item>
         <item quantity="other">%1$d uygulamaya uygulandı</item>
     </plurals>
-    <string name="message_batch_failed" tools:ignore="PluralsCandidate">%2$d uygulamadan %1$d tanesi başarısız oldu</string>
+    <string name="message_batch_failed">%2$d uygulamadan %1$d tanesi başarısız oldu</string>
     <string name="message_exported">Dışa aktarıldı</string>
     <string name="message_export_failed">Dışa aktarma başarısız: %1$s</string>
     <plurals name="message_imported">
