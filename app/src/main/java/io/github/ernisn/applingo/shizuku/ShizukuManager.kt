@@ -12,9 +12,13 @@ import io.github.ernisn.applingo.service.ApplingoUserService
 import io.github.ernisn.applingo.service.IApplingoService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -49,6 +53,17 @@ class ShizukuManager(private val context: Context, private val scope: CoroutineS
 
     private val _service = MutableStateFlow<IApplingoService?>(null)
     val service: StateFlow<IApplingoService?> = _service.asStateFlow()
+
+    private val _binderReceived = MutableSharedFlow<Unit>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+    /**
+     * Emits each time Shizuku hands over its binder with permission granted, before the service is bound:
+     * when this process starts while Shizuku runs, and when Shizuku starts, which wakes (or launches) this
+     * process to deliver it. Collect before [start].
+     */
+    val binderReceived: SharedFlow<Unit> = _binderReceived.asSharedFlow()
 
     private var timeoutJob: Job? = null
     private var recentRebinds = 0
@@ -91,7 +106,9 @@ class ShizukuManager(private val context: Context, private val scope: CoroutineS
         }
     }
 
-    private val binderReceived = Shizuku.OnBinderReceivedListener { onBinderAvailable() }
+    private val binderListener = Shizuku.OnBinderReceivedListener {
+        if (onBinderAvailable()) _binderReceived.tryEmit(Unit)
+    }
 
     private val binderDead = Shizuku.OnBinderDeadListener {
         timeoutJob?.cancel()
@@ -104,7 +121,7 @@ class ShizukuManager(private val context: Context, private val scope: CoroutineS
     }
 
     fun start() {
-        Shizuku.addBinderReceivedListenerSticky(binderReceived)
+        Shizuku.addBinderReceivedListenerSticky(binderListener)
         Shizuku.addBinderDeadListener(binderDead)
         Shizuku.addRequestPermissionResultListener(permissionResult)
         scope.launch {
@@ -134,15 +151,17 @@ class ShizukuManager(private val context: Context, private val scope: CoroutineS
             ?: withTimeoutOrNull(timeoutMs) { _service.filterNotNull().first() }
             ?: throw ServiceUnavailableException()
 
-    private fun onBinderAvailable() {
+    /** Binds the service if permitted; returns whether it did. */
+    private fun onBinderAvailable(): Boolean {
         _state.value = when {
             Shizuku.isPreV11() -> ShizukuState.Unsupported
             Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED -> {
                 bind()
-                return
+                return true
             }
             else -> permissionState()
         }
+        return false
     }
 
     private fun bind() {

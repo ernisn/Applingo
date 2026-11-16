@@ -1,6 +1,8 @@
 package io.github.ernisn.applingo
 
+import android.app.Activity
 import android.app.Application
+import android.os.Bundle
 import io.github.ernisn.applingo.background.BackgroundCheckWorker
 import io.github.ernisn.applingo.data.ActivityLog
 import io.github.ernisn.applingo.data.AppRepository
@@ -24,6 +26,7 @@ class ApplingoApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        registerActivityLifecycleCallbacks(container.startedActivities)
         container.start()
     }
 }
@@ -38,7 +41,17 @@ class AppContainer(private val app: Application) {
     val activityLog = ActivityLog(app)
     val locales = LocaleController(app, scope, shizuku, apps, DesiredLocaleStore(app), preferences, activityLog)
 
+    internal val startedActivities = StartedActivityCounter()
+
+    /** Whether an Applingo screen is visible; false while running for Shizuku, a job or boot. */
+    val isUiStarted: Boolean get() = startedActivities.count > 0
+
     fun start() {
+        scope.launch {
+            // Shizuku starting wakes this process only briefly; without a screen open, hand the check to a
+            // job right away, before the process is frozen (see BackgroundCheckWorker).
+            shizuku.binderReceived.collect { if (!isUiStarted) BackgroundCheckWorker.checkNow(app) }
+        }
         shizuku.start()
         locales.start()
         scope.launch {
@@ -64,4 +77,25 @@ class AppContainer(private val app: Application) {
         apps.refresh()
         locales.requestReconcile()
     }
+}
+
+/** Counts started activities; callbacks arrive on the main thread, [count] may be read from any. */
+internal class StartedActivityCounter : Application.ActivityLifecycleCallbacks {
+    @Volatile
+    var count = 0
+        private set
+
+    override fun onActivityStarted(activity: Activity) {
+        count++
+    }
+
+    override fun onActivityStopped(activity: Activity) {
+        count--
+    }
+
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
+    override fun onActivityResumed(activity: Activity) = Unit
+    override fun onActivityPaused(activity: Activity) = Unit
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
+    override fun onActivityDestroyed(activity: Activity) = Unit
 }
